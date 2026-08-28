@@ -330,8 +330,19 @@ function displayResults(result) {
   loadScreenshot(result.url);
   
   // Save to history
-  appState.history.unshift(result);
-  if (appState.history.length > 10) appState.history.pop();
+  try {
+    result.domain = new URL(result.url).hostname;
+  } catch {
+    result.domain = result.url;
+  }
+  result.savedAt = Date.now();
+
+  let history = getStoredHistory();
+  const normUrl = result.url.replace(/\/$/, '').toLowerCase();
+  history = history.filter(item => item.url.replace(/\/$/, '').toLowerCase() !== normUrl);
+  history.unshift(result);
+  if (history.length > 20) history.pop();
+  saveStoredHistory(history);
   updateHistory();
   
   // Scroll to results
@@ -788,8 +799,19 @@ function displayResults(result) {
   loadScreenshot(result.url);
   
   // Save to history
-  appState.history.unshift(result);
-  if (appState.history.length > 10) appState.history.pop();
+  try {
+    result.domain = new URL(result.url).hostname;
+  } catch {
+    result.domain = result.url;
+  }
+  result.savedAt = Date.now();
+
+  let history = getStoredHistory();
+  const normUrl = result.url.replace(/\/$/, '').toLowerCase();
+  history = history.filter(item => item.url.replace(/\/$/, '').toLowerCase() !== normUrl);
+  history.unshift(result);
+  if (history.length > 20) history.pop();
+  saveStoredHistory(history);
   updateHistory();
   
   // Scroll to results
@@ -945,6 +967,19 @@ async function loadScreenshot(url) {
       return;
     }
 
+    // Save to result object if it's the current one
+    if (appState.currentResult && appState.currentResult.url === cleanUrl) {
+      appState.currentResult.screenshotUrl = screenshotUrl;
+      let hist = getStoredHistory();
+      const normClean = cleanUrl.replace(/\/$/, '').toLowerCase();
+      const match = hist.find(item => item.url.replace(/\/$/, '').toLowerCase() === normClean);
+      if (match) {
+        match.screenshotUrl = screenshotUrl;
+        saveStoredHistory(hist);
+        updateHistory();
+      }
+    }
+
     clearTimeout(skeletonTimer);
 
     // Show image
@@ -960,33 +995,85 @@ async function loadScreenshot(url) {
 }
 
 
+// Local storage helper methods for analysis history
+function getStoredHistory() {
+  try {
+    const data = localStorage.getItem('streetcoders_seo_history');
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return appState.history || [];
+  }
+}
+
+function saveStoredHistory(history) {
+  appState.history = history;
+  try {
+    localStorage.setItem('streetcoders_seo_history', JSON.stringify(history));
+  } catch {
+    // Fail silently if blocked in sandboxed environment
+  }
+}
+
+// Delete history item
+function deleteHistoryItem(index) {
+  let history = getStoredHistory();
+  history.splice(index, 1);
+  saveStoredHistory(history);
+  updateHistory();
+}
+window.deleteHistoryItem = deleteHistoryItem;
+
 // Update history
 function updateHistory() {
   const container = document.getElementById('history-list');
+  const history = getStoredHistory();
   
-  if (appState.history.length === 0) {
+  if (history.length === 0) {
     container.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-8">No history yet. Analyze a website to get started!</p>';
     return;
   }
   
-  container.innerHTML = appState.history.map((item, index) => `
-    <div class="border-b border-gray-100 dark:border-slate-700 last:border-0 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors px-4 rounded-lg" onclick="loadHistoryItem(${index})">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="font-semibold text-gray-800 dark:text-gray-200">${item.url}</p>
-          <p class="text-sm text-gray-500 dark:text-gray-400">${item.timestamp}</p>
+  container.innerHTML = history.map((item, index) => {
+    const domain = item.domain || new URL(item.url).hostname;
+    const thumbnail = item.screenshotUrl || `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    return `
+      <div class="border-b border-gray-100 dark:border-slate-700 last:border-0 py-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors px-4 rounded-lg">
+        <div class="flex items-center gap-4 cursor-pointer flex-1 min-w-0" onclick="loadHistoryItem(${index})">
+          <img src="${thumbnail}" class="w-12 h-12 rounded object-cover border border-gray-200 dark:border-slate-700 bg-gray-50 flex-shrink-0" onerror="this.src='https://www.google.com/s2/favicons?domain=${domain}&sz=64'" />
+          <div class="min-w-0">
+            <p class="font-semibold text-gray-800 dark:text-gray-200 truncate">${domain}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">${item.timestamp}</p>
+          </div>
         </div>
-        <div class="text-2xl font-bold text-primary-600 dark:text-primary-500">${item.scores.total}</div>
+        <div class="flex items-center gap-3">
+          <div class="text-xl font-bold text-primary-600 dark:text-primary-500">${item.scores.total}</div>
+          <button onclick="deleteHistoryItem(${index}); event.stopPropagation();" class="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20" title="Delete from history">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // Load history item
-function loadHistoryItem(index) {
-  const item = appState.history[index];
-  if (item) {
+async function loadHistoryItem(index) {
+  const history = getStoredHistory();
+  const item = history[index];
+  if (!item) return;
+
+  const ageMs = Date.now() - (item.savedAt || 0);
+  const oneHour = 60 * 60 * 1000;
+
+  if (ageMs < oneHour) {
+    // Re-load from local cache
     displayResults(item);
+  } else {
+    // Re-run analysis
+    document.getElementById('url-input').value = item.url;
+    document.getElementById('launch-btn').click();
   }
 }
 window.loadHistoryItem = loadHistoryItem;
@@ -1352,4 +1439,7 @@ document.addEventListener('DOMContentLoaded', () => {
       sendChatMessage();
     }
   });
+
+  // Render history on load
+  updateHistory();
 });
