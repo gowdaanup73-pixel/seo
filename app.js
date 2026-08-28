@@ -259,97 +259,7 @@ function calculateDetailedScores(data) {
   return scores;
 }
 
-// Display results
-function displayResults(result) {
-  // Show results section
-  document.getElementById('results-section').classList.remove('hidden');
-  
-  // Update overall score
-  document.getElementById('overall-score').textContent = `${result.scores.total}/100`;
-  
-  // Update individual scores with animation
-  const circumference = 2 * Math.PI * 45;
-  
-  // OnPage
-  const onPagePercent = (result.scores.onPage / 40) * 100;
-  const onPageOffset = circumference - (onPagePercent / 100) * circumference;
-  document.getElementById('score-onpage').textContent = result.scores.onPage;
-  setTimeout(() => {
-    document.getElementById('circle-onpage').style.strokeDashoffset = onPageOffset;
-  }, 100);
-  
-  // Technical
-  const techPercent = (result.scores.technical / 30) * 100;
-  const techOffset = circumference - (techPercent / 100) * circumference;
-  document.getElementById('score-technical').textContent = result.scores.technical;
-  setTimeout(() => {
-    document.getElementById('circle-technical').style.strokeDashoffset = techOffset;
-  }, 200);
-  
-  // Content
-  const contentPercent = (result.scores.content / 20) * 100;
-  const contentOffset = circumference - (contentPercent / 100) * circumference;
-  document.getElementById('score-content').textContent = result.scores.content;
-  setTimeout(() => {
-    document.getElementById('circle-content').style.strokeDashoffset = contentOffset;
-  }, 300);
-  
-  // Link
-  const linkPercent = (result.scores.links / 10) * 100;
-  const linkOffset = circumference - (linkPercent / 100) * circumference;
-  document.getElementById('score-link').textContent = result.scores.links;
-  setTimeout(() => {
-    document.getElementById('circle-link').style.strokeDashoffset = linkOffset;
-  }, 400);
-  
-  // Final score
-  const finalPercent = (result.scores.total / 100) * 100;
-  const finalOffset = circumference - (finalPercent / 100) * circumference;
-  document.getElementById('final-score-text').textContent = result.scores.total;
-  setTimeout(() => {
-    document.getElementById('final-circle').style.strokeDashoffset = finalOffset;
-  }, 500);
-  
-  // Render pie chart
-  renderPieChart(result.scores);
-  
-  // Update quick stats
-  document.getElementById('stats-title').textContent = result.title;
-  document.getElementById('stats-desc').textContent = result.metaDesc;
-  document.getElementById('stats-h1').textContent = result.h1Count;
-  document.getElementById('stats-words').textContent = result.wordCount;
-  document.getElementById('stats-images').textContent = result.imageCount;
-  document.getElementById('stats-links').textContent = result.linkCount;
-  document.getElementById('stats-https').textContent = result.url.startsWith('https') ? '✓' : '✗';
-  document.getElementById('stats-keywords').textContent = result.topKeywords.length;
-  
-  // Generate recommendations
-  generateRecommendations(result);
-  
-  // Load screenshot
-  loadScreenshot(result.url);
-  
-  // Save to history
-  try {
-    result.domain = new URL(result.url).hostname;
-  } catch {
-    result.domain = result.url;
-  }
-  result.savedAt = Date.now();
 
-  let history = getStoredHistory();
-  const normUrl = result.url.replace(/\/$/, '').toLowerCase();
-  history = history.filter(item => item.url.replace(/\/$/, '').toLowerCase() !== normUrl);
-  history.unshift(result);
-  if (history.length > 20) history.pop();
-  saveStoredHistory(history);
-  updateHistory();
-  
-  // Scroll to results
-  setTimeout(() => {
-    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
-  }, 300);
-}
 
 // Render pie chart
 function renderPieChart(scores) {
@@ -401,17 +311,8 @@ function renderPieChart(scores) {
   });
 }
 
-// Copy code function
-function copyCode(button) {
-  const codeBlock = button.closest('.bg-gray-900, .bg-slate-950').querySelector('code');
-  const text = codeBlock.textContent;
-  
-  navigator.clipboard.writeText(text).then(() => {
-    const originalText = button.textContent;
-    button.textContent = 'Copied!';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
+
+
 // Generate recommendations with structured checks grouped by Critical, Improvement, and Passed
 function generateRecommendations(result) {
   const container = document.getElementById('recommendations-list');
