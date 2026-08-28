@@ -86,10 +86,29 @@ window.retryWithCorrection = retryWithCorrection;
 // Send message to AI — proxied through /api/ai-recommend (key stored server-side)
 async function sendMessageToAI(userMessage) {
   try {
+    const payload = {
+      message: userMessage,
+      auditData: appState.currentResult ? {
+        url: appState.currentResult.url,
+        title: appState.currentResult.title,
+        metaDesc: appState.currentResult.metaDesc,
+        h1Count: appState.currentResult.h1Count,
+        h2Count: appState.currentResult.h2Count,
+        imageCount: appState.currentResult.imageCount,
+        imagesWithoutAlt: appState.currentResult.imagesWithoutAlt,
+        linkCount: appState.currentResult.linkCount,
+        wordCount: appState.currentResult.wordCount,
+        hasViewport: appState.currentResult.hasViewport,
+        scores: appState.currentResult.scores,
+        topKeywords: appState.currentResult.topKeywords,
+        robots: appState.currentResult.robots
+      } : null
+    };
+
     const response = await fetch('/api/ai-recommend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMessage })
+      body: JSON.stringify(payload)
     });
 
     const data = await response.json();
@@ -626,6 +645,9 @@ function generateRecommendations(result) {
 
 // Modified displayResults function to render one-line reasons for lost points dynamically
 function displayResults(result) {
+  // Save current result
+  appState.currentResult = result;
+
   // Show results section
   document.getElementById('results-section').classList.remove('hidden');
   

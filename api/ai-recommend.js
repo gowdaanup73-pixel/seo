@@ -17,9 +17,49 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'AI service is not configured' });
   }
 
-  const { message } = req.body || {};
+  const { message, auditData } = req.body || {};
   if (!message || typeof message !== 'string' || message.trim() === '') {
     return res.status(400).json({ error: 'message is required' });
+  }
+
+  let systemPrompt = 
+    'You are an expert SEO assistant helping users optimize their websites. ' +
+    'Provide clear, actionable SEO advice. Keep responses concise and helpful.';
+
+  if (auditData) {
+    systemPrompt += `\n\nHere is the real SEO audit data for the user's website (${auditData.url}):
+- Overall Score: ${auditData.scores?.total || 0}/100
+  * On-Page SEO: ${auditData.scores?.onPage || 0}/40
+  * Technical SEO: ${auditData.scores?.technical || 0}/30
+  * Content Quality: ${auditData.scores?.content || 0}/20
+  * Link Density: ${auditData.scores?.links || 0}/10
+- Metadata:
+  * Title tag: "${auditData.title || 'Missing'}"
+  * Meta description: "${auditData.metaDesc || 'Missing'}"
+- Headings:
+  * H1 count: ${auditData.h1Count}
+  * H2 count: ${auditData.h2Count}
+- Images & Links:
+  * Total images: ${auditData.imageCount}
+  * Images missing alt attribute: ${auditData.imagesWithoutAlt}
+  * Total links: ${auditData.linkCount}
+- Content:
+  * Word count: ${auditData.wordCount}
+  * Viewport meta tag present: ${auditData.hasViewport ? 'Yes' : 'No'}
+- Crawlability:
+  * robots.txt found: ${auditData.robots?.found ? 'Yes' : 'No'}
+  * robots.txt blocks all search engines: ${auditData.robots?.disallowsAll ? 'Yes' : 'No'}
+  * robots.txt references Sitemap: ${auditData.robots?.hasSitemap ? 'Yes' : 'No'}
+
+Instructions:
+1. Reference the actual numbers and findings listed above when responding to the user. Be specific (e.g. mention "your page has ${auditData.imagesWithoutAlt} images missing alt text" instead of generic advice like "improve your images").
+2. Structure recommendations using these exact sections:
+   - **CRITICAL**: Immediate high priority fixes (such as missing title tag, insecure HTTP, missing viewport, zero H1s, or word count < 300).
+   - **HIGH**: Actionable items with large impact.
+   - **MEDIUM**: Important fixes (such as suboptimal title/description length, multiple H1 tags).
+   - **LOW**: Small optimizations.
+3. Explain why each issue matters and give a concrete, plain-language fix.
+4. If the user asks a general question, answer it but relate it back to their specific audit values.`;
   }
 
   try {
@@ -36,9 +76,7 @@ export default async function handler(req, res) {
         messages: [
           {
             role: 'system',
-            content:
-              'You are an expert SEO assistant helping users optimize their websites. ' +
-              'Provide clear, actionable SEO advice. Keep responses concise and helpful.'
+            content: systemPrompt
           },
           {
             role: 'user',
