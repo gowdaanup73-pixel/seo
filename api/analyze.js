@@ -171,7 +171,7 @@ export default async function handler(req, res) {
 
   // SSRF guard
   if (!isSafeHostname(parsedUrl.hostname)) {
-    return res.status(400).json({ success: false, error: 'Target host is not permitted' });
+    return res.status(400).json({ success: false, error: 'invalid-url', message: 'Target host is not permitted or is in a private network range.' });
   }
 
   // Cache lookup by normalized URL (lowercase, trailing slash stripped)
@@ -211,9 +211,24 @@ export default async function handler(req, res) {
     clearTimeout(timeoutId);
 
     if (!pageRes.ok) {
+      if (pageRes.status === 403 || pageRes.status === 401) {
+        return res.status(403).json({
+          success: false,
+          error: 'bot-blocked',
+          message: 'The target website is blocking automated crawlers (HTTP 403 Forbidden). Try analyzing another domain.'
+        });
+      }
+      if (pageRes.status >= 500) {
+        return res.status(502).json({
+          success: false,
+          error: 'server-error',
+          message: `The target website is experiencing server issues (HTTP ${pageRes.status}). Try again in a moment.`
+        });
+      }
       return res.status(502).json({
         success: false,
-        error: `Target site returned HTTP ${pageRes.status}`
+        error: 'site-error',
+        message: `The target website returned an error status (HTTP ${pageRes.status}). Verify the URL and try again.`
       });
     }
 
@@ -224,10 +239,34 @@ export default async function handler(req, res) {
   } catch (err) {
     clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
-      return res.status(504).json({ success: false, error: 'Target site timed out (8 s)' });
+      return res.status(504).json({ 
+        success: false, 
+        error: 'timeout', 
+        message: 'The request to target site timed out after 8 seconds. The server is responding too slowly or is offline.' 
+      });
     }
+    
     console.error('analyze fetch error:', err);
-    return res.status(502).json({ success: false, error: 'Failed to fetch target site' });
+    const code = err.code || '';
+    if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
+      return res.status(502).json({
+        success: false,
+        error: 'dns-failed',
+        message: 'DNS lookup failed. The domain name does not exist, has expired, or is typed incorrectly. Please verify the URL.'
+      });
+    }
+    if (code === 'ECONNREFUSED' || code === 'ECONNRESET') {
+      return res.status(502).json({
+        success: false,
+        error: 'unreachable',
+        message: 'Target site refused the connection. The server might be down, offline, or behind a firewall.'
+      });
+    }
+    return res.status(502).json({ 
+      success: false, 
+      error: 'failed', 
+      message: 'Failed to connect to the target website. Make sure it is online and publicly accessible.' 
+    });
   }
 
   // Parse HTML with JSDOM (server-side DOMParser equivalent)
@@ -237,7 +276,7 @@ export default async function handler(req, res) {
     doc = dom.window.document;
   } catch (err) {
     console.error('JSDOM parse error:', err);
-    return res.status(500).json({ success: false, error: 'Failed to parse HTML' });
+    return res.status(500).json({ success: false, error: 'parse-failed', message: 'Failed to parse the target website HTML. The markup may be malformed.' });
   }
 
   // Extract data and respond
@@ -249,6 +288,6 @@ export default async function handler(req, res) {
     return res.status(200).json(result);
   } catch (err) {
     console.error('extractData error:', err);
-    return res.status(500).json({ success: false, error: 'Failed to extract SEO data' });
+    return res.status(500).json({ success: false, error: 'extract-failed', message: 'Failed to extract SEO metrics. The page layout does not conform to standard HTML.' });
   }
 }

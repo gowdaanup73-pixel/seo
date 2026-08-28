@@ -111,16 +111,16 @@ async function sendMessageToAI(userMessage) {
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      throw new Error(data.error || 'AI service error');
+      throw new Error(data.message || data.error || 'AI service error.');
     }
 
     return data.reply;
   } catch (error) {
     console.error('AI API Error:', error);
-    return 'Sorry, I encountered an error. Please try again.';
+    return `AI Chatbot Error: ${error.message || 'Failed to contact AI recommendations service. Please verify server connectivity.'}`;
   }
 }
 
@@ -183,16 +183,16 @@ async function analyzeWebsite(url) {
 
     // ─── Analyze response handling ────────────────────────────────────────────
     if (!analyzeResponse) {
-      return { success: false, error: 'Analysis request was cancelled' };
+      return { success: false, error: 'Analysis request was cancelled.' };
     }
 
     updateLoadingStatus('Scoring results…');
-    const data = await analyzeResponse.json();
+    const data = await analyzeResponse.json().catch(() => ({}));
 
-    if (!analyzeResponse.ok || !data.success) {
+    if (!analyzeResponse.ok || data.success === false) {
       return {
         success: false,
-        error: data.error || `Server error ${analyzeResponse.status}`
+        error: data.message || data.error || `Server error ${analyzeResponse.status}`
       };
     }
 
@@ -212,7 +212,7 @@ async function analyzeWebsite(url) {
     return { ...data, scores };
 
   } catch (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: `Failed to fetch analysis: ${error.message || 'connection failed.'}` };
   }
 }
 
@@ -847,7 +847,7 @@ function setPreviewUrlBar(url) {
 }
 
 // Show fallback state with favicon + domain + retry/visit links
-function showPreviewFallback(url) {
+function showPreviewFallback(url, errorMsg = '') {
   const loading  = document.getElementById('preview-loading');
   const skeleton = document.getElementById('preview-skeleton');
   const img      = document.getElementById('web-preview-img');
@@ -857,6 +857,11 @@ function showPreviewFallback(url) {
   if (skeleton) skeleton.style.display = 'none';
   if (img)      img.style.display      = 'none';
   if (fallback) fallback.style.display = 'flex';
+
+  const errorEl = document.getElementById('preview-error-message');
+  if (errorEl) {
+    errorEl.textContent = errorMsg || 'Preview unavailable';
+  }
 
   try {
     const parsed = new URL(url);
@@ -917,8 +922,9 @@ async function loadScreenshot(url) {
     });
 
     if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
       clearTimeout(skeletonTimer);
-      showPreviewFallback(cleanUrl);
+      showPreviewFallback(cleanUrl, errData.message || 'Screenshot service returned an error.');
       return;
     }
 
@@ -926,12 +932,18 @@ async function loadScreenshot(url) {
 
     // Preload image before swapping in
     const testImg = new Image();
-    await new Promise((resolve, reject) => {
-      testImg.onload  = resolve;
-      testImg.onerror = reject;
-      testImg.src     = screenshotUrl;
-      setTimeout(reject, 12000); // 12s image-load timeout
-    });
+    try {
+      await new Promise((resolve, reject) => {
+        testImg.onload  = resolve;
+        testImg.onerror = () => reject(new Error('Image failed to load from screenshot service.'));
+        testImg.src     = screenshotUrl;
+        setTimeout(() => reject(new Error('Screenshot load timed out.')), 12000);
+      });
+    } catch (imageErr) {
+      clearTimeout(skeletonTimer);
+      showPreviewFallback(cleanUrl, imageErr.message);
+      return;
+    }
 
     clearTimeout(skeletonTimer);
 
@@ -1314,7 +1326,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Domain validation error already shown via modal
       return;
     } else {
-      alert('Error: ' + (result ? result.error : 'Unknown error'));
+      showErrorModal(result ? result.error : 'An unexpected error occurred.', url);
     }
   });
   

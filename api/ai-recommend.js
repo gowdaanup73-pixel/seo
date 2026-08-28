@@ -131,21 +131,34 @@ Instructions:
     if (!upstream.ok) {
       const errText = await upstream.text();
       console.error('OpenRouter error:', upstream.status, errText);
-      return res.status(502).json({ error: 'Upstream AI service error' });
+      const isAuthError = upstream.status === 401 || upstream.status === 403;
+      return res.status(upstream.status).json({ 
+        success: false, 
+        error: isAuthError ? 'ai-auth-failed' : 'ai-service-failed', 
+        message: isAuthError ? 'Authentication with the AI service failed. Verify your OpenRouter API key configuration.' : `OpenRouter returned an error (HTTP ${upstream.status}). Try again in a moment.`
+      });
     }
 
     const data = await upstream.json();
 
     if (!data.choices || !data.choices[0]) {
-      return res.status(502).json({ error: 'Invalid response from AI service' });
+      return res.status(502).json({ 
+        success: false, 
+        error: 'ai-invalid-reply', 
+        message: 'The AI model returned an empty or malformed reply. Please try again.' 
+      });
     }
 
     const reply = data.choices[0].message.content;
     global.aiCache.set(cacheKey, { reply, expiresAt: Date.now() + CACHE_TTL_MS });
     res.setHeader('X-AI-Cache', 'MISS');
-    return res.status(200).json({ reply });
+    return res.status(200).json({ reply, success: true });
   } catch (err) {
     console.error('ai-recommend handler error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ 
+      success: false, 
+      error: 'ai-unreachable', 
+      message: 'Failed to contact the AI recommendations service. Verify network connectivity.' 
+    });
   }
 }

@@ -100,15 +100,23 @@ export default async function handler(req, res) {
     clearTimeout(timeoutId);
 
     if (!probe.ok) {
-      return res.status(502).json({ error: 'Screenshot service unavailable' });
+      return res.status(502).json({ 
+        success: false, 
+        error: 'preview-unavailable', 
+        message: 'Thum.io screenshot service returned an error. The target domain might block screenshots.' 
+      });
     }
   } catch (err) {
-    const msg = err.name === 'AbortError' ? 'Screenshot service timed out' : 'Screenshot service unreachable';
-    return res.status(502).json({ error: msg });
+    const isTimeout = err.name === 'AbortError';
+    return res.status(502).json({ 
+      success: false, 
+      error: isTimeout ? 'preview-timeout' : 'preview-unreachable', 
+      message: isTimeout ? 'Generating the website preview timed out (5s).' : 'Screenshot service was unreachable.' 
+    });
   }
 
   // Cache and return
   cache.set(cacheKey, { screenshotUrl, expiresAt: Date.now() + CACHE_TTL_MS });
   res.setHeader('X-Preview-Cache', 'MISS');
-  return res.status(200).json({ url: screenshotUrl });
+  return res.status(200).json({ url: screenshotUrl, success: true });
 }
