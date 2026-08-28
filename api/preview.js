@@ -85,7 +85,7 @@ export default async function handler(req, res) {
   const cached = cache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     res.setHeader('X-Preview-Cache', 'HIT');
-    return res.status(200).json({ url: cached.screenshotUrl });
+    return res.status(200).json({ url: cached.screenshotUrl, cached: true });
   }
 
   // Build thum.io URL — append target URL as a plain path segment (NOT encoded)

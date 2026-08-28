@@ -22,6 +22,46 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'message is required' });
   }
 
+  // In-memory cache for AI recommendations (24 hours TTL). Note: resets on Vercel cold starts.
+  const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+  if (!global.aiCache) {
+    global.aiCache = new Map();
+  }
+
+  function getCacheKey(msg, data) {
+    const normalizedMsg = msg.trim().toLowerCase();
+    const normalizedData = data ? JSON.stringify({
+      url: data.url,
+      title: data.title,
+      metaDesc: data.metaDesc,
+      h1Count: data.h1Count,
+      h2Count: data.h2Count,
+      imageCount: data.imageCount,
+      imagesWithoutAlt: data.imagesWithoutAlt,
+      linkCount: data.linkCount,
+      wordCount: data.wordCount,
+      hasViewport: data.hasViewport,
+      scores: data.scores
+    }) : '';
+    return `${normalizedMsg}:${normalizedData}`;
+  }
+
+  function purgeExpired() {
+    const now = Date.now();
+    for (const [key, entry] of global.aiCache) {
+      if (entry.expiresAt < now) global.aiCache.delete(key);
+    }
+  }
+
+  const cacheKey = getCacheKey(message, auditData);
+  purgeExpired();
+
+  const cached = global.aiCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    res.setHeader('X-AI-Cache', 'HIT');
+    return res.status(200).json({ reply: cached.reply, cached: true });
+  }
+
   let systemPrompt = 
     'You are an expert SEO assistant helping users optimize their websites. ' +
     'Provide clear, actionable SEO advice. Keep responses concise and helpful.';
@@ -100,7 +140,10 @@ Instructions:
       return res.status(502).json({ error: 'Invalid response from AI service' });
     }
 
-    return res.status(200).json({ reply: data.choices[0].message.content });
+    const reply = data.choices[0].message.content;
+    global.aiCache.set(cacheKey, { reply, expiresAt: Date.now() + CACHE_TTL_MS });
+    res.setHeader('X-AI-Cache', 'MISS');
+    return res.status(200).json({ reply });
   } catch (err) {
     console.error('ai-recommend handler error:', err);
     return res.status(500).json({ error: 'Internal server error' });

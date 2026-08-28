@@ -125,6 +125,17 @@ function extractData(doc, finalUrl, robotsInfo) {
   };
 }
 
+// In-memory cache for SEO analysis (1 hour TTL). Note: resets on Vercel cold starts.
+const CACHE_TTL_MS = 60 * 60 * 1000;
+const cache = new Map();
+
+function purgeExpired() {
+  const now = Date.now();
+  for (const [key, entry] of cache) {
+    if (entry.expiresAt < now) cache.delete(key);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
@@ -161,6 +172,16 @@ export default async function handler(req, res) {
   // SSRF guard
   if (!isSafeHostname(parsedUrl.hostname)) {
     return res.status(400).json({ success: false, error: 'Target host is not permitted' });
+  }
+
+  // Cache lookup by normalized URL (lowercase, trailing slash stripped)
+  const cacheKey = parsedUrl.href.replace(/\/$/, '').toLowerCase();
+  purgeExpired();
+
+  const cached = cache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    res.setHeader('X-Analyze-Cache', 'HIT');
+    return res.status(200).json({ ...cached.data, cached: true });
   }
 
   // ------------------------------------------------------------------
@@ -222,6 +243,9 @@ export default async function handler(req, res) {
   // Extract data and respond
   try {
     const result = extractData(doc, url, robotsInfo);
+    // Cache the successful result
+    cache.set(cacheKey, { data: result, expiresAt: Date.now() + CACHE_TTL_MS });
+    res.setHeader('X-Analyze-Cache', 'MISS');
     return res.status(200).json(result);
   } catch (err) {
     console.error('extractData error:', err);
