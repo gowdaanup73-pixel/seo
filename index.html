@@ -87,10 +87,10 @@
 </head>
 <body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300">
     <header class="flex justify-between items-center py-4 px-4 md:px-8 max-w-7xl mx-auto">
-        <h1 class="text-3xl font-extrabold text-primary-600 dark:text-primary-500 tracking-tight">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-primary-600 dark:text-primary-500 tracking-tight">
             Street Coders
         </h1>
-        <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+        <button id="theme-toggle" class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
             <svg class="w-6 h-6 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
             </svg>
@@ -101,14 +101,14 @@
     </header>
 
     <main class="container mx-auto max-w-7xl text-center pt-10 pb-20 px-4">
-        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-black mb-4 tracking-tight leading-tight text-gray-800 dark:text-white">
+        <h2 class="text-3xl sm:text-5xl lg:text-6xl font-black mb-4 tracking-tight leading-tight text-gray-800 dark:text-white">
             Automating <span class="text-primary-600 dark:text-primary-500">Search Engine Optimization</span>
         </h2>
-        <h3 class="text-2xl sm:text-3xl lg:text-4xl font-light mb-12 text-gray-600 dark:text-gray-300">
+        <h3 class="text-lg sm:text-3xl lg:text-4xl font-light mb-12 text-gray-600 dark:text-gray-300">
             AI-Powered, Real-Time Web Analysis
         </h3>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16">
             <div class="feature-card bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700">
                 <div class="text-4xl mb-3">
                     <svg class="w-10 h-10 mx-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +156,7 @@
         <div class="bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl text-center">
             <div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full spinner mx-auto mb-4"></div>
             <p class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-6">Checking domain &amp; fetching page…</p>
-            <div class="flex justify-center gap-4 text-sm">
+            <div class="flex flex-wrap justify-center gap-2 sm:gap-4 text-sm">
                 <span id="phase-domain" class="px-3 py-1 rounded-full bg-primary-500 text-white font-medium">1 · Domain</span>
                 <span id="phase-fetch"  class="px-3 py-1 rounded-full bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400 font-medium">2 · Fetch</span>
                 <span id="phase-score"  class="px-3 py-1 rounded-full bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400 font-medium">3 · Score</span>
@@ -166,61 +166,61 @@
 
     <div id="results-section" class="hidden max-w-5xl mx-auto px-4 pb-20">
         <section class="mt-16 mb-16">
-            <h4 class="text-3xl font-extrabold mb-8 text-primary-600 dark:text-primary-500 text-center">
+            <h4 class="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-primary-600 dark:text-primary-500 text-center">
                 Overall Web Score: <span id="overall-score">0/100</span>
             </h4>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                 <div class="text-center">
-                    <div class="relative w-32 h-32 mx-auto mb-3">
+                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3">
                         <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                             <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
                             <circle id="circle-onpage" cx="50" cy="50" r="45" fill="none" stroke="#3b82f6" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
                         </svg>
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <span id="score-onpage" class="text-2xl font-extrabold text-scoreBlue">0</span>
+                            <span id="score-onpage" class="text-xl sm:text-2xl font-extrabold text-scoreBlue">0</span>
                         </div>
                     </div>
-                    <h5 class="text-lg font-bold text-gray-800 dark:text-gray-200">OnPage</h5>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Max: 40</p>
+                    <h5 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">OnPage</h5>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max: 40</p>
                 </div>
                 <div class="text-center">
-                    <div class="relative w-32 h-32 mx-auto mb-3">
+                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3">
                         <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                             <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
                             <circle id="circle-technical" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
                         </svg>
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <span id="score-technical" class="text-2xl font-extrabold text-scoreGreen">0</span>
+                            <span id="score-technical" class="text-xl sm:text-2xl font-extrabold text-scoreGreen">0</span>
                         </div>
                     </div>
-                    <h5 class="text-lg font-bold text-gray-800 dark:text-gray-200">Technical</h5>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Max: 30</p>
+                    <h5 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">Technical</h5>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max: 30</p>
                 </div>
                 <div class="text-center">
-                    <div class="relative w-32 h-32 mx-auto mb-3">
+                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3">
                         <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                             <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
                             <circle id="circle-content" cx="50" cy="50" r="45" fill="none" stroke="#f97316" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
                         </svg>
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <span id="score-content" class="text-2xl font-extrabold text-scoreOrange">0</span>
+                            <span id="score-content" class="text-xl sm:text-2xl font-extrabold text-scoreOrange">0</span>
                         </div>
                     </div>
-                    <h5 class="text-lg font-bold text-gray-800 dark:text-gray-200">Content</h5>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Max: 20</p>
+                    <h5 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">Content</h5>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max: 20</p>
                 </div>
                 <div class="text-center">
-                    <div class="relative w-32 h-32 mx-auto mb-3">
+                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3">
                         <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                             <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
                             <circle id="circle-link" cx="50" cy="50" r="45" fill="none" stroke="#ef4444" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
                         </svg>
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <span id="score-link" class="text-2xl font-extrabold text-scoreRed">0</span>
+                            <span id="score-link" class="text-xl sm:text-2xl font-extrabold text-scoreRed">0</span>
                         </div>
                     </div>
-                    <h5 class="text-lg font-bold text-gray-800 dark:text-gray-200">Link</h5>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Max: 10</p>
+                    <h5 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">Link</h5>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max: 10</p>
                 </div>
             </div>
         </section>
@@ -240,15 +240,15 @@
         </section>
 
         <section class="mt-16 p-8 bg-white dark:bg-darkCard rounded-2xl shadow-2xl">
-            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Overall Analysis Breakdown</h4>
-            <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Overall Analysis Breakdown</h4>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-8">
                 <svg id="pie-chart-svg" viewBox="0 0 200 200" class="w-64 h-64"></svg>
                 <div id="pie-chart-legend" class="space-y-3"></div>
             </div>
         </section>
 
         <section class="mt-16">
-            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Quick Stats</h4>
+            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Quick Stats</h4>
             <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-xl">
                 <div class="space-y-4">
                     <div class="border-b border-gray-100 dark:border-slate-700 pb-4">
@@ -259,7 +259,7 @@
                         <p class="text-sm font-semibold text-primary-600 dark:text-primary-500 uppercase">2. Meta Description</p>
                         <p id="stats-desc" class="text-xl font-medium text-gray-800 dark:text-gray-200">---</p>
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                         <div>
                             <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">H1 Count</p>
                             <p id="stats-h1" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
@@ -290,12 +290,12 @@
         </section>
 
         <section class="mt-16">
-            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Actionable Recommendations</h4>
-            <div id="recommendations-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Actionable Recommendations</h4>
+            <div id="recommendations-list" class="grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
         </section>
 
         <section class="mt-16">
-            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Web Preview</h4>
+            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Web Preview</h4>
             <!-- Browser-window chrome card -->
             <div class="bg-white dark:bg-darkCard rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-slate-700">
 
@@ -364,7 +364,7 @@
 
 
         <section class="mt-16 mb-16">
-            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Analysis History</h4>
+            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Analysis History</h4>
             <div id="history-list" class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-xl">
                 <p class="text-gray-500 dark:text-gray-400 text-center py-8">No history yet. Analyze a website to get started!</p>
             </div>
@@ -429,8 +429,8 @@
         </div>
     </div>
 
-    <div id="chatbot-container" class="fixed bottom-5 right-5 z-50">
-        <div id="chat-window" class="w-96 h-[500px] bg-white dark:bg-darkCard rounded-xl shadow-3xl flex-col border border-gray-200 dark:border-slate-700" style="display: none;">
+    <div id="chatbot-container" class="fixed bottom-5 right-4 sm:right-5 z-50">
+        <div id="chat-window" class="w-[calc(100vw-2rem)] sm:w-96 h-[70vh] sm:h-[500px] bg-white dark:bg-darkCard rounded-xl shadow-3xl flex-col border border-gray-200 dark:border-slate-700" style="display: none;">
             <div class="p-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold rounded-t-xl flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
