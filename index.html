@@ -378,13 +378,19 @@
         <section class="mt-16 mb-16">
             <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Analysis History</h4>
             <div id="history-list" class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-xl">
-                <p class="text-gray-500 dark:text-gray-400 text-center py-8">No history yet. Analyze a website to get started!</p>
+                <div class="flex flex-col items-center justify-center py-10 px-4 text-center">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No analysis history yet</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Audit websites to keep track of your scores over time.</p>
+                </div>
             </div>
         </section>
     </div>
 
-    <div id="error-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-darkCard rounded-2xl shadow-3xl max-w-md w-full p-6 transform transition-all">
+    <div id="error-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 max-w-md w-full p-8 transform transition-all">
             <div class="text-center">
                 <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
                     <svg class="h-10 w-10 text-red-600 dark:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -393,47 +399,47 @@
                 </div>
                 
                 <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                    Domain Not Found
+                    Analysis Error
                 </h3>
                 
                 <p class="text-gray-600 dark:text-gray-400 mb-4" id="error-message">
                     The domain you entered is not registered or does not exist.
                 </p>
                 
-                <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
+                <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-xl p-3.5 mb-4">
                     <p class="text-sm font-mono text-red-800 dark:text-red-400" id="error-domain">example.com</p>
                 </div>
                 
-                <div class="text-left bg-gray-50 dark:bg-slate-800 rounded-lg p-4 mb-6">
-                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Common issues:</p>
+                <div class="text-left bg-gray-50 dark:bg-slate-800/40 rounded-xl p-4 mb-6">
+                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Suggested troubleshooting:</p>
                     <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                         <li>• Check for typos in the domain name</li>
-                        <li>• Verify the correct extension (.com, .org, .net)</li>
-                        <li>• Ensure the domain is properly registered</li>
-                        <li>• Try a different website</li>
+                        <li>• Verify the URL is public and online</li>
+                        <li>• Ensure your internet connection is active</li>
+                        <li>• Try another website URL</li>
                     </ul>
                 </div>
                 
                 <div class="text-left mb-6">
-                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Try these working examples:</p>
-                    <div class="space-y-2">
-                        <button onclick="tryExample('example.com')" class="w-full text-left text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-slate-700 px-3 py-2 rounded-lg transition">
-                            → example.com
+                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-center">Try these working examples:</p>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <button onclick="tryExample('example.com')" class="text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-primary-600 dark:text-primary-400 px-3.5 py-2 rounded-full transition-all">
+                            example.com
                         </button>
-                        <button onclick="tryExample('github.com')" class="w-full text-left text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-slate-700 px-3 py-2 rounded-lg transition">
-                            → github.com
+                        <button onclick="tryExample('github.com')" class="text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-primary-600 dark:text-primary-400 px-3.5 py-2 rounded-full transition-all">
+                            github.com
                         </button>
-                        <button onclick="tryExample('wikipedia.org')" class="w-full text-left text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-slate-700 px-3 py-2 rounded-lg transition">
-                            → wikipedia.org
+                        <button onclick="tryExample('wikipedia.org')" class="text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-primary-600 dark:text-primary-400 px-3.5 py-2 rounded-full transition-all">
+                            wikipedia.org
                         </button>
                     </div>
                 </div>
                 
                 <div class="flex gap-3">
-                    <button onclick="closeErrorModal()" class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-semibold rounded-lg transition">
+                    <button onclick="closeErrorModal()" class="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl transition">
                         Cancel
                     </button>
-                    <button onclick="retryWithCorrection()" class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition">
+                    <button onclick="retryWithCorrection()" class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition shadow-md hover:shadow-lg">
                         Try Again
                     </button>
                 </div>

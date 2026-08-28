@@ -930,7 +930,15 @@ function updateHistory() {
   const history = getStoredHistory();
   
   if (history.length === 0) {
-    container.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-8">No history yet. Analyze a website to get started!</p>';
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-10 px-4 text-center">
+        <svg class="w-12 h-12 text-gray-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No analysis history yet</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Audit websites to keep track of your scores over time.</p>
+      </div>
+    `;
     return;
   }
   
