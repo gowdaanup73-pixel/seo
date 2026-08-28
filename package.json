@@ -1,0 +1,9 @@
+{
+  "name": "street-coders-seo",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@vercel/speed-insights": "^1.2.0",
+    "jsdom": "^24.1.3"
+  }
+}

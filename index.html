@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Street Coders - AI-Powered SEO</title>
+    <meta name="google-site-verification" content="5Dr2r7urth0q-iyzjv0O73N41QtoAQCKGhZMYou6mZg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'] 
+                    },
+                    colors: {
+                        primary: {
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e'
+                        },
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b',
+                        scoreGreen: '#10b981',
+                        scoreBlue: '#3b82f6',
+                        scoreOrange: '#f97316',
+                        scoreRed: '#ef4444',
+                        chatPrimary: '#0d9488'
+                    },
+                    boxShadow: {
+                        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.2);
+        }
+        .progress-circle {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 1.5s ease-out;
+        }
+        .recommendation-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .recommendation-card.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            animation: spin 0.8s linear infinite;
+        }
+        #chat-window {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #chat-window.active {
+            display: flex !important;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-bounce {
+            animation: bounce 1s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <header class="flex justify-between items-center py-4 px-4 md:px-8 max-w-7xl mx-auto">
+        <h1 class="text-3xl font-extrabold text-primary-600 dark:text-primary-500 tracking-tight">
+            Street Coders
+        </h1>
+        <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+            <svg class="w-6 h-6 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+            </svg>
+            <svg class="w-6 h-6 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+            </svg>
+        </button>
+    </header>
+
+    <main class="container mx-auto max-w-7xl text-center pt-10 pb-20 px-4">
+        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-black mb-4 tracking-tight leading-tight text-gray-800 dark:text-white">
+            Automating <span class="text-primary-600 dark:text-primary-500">Search Engine Optimization</span>
+        </h2>
+        <h3 class="text-2xl sm:text-3xl lg:text-4xl font-light mb-12 text-gray-600 dark:text-gray-300">
+            AI-Powered, Real-Time Web Analysis
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div class="feature-card bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700">
+                <div class="text-4xl mb-3">
+                    <svg class="w-10 h-10 mx-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <h4 class="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">Real-time Analysis</h4>
+                <p class="text-gray-600 dark:text-gray-400">Instantly monitor your website's performance</p>
+            </div>
+            <div class="feature-card bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700">
+                <div class="text-4xl mb-3">
+                    <svg class="w-10 h-10 mx-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                </div>
+                <h4 class="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">Smart Recommendations</h4>
+                <p class="text-gray-600 dark:text-gray-400">AI-powered suggestions to boost rankings</p>
+            </div>
+            <div class="feature-card bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700">
+                <div class="text-4xl mb-3">
+                    <svg class="w-10 h-10 mx-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h4 class="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">Persistence History</h4>
+                <p class="text-gray-600 dark:text-gray-400">Track progress and improvements over time</p>
+            </div>
+        </div>
+
+        <div class="mt-16 max-w-3xl mx-auto text-left">
+            <h4 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200 text-center">Analyze</h4>
+            <div class="flex flex-col sm:flex-row gap-3 p-2 bg-white dark:bg-darkCard rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700">
+                <input type="url" id="url-input" 
+                       placeholder="Enter website URL (e.g., https://example.com)"
+                       class="flex-grow p-4 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-600">
+                <button id="launch-btn" 
+                        class="bg-primary-600 hover:bg-primary-700 text-white font-extrabold py-4 px-8 rounded-xl transition-colors whitespace-nowrap">
+                    Launch SEO Analyser
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <div id="loading-section" class="hidden max-w-5xl mx-auto px-4 py-8">
+        <div class="bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl text-center">
+            <div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full spinner mx-auto mb-4"></div>
+            <p class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-6">Checking domain &amp; fetching page…</p>
+            <div class="flex justify-center gap-4 text-sm">
+                <span id="phase-domain" class="px-3 py-1 rounded-full bg-primary-500 text-white font-medium">1 · Domain</span>
+                <span id="phase-fetch"  class="px-3 py-1 rounded-full bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400 font-medium">2 · Fetch</span>
+                <span id="phase-score"  class="px-3 py-1 rounded-full bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400 font-medium">3 · Score</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="results-section" class="hidden max-w-5xl mx-auto px-4 pb-20">
+        <section class="mt-16 mb-16">
+            <h4 class="text-3xl font-extrabold mb-8 text-primary-600 dark:text-primary-500 text-center">
+                Overall Web Score: <span id="overall-score">0/100</span>
+            </h4>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="relative w-32 h-32 mx-auto mb-3">
+                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
+                            <circle id="circle-onpage" cx="50" cy="50" r="45" fill="none" stroke="#3b82f6" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="score-onpage" class="text-2xl font-extrabold text-scoreBlue">0</span>
+                        </div>
+                    </div>
+                    <h5 class="text-lg font-bold text-gray-800 dark:text-gray-200">OnPage</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Max: 40</p>
+                </div>
+                <div class="text-center">
+                    <div class="relative w-32 h-32 mx-auto mb-3">
+                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
+                            <circle id="circle-technical" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="score-technical" class="text-2xl font-extrabold text-scoreGreen">0</span>
+                        </div>
+                    </div>
+                    <h5 class="text-lg font-bold text-gray-800 dark:text-gray-200">Technical</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Max: 30</p>
+                </div>
+                <div class="text-center">
+                    <div class="relative w-32 h-32 mx-auto mb-3">
+                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
+                            <circle id="circle-content" cx="50" cy="50" r="45" fill="none" stroke="#f97316" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="score-content" class="text-2xl font-extrabold text-scoreOrange">0</span>
+                        </div>
+                    </div>
+                    <h5 class="text-lg font-bold text-gray-800 dark:text-gray-200">Content</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Max: 20</p>
+                </div>
+                <div class="text-center">
+                    <div class="relative w-32 h-32 mx-auto mb-3">
+                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
+                            <circle id="circle-link" cx="50" cy="50" r="45" fill="none" stroke="#ef4444" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="score-link" class="text-2xl font-extrabold text-scoreRed">0</span>
+                        </div>
+                    </div>
+                    <h5 class="text-lg font-bold text-gray-800 dark:text-gray-200">Link</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Max: 10</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-16 max-w-xl mx-auto p-8 bg-white dark:bg-darkCard rounded-2xl shadow-2xl border-2 border-primary-500">
+            <h4 class="text-4xl font-black mb-8 text-primary-600 dark:text-primary-500 text-center">Final Score</h4>
+            <div class="relative w-48 h-48 mx-auto">
+                <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
+                    <circle id="final-circle" cx="50" cy="50" r="45" fill="none" stroke="#14b8a6" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span id="final-score-text" class="text-6xl font-extrabold text-primary-600 dark:text-primary-500">0</span>
+                    <span class="text-2xl text-gray-500 dark:text-gray-400">/ 100</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-16 p-8 bg-white dark:bg-darkCard rounded-2xl shadow-2xl">
+            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Overall Analysis Breakdown</h4>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+                <svg id="pie-chart-svg" viewBox="0 0 200 200" class="w-64 h-64"></svg>
+                <div id="pie-chart-legend" class="space-y-3"></div>
+            </div>
+        </section>
+
+        <section class="mt-16">
+            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Quick Stats</h4>
+            <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-xl">
+                <div class="space-y-4">
+                    <div class="border-b border-gray-100 dark:border-slate-700 pb-4">
+                        <p class="text-sm font-semibold text-primary-600 dark:text-primary-500 uppercase">1. Website Title</p>
+                        <p id="stats-title" class="text-xl font-medium text-gray-800 dark:text-gray-200">---</p>
+                    </div>
+                    <div class="border-b border-gray-100 dark:border-slate-700 pb-4">
+                        <p class="text-sm font-semibold text-primary-600 dark:text-primary-500 uppercase">2. Meta Description</p>
+                        <p id="stats-desc" class="text-xl font-medium text-gray-800 dark:text-gray-200">---</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">H1 Count</p>
+                            <p id="stats-h1" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Word Count</p>
+                            <p id="stats-words" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Images</p>
+                            <p id="stats-images" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Links</p>
+                            <p id="stats-links" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">HTTPS</p>
+                            <p id="stats-https" class="text-2xl font-bold text-gray-800 dark:text-gray-200">---</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Keywords</p>
+                            <p id="stats-keywords" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-16">
+            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Actionable Recommendations</h4>
+            <div id="recommendations-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </section>
+
+        <section class="mt-16">
+            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Web Preview</h4>
+            <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-xl">
+                <div id="preview-container" class="relative">
+                    <img id="web-preview-img" src="" alt="Website Preview" class="w-full rounded-lg" style="display:none;">
+                    <div id="preview-loading" class="w-full h-64 flex items-center justify-center bg-gray-100 dark:bg-slate-800 rounded-lg">
+                        <div class="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-16 mb-16">
+            <h4 class="text-3xl font-extrabold mb-8 text-gray-800 dark:text-gray-100">Analysis History</h4>
+            <div id="history-list" class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-xl">
+                <p class="text-gray-500 dark:text-gray-400 text-center py-8">No history yet. Analyze a website to get started!</p>
+            </div>
+        </section>
+    </div>
+
+    <div id="error-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard rounded-2xl shadow-3xl max-w-md w-full p-6 transform transition-all">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
+                    <svg class="h-10 w-10 text-red-600 dark:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    Domain Not Found
+                </h3>
+                
+                <p class="text-gray-600 dark:text-gray-400 mb-4" id="error-message">
+                    The domain you entered is not registered or does not exist.
+                </p>
+                
+                <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
+                    <p class="text-sm font-mono text-red-800 dark:text-red-400" id="error-domain">example.com</p>
+                </div>
+                
+                <div class="text-left bg-gray-50 dark:bg-slate-800 rounded-lg p-4 mb-6">
+                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Common issues:</p>
+                    <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                        <li>• Check for typos in the domain name</li>
+                        <li>• Verify the correct extension (.com, .org, .net)</li>
+                        <li>• Ensure the domain is properly registered</li>
+                        <li>• Try a different website</li>
+                    </ul>
+                </div>
+                
+                <div class="text-left mb-6">
+                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Try these working examples:</p>
+                    <div class="space-y-2">
+                        <button onclick="tryExample('example.com')" class="w-full text-left text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-slate-700 px-3 py-2 rounded-lg transition">
+                            → example.com
+                        </button>
+                        <button onclick="tryExample('github.com')" class="w-full text-left text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-slate-700 px-3 py-2 rounded-lg transition">
+                            → github.com
+                        </button>
+                        <button onclick="tryExample('wikipedia.org')" class="w-full text-left text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-slate-700 px-3 py-2 rounded-lg transition">
+                            → wikipedia.org
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="closeErrorModal()" class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-800 dark:text-white font-semibold rounded-lg transition">
+                        Cancel
+                    </button>
+                    <button onclick="retryWithCorrection()" class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chatbot-container" class="fixed bottom-5 right-5 z-50">
+        <div id="chat-window" class="w-96 h-[500px] bg-white dark:bg-darkCard rounded-xl shadow-3xl flex-col border border-gray-200 dark:border-slate-700" style="display: none;">
+            <div class="p-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold rounded-t-xl flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                    </svg>
+                    <span>AI SEO Assistant</span>
+                </div>
+                <button id="chat-close-btn" class="hover:bg-primary-700 p-1 rounded transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-gray-50 dark:bg-slate-900" style="flex: 1; min-height: 0;">
+                <div class="flex gap-2">
+                    <div class="bg-primary-500 text-white p-3 rounded-2xl rounded-tl-none max-w-[80%]">
+                        <p class="text-sm">👋 Hi! I'm your AI SEO assistant. Ask me anything about SEO optimization, keywords, or website performance!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-white dark:bg-darkCard border-t border-gray-200 dark:border-slate-700 rounded-b-xl">
+                <div class="flex gap-2">
+                    <input id="chat-input" type="text" placeholder="Ask about SEO..." 
+                           class="flex-grow p-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <button id="chat-send-btn" class="bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <button id="chat-toggle-btn" class="w-16 h-16 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-2xl hover:scale-110 transition-transform flex items-center justify-center">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            </svg>
+        </button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
