@@ -1109,8 +1109,174 @@ function updateLoadingStatus(message) {
   }
 }
 
+// Generate and download a PDF report using jsPDF (client-side)
+async function downloadReport() {
+  const result = appState.currentResult;
+  if (!result) return;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a4');
+  
+  let y = 15;
+  const margin = 15;
+  const pageHeight = 280;
+
+  const addText = (text, size = 10, isBold = false, color = '#333333') => {
+    doc.setFontSize(size);
+    doc.setFont('Helvetica', isBold ? 'bold' : 'normal');
+    if (color === 'primary') {
+      doc.setTextColor(13, 148, 136); // #0d9488
+    } else if (color === 'red') {
+      doc.setTextColor(239, 68, 68);
+    } else if (color === 'orange') {
+      doc.setTextColor(249, 115, 22);
+    } else if (color === 'green') {
+      doc.setTextColor(16, 185, 129);
+    } else {
+      doc.setTextColor(51, 51, 51);
+    }
+
+    const splitText = doc.splitTextToSize(text, 180);
+    splitText.forEach(line => {
+      if (y > pageHeight) {
+        doc.addPage();
+        y = 15;
+      }
+      doc.text(line, margin, y);
+      y += (size * 0.3527) + 2.5; // spacing
+    });
+  };
+
+  const addDivider = () => {
+    if (y > pageHeight - 10) {
+      doc.addPage();
+      y = 15;
+    }
+    doc.setDrawColor(229, 231, 235);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, 195, y);
+    y += 5;
+  };
+
+  // Title
+  addText('STREET CODERS - SEO AUDIT REPORT', 16, true, 'primary');
+  addText(`Generated on: ${new Date().toLocaleString()}`, 9, false, 'gray');
+  y += 3;
+  addDivider();
+
+  // Overview
+  addText('1. AUDIT OVERVIEW', 13, true, 'primary');
+  addText(`Target URL: ${result.url}`, 10, false);
+  addText(`Overall SEO Score: ${result.scores.total}/100`, 11, true, 'primary');
+  y += 2;
+  
+  addText('Category Breakdown:', 10, true);
+  
+  const getCategoryReason = (cat) => {
+    const reasons = {
+      onPage: [],
+      technical: [],
+      content: [],
+      link: []
+    };
+    if (!result.title || result.title === 'Missing') reasons.onPage.push('Title missing (-15)');
+    else if (result.title.length < 30 || result.title.length > 60) reasons.onPage.push('Suboptimal Title length (-5)');
+    if (!result.metaDesc || result.metaDesc === 'Missing') reasons.onPage.push('Meta description missing (-10)');
+    else if (result.metaDesc.length < 120 || result.metaDesc.length > 160) reasons.onPage.push('Suboptimal Meta description length (-5)');
+    if (result.h1Count === 0) reasons.onPage.push('H1 missing (-5)');
+
+    if (!result.url.startsWith('https')) reasons.technical.push('Insecure HTTP Connection (-10)');
+    if (!result.hasViewport) reasons.technical.push('Viewport missing (-10)');
+    if (result.h1Count !== 1) reasons.technical.push('H1 count not 1 (-5)');
+    if (result.wordCount <= 300) reasons.technical.push('Thin content (-5)');
+
+    if (result.wordCount <= 300) reasons.content.push('Word count < 300 (-10)');
+    else if (result.wordCount <= 600) reasons.content.push('Word count < 600 (-5)');
+    if (result.h2Count === 0) reasons.content.push('H2 missing (-5)');
+
+    if (result.linkCount <= 5) reasons.link.push('Link count < 5 (-10)');
+    else if (result.linkCount <= 10) reasons.link.push('Link count < 10 (-5)');
+
+    return reasons[cat].length > 0 ? `(Deductions: ${reasons[cat].join('; ')})` : '(No deductions)';
+  };
+
+  addText(`• On-Page SEO: ${result.scores.onPage}/40 ${getCategoryReason('onPage')}`, 9.5, false);
+  addText(`• Technical SEO: ${result.scores.technical}/30 ${getCategoryReason('technical')}`, 9.5, false);
+  addText(`• Content Quality: ${result.scores.content}/20 ${getCategoryReason('content')}`, 9.5, false);
+  addText(`• Link Density: ${result.scores.links}/10 ${getCategoryReason('link')}`, 9.5, false);
+  y += 3;
+  addDivider();
+
+  // Stats
+  addText('2. WEBSITE METRICS', 13, true, 'primary');
+  addText(`• Title Tag: ${result.title}`, 9.5, false);
+  addText(`• Meta Description: ${result.metaDesc}`, 9.5, false);
+  addText(`• Headings: ${result.h1Count} H1 heading(s) / ${result.h2Count} H2 heading(s)`, 9.5, false);
+  addText(`• Word Count: ${result.wordCount} words`, 9.5, false);
+  addText(`• Link Density: ${result.linkCount} links`, 9.5, false);
+  addText(`• Images Audit: ${result.imageCount} image(s) total (${result.imagesWithoutAlt} missing alt tags)`, 9.5, false);
+  addText(`• Security Status: ${result.url.startsWith('https') ? 'Secure (HTTPS)' : 'Insecure (HTTP)'}`, 9.5, false);
+  y += 3;
+  addDivider();
+
+  // Actionable findings
+  addText('3. ACTIONABLE AUDIT FINDINGS', 13, true, 'primary');
+  
+  const checks = [
+    { name: 'Title Tag Audit', passed: result.title && result.title !== 'Missing' && result.title.length >= 30 && result.title.length <= 60, severity: result.title === 'Missing' ? 'Critical' : 'Improvement', fix: result.title === 'Missing' ? 'Add a title tag inside the <head> block.' : `Revise title tag to 30-60 characters.` },
+    { name: 'Meta Description Audit', passed: result.metaDesc && result.metaDesc !== 'Missing' && result.metaDesc.length >= 120 && result.metaDesc.length <= 160, severity: result.metaDesc === 'Missing' ? 'Critical' : 'Improvement', fix: result.metaDesc === 'Missing' ? 'Add a meta description to your head section.' : `Rewrite description to fit within 120-160 characters.` },
+    { name: 'H1 Heading Presence', passed: result.h1Count > 0, severity: 'Critical', fix: 'Add exactly one H1 tag near the top of the page.' },
+    { name: 'Single H1 Restriction', passed: result.h1Count === 1, severity: 'Improvement', fix: 'Keep only one H1 and convert additional ones to H2 or H3 tags.' },
+    { name: 'Image Alt Tags Audit', passed: result.imagesWithoutAlt === 0, severity: 'Improvement', fix: 'Add alt attributes to all images.' },
+    { name: 'HTTPS Connection', passed: result.url.startsWith('https'), severity: 'Critical', fix: 'Install SSL certificate and configure redirect.' },
+    { name: 'Viewport Meta Tag', passed: result.hasViewport, severity: 'Critical', fix: 'Add viewport meta tag to document header.' },
+    { name: 'Page Word Count', passed: result.wordCount >= 600, severity: result.wordCount < 300 ? 'Critical' : 'Improvement', fix: 'Expand page content to at least 600 words.' },
+    { name: 'H2 Subheadings Presence', passed: result.h2Count > 0, severity: 'Improvement', fix: 'Organize text sections under H2 subheadings.' },
+    { name: 'Link Density & Distribution', passed: result.linkCount >= 10, severity: 'Improvement', fix: 'Incorporate relevant internal or external contextual links.' }
+  ];
+
+  const failedChecks = checks.filter(c => !c.passed);
+  const passedChecks = checks.filter(c => c.passed);
+
+  if (failedChecks.length > 0) {
+    addText('Identified Issues:', 10.5, true, 'red');
+    failedChecks.forEach(c => {
+      addText(`[${c.severity}] ${c.name} — Recommended Fix: ${c.fix}`, 9, false, c.severity === 'Critical' ? 'red' : 'orange');
+    });
+    y += 2;
+  }
+
+  if (passedChecks.length > 0) {
+    addText('Passed Audits:', 10.5, true, 'green');
+    passedChecks.forEach(c => {
+      addText(`✓ ${c.name}`, 9, false, 'green');
+    });
+    y += 2;
+  }
+  
+  // Chat logs
+  const messagesContainer = document.getElementById('chat-messages');
+  if (messagesContainer) {
+    const aiMessages = Array.from(messagesContainer.querySelectorAll('.bg-primary-500 p'));
+    if (aiMessages.length > 1) {
+      y += 3;
+      addDivider();
+      addText('4. INTERACTIVE AI CHAT ASSISTANT NOTES', 13, true, 'primary');
+      aiMessages.slice(1).forEach((msg, idx) => {
+        addText(`AI note ${idx + 1}: ${msg.textContent}`, 9, false);
+      });
+    }
+  }
+
+  const filename = `seo-report-${result.url.replace(/^https?:\/\//i, '').replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+  doc.save(filename);
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+  // PDF Report button
+  document.getElementById('download-report-btn').addEventListener('click', downloadReport);
+
   // Theme toggle
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
   

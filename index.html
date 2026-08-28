@@ -166,9 +166,17 @@
 
     <div id="results-section" class="hidden max-w-5xl mx-auto px-4 pb-20">
         <section class="mt-16 mb-16">
-            <h4 class="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-primary-600 dark:text-primary-500 text-center">
+            <h4 class="text-2xl sm:text-3xl font-extrabold mb-4 text-primary-600 dark:text-primary-500 text-center">
                 Overall Web Score: <span id="overall-score">0/100</span>
             </h4>
+            <div class="text-center mb-8">
+                <button id="download-report-btn" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md hover:shadow-lg text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Download PDF Report</span>
+                </button>
+            </div>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                 <div class="text-center">
                     <div class="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3">
@@ -474,6 +482,7 @@
         </button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
