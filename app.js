@@ -766,42 +766,132 @@ to improve your rankings.&lt;/p&gt;`,
   });
 }
 
-// Load screenshot
-async function loadScreenshot(url) {
-  const img = document.getElementById('web-preview-img');
-  const loading = document.getElementById('preview-loading');
-  const container = document.getElementById('preview-container');
-  
-  loading.style.display = 'flex';
-  img.style.display = 'none';
-  
-  const cleanUrl = url.startsWith('http') ? url : 'https://' + url;
-  const screenshotUrl = `https://image.thum.io/get/width/800/crop/600/noanimate/${encodeURIComponent(cleanUrl)}`;
-  
+// ─── Preview helpers ──────────────────────────────────────────────────────────
+
+// Set URL bar text and HTTPS badge visibility
+function setPreviewUrlBar(url) {
+  const urlBar = document.getElementById('preview-url-bar');
+  const httpsBadge = document.getElementById('preview-https-badge');
+  if (!urlBar) return;
+
   try {
-    const testImg = new Image();
-    await new Promise((resolve, reject) => {
-      testImg.onload = resolve;
-      testImg.onerror = reject;
-      testImg.src = screenshotUrl;
-      setTimeout(reject, 10000); // 10s timeout
-    });
-    
-    img.src = screenshotUrl;
-    img.style.display = 'block';
-    loading.style.display = 'none';
-  } catch (e) {
-    loading.innerHTML = `
-      <div class="text-center">
-        <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-        </svg>
-        <p class="text-gray-500 dark:text-gray-400">Screenshot not available</p>
-        <a href="${cleanUrl}" target="_blank" class="text-primary-600 dark:text-primary-500 hover:underline mt-2 inline-block">Visit website →</a>
-      </div>
-    `;
+    const parsed = new URL(url);
+    urlBar.textContent = parsed.hostname + (parsed.pathname !== '/' ? parsed.pathname : '');
+    if (httpsBadge) {
+      if (parsed.protocol === 'https:') {
+        httpsBadge.classList.remove('hidden');
+        httpsBadge.classList.add('flex');
+      } else {
+        httpsBadge.classList.add('hidden');
+        httpsBadge.classList.remove('flex');
+      }
+    }
+  } catch {
+    urlBar.textContent = url;
   }
 }
+
+// Show fallback state with favicon + domain + retry/visit links
+function showPreviewFallback(url) {
+  const loading  = document.getElementById('preview-loading');
+  const skeleton = document.getElementById('preview-skeleton');
+  const img      = document.getElementById('web-preview-img');
+  const fallback = document.getElementById('preview-fallback');
+
+  if (loading)  loading.style.display  = 'none';
+  if (skeleton) skeleton.style.display = 'none';
+  if (img)      img.style.display      = 'none';
+  if (fallback) fallback.style.display = 'flex';
+
+  try {
+    const parsed = new URL(url);
+    const faviconEl = document.getElementById('preview-favicon');
+    const domainEl  = document.getElementById('preview-fallback-domain');
+    const visitLink = document.getElementById('preview-visit-link');
+
+    if (faviconEl) {
+      faviconEl.src = `https://www.google.com/s2/favicons?domain=${parsed.hostname}&sz=64`;
+      faviconEl.style.display = 'block';
+    }
+    if (domainEl)  domainEl.textContent = parsed.hostname;
+    if (visitLink) visitLink.href = url;
+  } catch { /* ignore parse errors */ }
+}
+
+// Load screenshot via /api/preview (caching + correct URL encoding)
+async function loadScreenshot(url) {
+  const img      = document.getElementById('web-preview-img');
+  const loading  = document.getElementById('preview-loading');
+  const skeleton = document.getElementById('preview-skeleton');
+  const fallback = document.getElementById('preview-fallback');
+
+  // Reset all states
+  if (loading)  loading.style.display  = 'flex';
+  if (skeleton) skeleton.style.display = 'none';
+  if (img)      img.style.display      = 'none';
+  if (fallback) fallback.style.display = 'none';
+
+  const cleanUrl = url.startsWith('http') ? url : 'https://' + url;
+
+  // Populate URL bar and HTTPS badge immediately (data is already known)
+  setPreviewUrlBar(cleanUrl);
+
+  // Wire up retry button
+  const retryBtn = document.getElementById('preview-retry-btn');
+  if (retryBtn) {
+    // Remove any previous listener by cloning the node
+    const freshBtn = retryBtn.cloneNode(true);
+    retryBtn.parentNode.replaceChild(freshBtn, retryBtn);
+    freshBtn.addEventListener('click', () => loadScreenshot(cleanUrl));
+  }
+
+  // Switch to skeleton after 300ms so rapid loads don't flash it
+  const skeletonTimer = setTimeout(() => {
+    if (loading && skeleton) {
+      loading.style.display  = 'none';
+      skeleton.style.display = 'block';
+    }
+  }, 300);
+
+  try {
+    // Ask the server for the (possibly cached) thum.io URL
+    const response = await fetch('/api/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: cleanUrl })
+    });
+
+    if (!response.ok) {
+      clearTimeout(skeletonTimer);
+      showPreviewFallback(cleanUrl);
+      return;
+    }
+
+    const { url: screenshotUrl } = await response.json();
+
+    // Preload image before swapping in
+    const testImg = new Image();
+    await new Promise((resolve, reject) => {
+      testImg.onload  = resolve;
+      testImg.onerror = reject;
+      testImg.src     = screenshotUrl;
+      setTimeout(reject, 12000); // 12s image-load timeout
+    });
+
+    clearTimeout(skeletonTimer);
+
+    // Show image
+    img.src           = screenshotUrl;
+    img.style.display = 'block';
+    if (loading)  loading.style.display  = 'none';
+    if (skeleton) skeleton.style.display = 'none';
+
+  } catch {
+    clearTimeout(skeletonTimer);
+    showPreviewFallback(cleanUrl);
+  }
+}
+
 
 // Update history
 function updateHistory() {
