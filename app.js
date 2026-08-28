@@ -382,389 +382,422 @@ function copyCode(button) {
     setTimeout(() => {
       button.textContent = originalText;
     }, 2000);
+// Generate recommendations with structured checks grouped by Critical, Improvement, and Passed
+function generateRecommendations(result) {
+  const container = document.getElementById('recommendations-list');
+  if (!container) return;
+
+  // Define the audit checks
+  const checks = [
+    // 1. Title Presence & Length (OnPage)
+    {
+      name: 'Title Tag Audit',
+      category: 'onPage',
+      passed: result.title && result.title !== 'Missing' && result.title.length >= 30 && result.title.length <= 60,
+      severity: result.title === 'Missing' ? 'Critical' : 'Improvement',
+      status: result.title === 'Missing' ? 'No title tag detected' : `Title length is suboptimal (${result.title.length} chars: "${result.title}")`,
+      passedStatus: `Title length is optimal (${result.title.length} chars: "${result.title}")`,
+      explanation: result.title === 'Missing' 
+        ? 'Your website is completely missing a title tag in the head section.'
+        : `Your title tag is ${result.title.length < 30 ? 'too short' : 'too long'} to display properly in search engine result pages.`,
+      whyItMatters: 'Title tags are the primary clickable link displayed on search results pages and are heavily weighted by search engines to understand page topic.',
+      fix: result.title === 'Missing'
+        ? 'Add a `<title>Your Target Keyword | BrandName</title>` tag within the `<head>` block of your HTML.'
+        : `Revise the title tag to be between 30 and 60 characters long. Current title: "${result.title}" (length: ${result.title.length}).`,
+      code: '&lt;title&gt;Target Keyword | Described Brand&lt;/title&gt;'
+    },
+    // 2. Meta Description (OnPage)
+    {
+      name: 'Meta Description Audit',
+      category: 'onPage',
+      passed: result.metaDesc && result.metaDesc !== 'Missing' && result.metaDesc.length >= 120 && result.metaDesc.length <= 160,
+      severity: result.metaDesc === 'Missing' ? 'Critical' : 'Improvement',
+      status: result.metaDesc === 'Missing' ? 'No meta description detected' : `Meta description length is suboptimal (${result.metaDesc.length} chars: "${result.metaDesc}")`,
+      passedStatus: `Meta description is optimal (${result.metaDesc.length} chars)`,
+      explanation: result.metaDesc === 'Missing'
+        ? 'No meta description tag was found on the page.'
+        : `The meta description length of ${result.metaDesc.length} characters is outside the optimal 120-160 range.`,
+      whyItMatters: 'Meta descriptions act as search snippet copy; they directly impact Click-Through Rate (CTR) even though they are not a direct ranking factor.',
+      fix: result.metaDesc === 'Missing'
+        ? 'Add a `<meta name="description" content="...">` tag to the `<head>` with a summary between 120 and 160 characters.'
+        : `Rewrite your description to fit within the 120-160 character display limit. Current: "${result.metaDesc}"`,
+      code: '&lt;meta name="description" content="A compelling summary of the page containing your primary keywords."&gt;'
+    },
+    // 3. H1 Presence (OnPage/Technical)
+    {
+      name: 'H1 Heading Presence',
+      category: 'onPage',
+      passed: result.h1Count > 0,
+      severity: 'Critical',
+      status: 'No H1 tag detected on the page',
+      passedStatus: `H1 tag is present (Count: ${result.h1Count})`,
+      explanation: 'Your page does not contain any H1 heading tags.',
+      whyItMatters: 'H1 tags define the top-level heading of a page. Search engines use them to grasp the main topic of your page content.',
+      fix: 'Create exactly one H1 tag near the top of your page wrapper containing your primary keyword.',
+      code: '&lt;h1&gt;Main Page Heading Containing Keywords&lt;/h1&gt;'
+    },
+    // 4. Single H1 Rule (Technical)
+    {
+      name: 'Single H1 Restriction',
+      category: 'technical',
+      passed: result.h1Count === 1,
+      severity: 'Improvement',
+      status: `Multiple H1 tags detected (${result.h1Count} tags found)`,
+      passedStatus: 'Exactly one H1 tag is used (Optimal)',
+      explanation: `Your page has ${result.h1Count} H1 tags instead of the recommended single H1.`,
+      whyItMatters: 'Using more than one H1 tag dilutes keyword focus and makes page hierarchy confusing for screen readers and crawlers.',
+      fix: `Keep only the primary heading as H1 and convert the other ${result.h1Count - 1} H1 tags to H2 or H3 tags.`,
+      code: null
+    },
+    // 5. Image Alt Attributes (OnPage)
+    {
+      name: 'Image Alt Tags Audit',
+      category: 'onPage',
+      passed: result.imagesWithoutAlt === 0,
+      severity: 'Improvement',
+      status: `${result.imagesWithoutAlt} out of ${result.imageCount} images lack descriptive alt tags`,
+      passedStatus: `All ${result.imageCount} images have alt tags`,
+      explanation: `There are ${result.imagesWithoutAlt} image element(s) with missing or empty alt properties.`,
+      whyItMatters: 'Alt attributes tell search engines what an image represents and are crucial for screen reader accessibility and image search rankings.',
+      fix: 'Add a descriptive `alt="..."` attribute to every image tag that lacks one.',
+      code: '&lt;img src="image.jpg" alt="Descriptive explanation of the image content"&gt;'
+    },
+    // 6. HTTPS Security (Technical)
+    {
+      name: 'HTTPS Protocol Secure Connection',
+      category: 'technical',
+      passed: result.url.startsWith('https'),
+      severity: 'Critical',
+      status: `Insecure HTTP protocol in use: "${result.url}"`,
+      passedStatus: 'Secure HTTPS protocol enabled',
+      explanation: 'The connection protocol is HTTP instead of HTTPS.',
+      whyItMatters: 'HTTPS is a confirmed search ranking signal. Insecure sites display browser warnings, increasing user bounce rates.',
+      fix: 'Configure an SSL certificate on your web host and redirect all HTTP traffic to HTTPS via 301 redirects.',
+      code: null
+    },
+    // 7. Viewport Configuration (Technical)
+    {
+      name: 'Viewport Meta Tag Definition',
+      category: 'technical',
+      passed: result.hasViewport,
+      severity: 'Critical',
+      status: 'Viewport meta tag is missing',
+      passedStatus: 'Viewport meta tag is defined correctly',
+      explanation: 'No viewport meta tag was detected in the document header.',
+      whyItMatters: 'The viewport tag ensures search engines recognize your site as mobile-friendly and scale it correctly on phone devices.',
+      fix: 'Add the viewport meta tag inside the `<head>` section of the page.',
+      code: '&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;'
+    },
+    // 8. Content Word Count (Content)
+    {
+      name: 'Page Word Count',
+      category: 'content',
+      passed: result.wordCount >= 600,
+      severity: result.wordCount < 300 ? 'Critical' : 'Improvement',
+      status: result.wordCount < 300 
+        ? `Thin content detected: only ${result.wordCount} words` 
+        : `Suboptimal word count: only ${result.wordCount} words (optimal is 600+)`,
+      passedStatus: `Optimal word count: ${result.wordCount} words`,
+      explanation: `The page contains only ${result.wordCount} words of text.`,
+      whyItMatters: 'Longer, comprehensive copy ranks higher because it matches search queries and offers greater depth of information.',
+      fix: `Expand the page copy with detailed sections, explanations, or FAQs to reach at least 600 words. Current: ${result.wordCount} words.`,
+      code: null
+    },
+    // 9. H2 Subheadings (Content)
+    {
+      name: 'H2 Subheadings Presence',
+      category: 'content',
+      passed: result.h2Count > 0,
+      severity: 'Improvement',
+      status: 'No H2 subheadings found',
+      passedStatus: `H2 subheadings present (Count: ${result.h2Count})`,
+      explanation: 'The page lacks H2 subheading tags to organize the text copy.',
+      whyItMatters: 'H2 tags act as section breaks, improving scannability for readers and providing hierarchy context to web crawlers.',
+      fix: 'Identify major sections within your text copy and wrap their headings in H2 tags.',
+      code: '&lt;h2&gt;Subheading Topic&lt;/h2&gt;'
+    },
+    // 10. Link Density (Links)
+    {
+      name: 'Link Density & Distribution',
+      category: 'links',
+      passed: result.linkCount >= 10,
+      severity: 'Improvement',
+      status: `Low link density: only ${result.linkCount} links found (optimal is 10+)`,
+      passedStatus: `Optimal link density: ${result.linkCount} links`,
+      explanation: `Only ${result.linkCount} total links were detected on the page.`,
+      whyItMatters: 'Links help build page relationships, index site contents, and guide user navigation.',
+      fix: 'Incorporate relevant contextual text links to internal pages or high-authority external sources.',
+      code: '&lt;a href="/internal-page"&gt;Related Article&lt;/a&gt;'
+    }
+  ];
+
+  // Group the checks
+  const critical = [];
+  const improvement = [];
+  const passed = [];
+
+  checks.forEach(check => {
+    if (check.passed) {
+      passed.push(check);
+    } else if (check.severity === 'Critical') {
+      critical.push(check);
+    } else {
+      improvement.push(check);
+    }
+  });
+
+  // Render HTML structures
+  container.innerHTML = '';
+
+  function renderGroup(title, list, badgeColor, borderColor) {
+    if (list.length === 0) return '';
+    
+    let groupHtml = `
+      <div class="col-span-1 md:col-span-2 mt-4">
+        <h5 class="text-xl font-bold flex items-center gap-2 mb-4">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${badgeColor}">${list.length}</span>
+          <span class="text-gray-800 dark:text-gray-200">${title}</span>
+        </h5>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    `;
+
+    list.forEach(check => {
+      groupHtml += `
+        <div class="recommendation-card is-visible bg-white dark:bg-darkCard rounded-2xl shadow-md p-6 border-l-4 ${borderColor} transition hover:shadow-lg">
+          <div class="flex items-start justify-between mb-3">
+            <span class="text-sm font-bold text-gray-900 dark:text-white">${check.name}</span>
+            <span class="text-xs uppercase font-bold px-2 py-0.5 rounded ${check.passed ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : (check.severity === 'Critical' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' : 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400')}">
+              ${check.passed ? 'Passed' : check.severity}
+            </span>
+          </div>
+          
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2 font-mono break-all">
+            Status: ${check.passed ? check.passedStatus : check.status}
+          </p>
+          
+          <p class="text-sm text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">
+            ${check.passed ? 'No issues found. This check meets optimal SEO criteria.' : check.explanation}
+          </p>
+          
+          ${!check.passed ? `
+            <div class="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900 rounded-lg p-3.5 mb-3 text-xs text-blue-900 dark:text-blue-300">
+              <span class="font-bold">Why it matters:</span> ${check.whyItMatters}
+            </div>
+            <div class="bg-gray-50 dark:bg-slate-800 rounded-lg p-3.5 mb-3 text-xs text-gray-700 dark:text-gray-300 border border-gray-100 dark:border-slate-700">
+              <span class="font-bold text-gray-900 dark:text-white">🔧 How to fix:</span> ${check.fix}
+            </div>
+          ` : ''}
+          
+          ${check.code && !check.passed ? `
+            <div class="bg-gray-900 dark:bg-slate-950 rounded-lg p-3 mb-3">
+              <pre class="text-xs text-green-400 font-mono overflow-x-auto"><code>${check.code}</code></pre>
+            </div>
+          ` : ''}
+          
+          ${!check.passed ? `
+            <button onclick="markCompleted(this)" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 rounded-lg transition text-xs">
+              Mark as Fixed
+            </button>
+          ` : `
+            <div class="text-xs text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
+              ✓ Meets SEO best practices
+            </div>
+          `}
+        </div>
+      `;
+    });
+
+    groupHtml += `
+        </div>
+      </div>
+    `;
+    return groupHtml;
+  }
+
+  // Render in columns/grids
+  let finalHtml = '';
+  finalHtml += renderGroup('Critical Issues', critical, 'bg-red-500 text-white', 'border-red-500');
+  finalHtml += renderGroup('Improvements Needed', improvement, 'bg-orange-500 text-white', 'border-orange-500');
+  finalHtml += renderGroup('Passed Checks', passed, 'bg-green-500 text-white', 'border-green-500');
+
+  container.innerHTML = finalHtml;
+}
+
+
+// Modified displayResults function to render one-line reasons for lost points dynamically
+function displayResults(result) {
+  // Show results section
+  document.getElementById('results-section').classList.remove('hidden');
+  
+  // Update overall score
+  document.getElementById('overall-score').textContent = `${result.scores.total}/100`;
+  
+  // Update individual scores with animation
+  const circumference = 2 * Math.PI * 45;
+  
+  // OnPage
+  const onPagePercent = (result.scores.onPage / 40) * 100;
+  const onPageOffset = circumference - (onPagePercent / 100) * circumference;
+  document.getElementById('score-onpage').textContent = result.scores.onPage;
+  setTimeout(() => {
+    document.getElementById('circle-onpage').style.strokeDashoffset = onPageOffset;
+  }, 100);
+  
+  // Technical
+  const techPercent = (result.scores.technical / 30) * 100;
+  const techOffset = circumference - (techPercent / 100) * circumference;
+  document.getElementById('score-technical').textContent = result.scores.technical;
+  setTimeout(() => {
+    document.getElementById('circle-technical').style.strokeDashoffset = techOffset;
+  }, 200);
+  
+  // Content
+  const contentPercent = (result.scores.content / 20) * 100;
+  const contentOffset = circumference - (contentPercent / 100) * circumference;
+  document.getElementById('score-content').textContent = result.scores.content;
+  setTimeout(() => {
+    document.getElementById('circle-content').style.strokeDashoffset = contentOffset;
+  }, 300);
+  
+  // Link
+  const linkPercent = (result.scores.links / 10) * 100;
+  const linkOffset = circumference - (linkPercent / 100) * circumference;
+  document.getElementById('score-link').textContent = result.scores.links;
+  setTimeout(() => {
+    document.getElementById('circle-link').style.strokeDashoffset = linkOffset;
+  }, 400);
+  
+  // Final score
+  const finalPercent = (result.scores.total / 100) * 100;
+  const finalOffset = circumference - (finalPercent / 100) * circumference;
+  document.getElementById('final-score-text').textContent = result.scores.total;
+  setTimeout(() => {
+    document.getElementById('final-circle').style.strokeDashoffset = finalOffset;
+  }, 500);
+
+  // ─── Compile Category Reasons for Lost Points ─────────────────────────────────
+  const reasons = {
+    onPage: [],
+    technical: [],
+    content: [],
+    link: []
+  };
+
+  // On-Page failed checks compile
+  if (!result.title || result.title === 'Missing') {
+    reasons.onPage.push('Title tag missing (-15)');
+  } else if (result.title.length < 30 || result.title.length > 60) {
+    reasons.onPage.push('Suboptimal Title length (-5)');
+  }
+  if (!result.metaDesc || result.metaDesc === 'Missing') {
+    reasons.onPage.push('Meta description missing (-10)');
+  } else if (result.metaDesc.length < 120 || result.metaDesc.length > 160) {
+    reasons.onPage.push('Suboptimal Meta description length (-5)');
+  }
+  if (result.h1Count === 0) {
+    reasons.onPage.push('H1 tag missing (-5)');
+  }
+
+  // Technical failed checks compile
+  if (!result.url.startsWith('https')) {
+    reasons.technical.push('Insecure HTTP Connection (-10)');
+  }
+  if (!result.hasViewport) {
+    reasons.technical.push('Viewport meta tag missing (-10)');
+  }
+  if (result.h1Count !== 1) {
+    reasons.technical.push('Page H1 count is not exactly 1 (-5)');
+  }
+  if (result.wordCount <= 300) {
+    reasons.technical.push('Thin content word count (-5)');
+  }
+
+  // Content failed checks compile
+  if (result.wordCount <= 300) {
+    reasons.content.push('Word count is below 300 (-10)');
+  } else if (result.wordCount <= 600) {
+    reasons.content.push('Word count is below 600 (-5)');
+  }
+  if (result.h2Count === 0) {
+    reasons.content.push('H2 subheadings missing (-5)');
+  }
+
+  // Link failed checks compile
+  if (result.linkCount <= 5) {
+    reasons.link.push('Link count is below 5 (-10)');
+  } else if (result.linkCount <= 10) {
+    reasons.link.push('Link count is below 10 (-5)');
+  }
+
+  // Display reasons dynamically below each progress ring
+  const updateReasonEl = (id, reasonList, maxScore, actualScore) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (actualScore === maxScore || reasonList.length === 0) {
+      el.classList.add('hidden');
+    } else {
+      el.textContent = reasonList.join('; ');
+      el.classList.remove('hidden');
+    }
+  };
+
+  updateReasonEl('reason-onpage', reasons.onPage, 40, result.scores.onPage);
+  updateReasonEl('reason-technical', reasons.technical, 30, result.scores.technical);
+  updateReasonEl('reason-content', reasons.content, 20, result.scores.content);
+  updateReasonEl('reason-link', reasons.link, 10, result.scores.links);
+  
+  // Render pie chart
+  renderPieChart(result.scores);
+  
+  // Update quick stats
+  document.getElementById('stats-title').textContent = result.title;
+  document.getElementById('stats-desc').textContent = result.metaDesc;
+  document.getElementById('stats-h1').textContent = result.h1Count;
+  document.getElementById('stats-words').textContent = result.wordCount;
+  document.getElementById('stats-images').textContent = result.imageCount;
+  document.getElementById('stats-links').textContent = result.linkCount;
+  document.getElementById('stats-https').textContent = result.url.startsWith('https') ? '✓' : '✗';
+  document.getElementById('stats-keywords').textContent = result.topKeywords.length;
+  
+  // Render the structured checks inside recommendations-list
+  generateRecommendations(result);
+  
+  // Load screenshot
+  loadScreenshot(result.url);
+  
+  // Save to history
+  appState.history.unshift(result);
+  if (appState.history.length > 10) appState.history.pop();
+  updateHistory();
+  
+  // Scroll to results
+  setTimeout(() => {
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+  }, 300);
+}
+// Copy code function
+function copyCode(button) {
+  const codeBlock = button.closest('.bg-gray-900, .bg-slate-950').querySelector('code');
+  const text = codeBlock.textContent;
+  
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = button.textContent;
+    button.textContent = 'Copied!';
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 2000);
   });
 }
 window.copyCode = copyCode;
 
 // Mark as completed
 function markCompleted(button) {
-  button.textContent = '✓ Completed';
+  button.textContent = '✓ Fixed';
   button.classList.add('bg-green-600', 'hover:bg-green-700');
   button.classList.remove('bg-primary-600', 'hover:bg-primary-700');
   button.disabled = true;
 }
 window.markCompleted = markCompleted;
-
-// Generate recommendations with expanded details
-function generateRecommendations(result) {
-  const container = document.getElementById('recommendations-list');
-  const recs = [];
-  
-  // Meta Description - High Priority
-  if (!result.metaDesc || result.metaDesc === 'Missing') {
-    recs.push({
-      priority: 'high',
-      title: 'Add Meta Description',
-      time: '10-15 min',
-      description: 'Your website is missing a meta description, which is crucial for search engine results. A well-crafted meta description acts as a "sales pitch" in search results, directly impacting your click-through rate (CTR). Search engines like Google display this 150-160 character snippet below your page title, making it one of the first things potential visitors see.',
-      impact: ['Increases click-through rates by 5-15%', 'Improves search result appearance', 'Helps search engines understand page content', 'Influences social media shares'],
-      steps: [
-        'Open your HTML file or CMS settings',
-        'Locate the &lt;head&gt; section',
-        'Add the meta description tag',
-        'Write compelling 150-160 character description',
-        'Include primary keywords naturally'
-      ],
-      code: `&lt;meta name="description" 
-      content="Discover expert SEO tips and 
-      strategies to boost your website ranking. 
-      Improve visibility, traffic, and conversions 
-      with proven techniques."&gt;`,
-      bestPractices: [
-        'Keep it between 150-160 characters (optimal length)',
-        'Include your primary keyword near the beginning',
-        'Write for humans, not just search engines',
-        'Make it unique for each page',
-        'Include a call-to-action when appropriate',
-        'Avoid duplicate descriptions across pages'
-      ]
-    });
-  }
-  
-  // Title Tag - High Priority
-  if (!result.title || result.title === 'Missing') {
-    recs.push({
-      priority: 'high',
-      title: 'Add Title Tag',
-      time: '5-10 min',
-      description: 'Your page is missing a title tag, which is one of the most important on-page SEO elements. The title tag appears in search engine results, browser tabs, and social media shares. Without it, search engines cannot properly index your page, and users won\'t understand what your page is about before clicking.',
-      impact: ['Critical for search engine ranking', 'First impression in search results', 'Improves click-through rate by 20-30%', 'Required for social media sharing'],
-      steps: [
-        'Open your HTML file',
-        'Find the &lt;head&gt; section',
-        'Add a &lt;title&gt; tag',
-        'Write a descriptive 50-60 character title',
-        'Include your primary keyword'
-      ],
-      code: `&lt;title&gt;SEO Tips &amp; Strategies | Boost Your Rankings - YourBrand&lt;/title&gt;`,
-      bestPractices: [
-        'Keep between 50-60 characters for optimal display',
-        'Put important keywords first',
-        'Include your brand name at the end',
-        'Make each page title unique',
-        'Avoid keyword stuffing',
-        'Write compelling, clickable titles'
-      ]
-    });
-  } else if (result.title.length < 30) {
-    recs.push({
-      priority: 'medium',
-      title: 'Expand Title Tag Length',
-      time: '5 min',
-      description: `Your title tag is only ${result.title.length} characters, which is too short to be effective. Search engines display up to 60 characters in search results, and you\'re not utilizing this valuable space. A longer, more descriptive title can significantly improve your click-through rate and provide better context to both users and search engines.`,
-      impact: ['Better use of SERP real estate', 'Improved keyword targeting', 'Higher click-through rates', 'More descriptive for users'],
-      steps: [
-        'Review your current title: "' + result.title + '"',
-        'Add descriptive keywords',
-        'Expand to 50-60 characters',
-        'Test the appearance in Google SERP simulator'
-      ],
-      code: null,
-      bestPractices: [
-        'Aim for 50-60 characters total',
-        'Include primary and secondary keywords',
-        'Make it compelling and clickable',
-        'Add your brand name if space allows'
-      ]
-    });
-  }
-  
-  // H1 Tag - High Priority
-  if (result.h1Count === 0) {
-    recs.push({
-      priority: 'high',
-      title: 'Add H1 Heading Tag',
-      time: '5 min',
-      description: 'Your page is missing an H1 tag, which is essential for proper page structure and SEO. The H1 tag tells both users and search engines what the main topic of your page is. Without it, search engines have difficulty understanding your content hierarchy, which can negatively impact your rankings.',
-      impact: ['Improves content structure', 'Helps search engines understand page topic', 'Better accessibility for screen readers', 'Increases relevance for target keywords'],
-      steps: [
-        'Identify the main heading on your page',
-        'Wrap it in an &lt;h1&gt; tag',
-        'Ensure it includes your primary keyword',
-        'Use only ONE H1 per page'
-      ],
-      code: `&lt;h1&gt;Complete Guide to SEO Optimization in 2025&lt;/h1&gt;`,
-      bestPractices: [
-        'Use only one H1 tag per page',
-        'Include your primary keyword',
-        'Make it descriptive and compelling',
-        'Keep it between 20-70 characters',
-        'Place it prominently near the top of the page'
-      ]
-    });
-  } else if (result.h1Count > 1) {
-    recs.push({
-      priority: 'medium',
-      title: 'Use Only One H1 Tag',
-      time: '10 min',
-      description: `Your page has ${result.h1Count} H1 tags, but SEO best practices recommend using only one H1 per page. Multiple H1 tags confuse search engines about which heading is the main topic of your page. This dilutes the SEO value and can harm your rankings. Convert additional H1 tags to H2 or H3 tags to maintain proper content hierarchy.`,
-      impact: ['Clearer content hierarchy', 'Better search engine understanding', 'Improved page structure', 'Stronger focus on main keyword'],
-      steps: [
-        'Identify all H1 tags on your page',
-        'Choose the most important one as your main H1',
-        'Convert others to H2 or H3 tags',
-        'Verify the hierarchy makes sense'
-      ],
-      code: null,
-      bestPractices: [
-        'Always use exactly one H1 per page',
-        'Use H2 for major sections',
-        'Use H3 for subsections',
-        'Maintain logical hierarchy (H1 → H2 → H3)',
-        'Don\'t skip heading levels'
-      ]
-    });
-  }
-  
-  // Content Length - Medium Priority
-  if (result.wordCount < 300) {
-    recs.push({
-      priority: 'medium',
-      title: 'Increase Content Length',
-      time: '30-60 min',
-      description: `Your page currently has only ${result.wordCount} words, which is significantly below the recommended minimum of 600-1000 words for good SEO performance. Longer, comprehensive content tends to rank better in search results because it provides more value to users and more opportunities to target relevant keywords naturally.`,
-      impact: ['Better search rankings', 'More keyword opportunities', 'Higher user engagement', 'Increased authority'],
-      steps: [
-        'Research your topic thoroughly',
-        'Add detailed explanations and examples',
-        'Include relevant statistics and data',
-        'Add FAQ sections',
-        'Expand on key points'
-      ],
-      code: null,
-      bestPractices: [
-        'Aim for at least 600-1000 words',
-        'Focus on quality over quantity',
-        'Break content into scannable sections',
-        'Use bullet points and lists',
-        'Add relevant images and media',
-        'Answer user questions thoroughly'
-      ]
-    });
-  }
-  
-  // H2 Headings - Low Priority
-  if (result.h2Count === 0) {
-    recs.push({
-      priority: 'low',
-      title: 'Add H2 Subheadings',
-      time: '15-20 min',
-      description: 'Your page lacks H2 subheadings, which are important for organizing content and improving readability. Subheadings break up long text, make content scannable, and help search engines understand your content structure. They also provide additional opportunities to include relevant keywords naturally.',
-      impact: ['Better content organization', 'Improved readability', 'Enhanced user experience', 'Additional keyword opportunities'],
-      steps: [
-        'Identify major sections in your content',
-        'Add descriptive H2 tags for each section',
-        'Include relevant keywords where appropriate'
-      ],
-      code: `&lt;h2&gt;Why SEO Matters for Your Business&lt;/h2&gt;
-&lt;p&gt;Content about SEO importance...&lt;/p&gt;
-
-&lt;h2&gt;Top SEO Strategies for 2025&lt;/h2&gt;
-&lt;p&gt;Content about strategies...&lt;/p&gt;`,
-      bestPractices: [
-        'Use H2 for major sections',
-        'Make headings descriptive',
-        'Include keywords naturally',
-        'Keep headings concise',
-        'Maintain logical flow'
-      ]
-    });
-  }
-  
-  // HTTPS - High Priority
-  if (!result.url.startsWith('https')) {
-    recs.push({
-      priority: 'high',
-      title: 'Enable HTTPS Security',
-      time: '30-60 min',
-      description: 'Your website is not using HTTPS, which means the connection is not secure. HTTPS is a confirmed Google ranking factor, and modern browsers display "Not Secure" warnings for HTTP sites. This damages user trust, reduces conversions, and negatively impacts your search rankings. Enabling HTTPS is essential for any modern website.',
-      impact: ['Improved security and user trust', 'Better search engine rankings', 'Required for modern web features', 'Increased conversion rates'],
-      steps: [
-        'Purchase or obtain a free SSL certificate (Let\'s Encrypt)',
-        'Install the SSL certificate on your server',
-        'Update all internal links to HTTPS',
-        'Set up 301 redirects from HTTP to HTTPS',
-        'Update your sitemap and robots.txt'
-      ],
-      code: null,
-      bestPractices: [
-        'Use free Let\'s Encrypt certificates',
-        'Enable HSTS (HTTP Strict Transport Security)',
-        'Update all internal links',
-        'Check for mixed content warnings',
-        'Monitor certificate expiration'
-      ]
-    });
-  }
-  
-  // Internal Links - Low Priority
-  if (result.linkCount < 5) {
-    recs.push({
-      priority: 'low',
-      title: 'Add More Internal Links',
-      time: '15-20 min',
-      description: `Your page has only ${result.linkCount} links. Internal linking is crucial for SEO as it helps search engines discover and index your content, distributes page authority, and improves user navigation. A well-structured internal linking strategy keeps users on your site longer and helps search engines understand your site\'s information architecture.`,
-      impact: ['Better site structure', 'Improved crawlability', 'Enhanced user navigation', 'Distributed page authority'],
-      steps: [
-        'Identify related pages on your site',
-        'Add contextual links within content',
-        'Use descriptive anchor text'
-      ],
-      code: `&lt;p&gt;Learn more about &lt;a href="/seo-tips"&gt;advanced SEO techniques&lt;/a&gt; 
-to improve your rankings.&lt;/p&gt;`,
-      bestPractices: [
-        'Use descriptive anchor text',
-        'Link to relevant pages only',
-        'Aim for 3-5 internal links per page',
-        'Avoid over-optimization',
-        'Link to both new and important pages'
-      ]
-    });
-  }
-  
-  // Schema Markup - Low Priority
-  recs.push({
-    priority: 'low',
-    title: 'Add Schema Markup',
-    time: '20-30 min',
-    description: 'Schema markup (structured data) helps search engines better understand your content and can result in rich snippets in search results. Rich snippets can include ratings, prices, availability, and other information that makes your listing stand out, potentially increasing click-through rates by 20-30%.',
-    impact: ['Rich snippets in search results', 'Enhanced SERP appearance', 'Better search engine understanding', 'Increased click-through rates'],
-    steps: [
-      'Identify appropriate schema type (Article, Product, etc.)',
-      'Use Google\'s Structured Data Markup Helper',
-      'Add JSON-LD script to your page',
-      'Test with Google\'s Rich Results Test'
-    ],
-    code: `&lt;script type="application/ld+json"&gt;
-{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "Your Article Title",
-  "author": {
-    "@type": "Person",
-    "name": "Author Name"
-  },
-  "datePublished": "2025-10-29"
-}
-&lt;/script&gt;`,
-    bestPractices: [
-      'Use JSON-LD format (Google recommended)',
-      'Choose the most specific schema type',
-      'Test with Google\'s validation tools',
-      'Keep markup up to date',
-      'Include all required properties'
-    ]
-  });
-  
-  // Render recommendations with expanded details
-  container.innerHTML = '';
-  recs.forEach((rec, index) => {
-    const card = document.createElement('div');
-    card.className = 'recommendation-card bg-white dark:bg-darkCard rounded-2xl shadow-lg p-6 hover:shadow-xl transition';
-    
-    const priorityStyles = {
-      high: { color: 'border-red-500', badge: 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400', emoji: '🔴' },
-      medium: { color: 'border-orange-500', badge: 'bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-400', emoji: '🟠' },
-      low: { color: 'border-green-500', badge: 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400', emoji: '🟢' }
-    };
-    
-    const style = priorityStyles[rec.priority];
-    card.classList.add(style.color, 'border-l-4');
-    
-    let html = `
-      <!-- Priority Badge -->
-      <div class="flex items-start justify-between mb-4">
-        <span class="px-3 py-1 ${style.badge} text-xs font-bold rounded-full uppercase">
-          ${style.emoji} ${rec.priority} Priority
-        </span>
-        <span class="text-xs text-gray-500 dark:text-gray-400">⏱️ ${rec.time}</span>
-      </div>
-      
-      <!-- Title -->
-      <h5 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
-        ${rec.title}
-      </h5>
-      
-      <!-- Description -->
-      <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-        ${rec.description}
-      </p>
-      
-      <!-- Impact -->
-      <div class="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-        <p class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">📊 Impact:</p>
-        <ul class="text-sm text-blue-800 dark:text-blue-400 space-y-1">
-          ${rec.impact.map(item => `<li>• ${item}</li>`).join('')}
-        </ul>
-      </div>
-      
-      <!-- Implementation Steps -->
-      <div class="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 mb-4">
-        <p class="text-sm font-semibold text-gray-900 dark:text-white mb-3">🔧 How to Fix:</p>
-        <ol class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
-          ${rec.steps.map((step, i) => `<li><strong>${i + 1}.</strong> ${step}</li>`).join('')}
-        </ol>
-      </div>
-    `;
-    
-    // Add code example if provided
-    if (rec.code) {
-      html += `
-        <!-- Code Example -->
-        <div class="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 mb-4">
-          <div class="flex items-center justify-between mb-2">
-            <p class="text-xs font-mono text-gray-400">HTML</p>
-            <button onclick="copyCode(this)" class="text-xs text-primary-400 hover:text-primary-300">
-              Copy
-            </button>
-          </div>
-          <pre class="text-sm text-green-400 font-mono overflow-x-auto"><code>${rec.code}</code></pre>
-        </div>
-      `;
-    }
-    
-    // Add best practices if provided
-    if (rec.bestPractices && rec.bestPractices.length > 0) {
-      html += `
-        <!-- Best Practices -->
-        <details class="mb-4">
-          <summary class="text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 transition">
-            💡 Best Practices &amp; Tips
-          </summary>
-          <ul class="mt-3 text-sm text-gray-700 dark:text-gray-300 space-y-2 pl-4">
-            ${rec.bestPractices.map(tip => `<li>• ${tip}</li>`).join('')}
-          </ul>
-        </details>
-      `;
-    }
-    
-    // Add action button
-    html += `
-      <!-- Action Button -->
-      <button onclick="markCompleted(this)" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition">
-        Mark as Completed ✓
-      </button>
-    `;
-    
-    card.innerHTML = html;
-    container.appendChild(card);
-    
-    // Trigger animation
-    setTimeout(() => {
-      card.classList.add('is-visible');
-    }, 100 * index);
-  });
-}
 
 // ─── Preview helpers ──────────────────────────────────────────────────────────
 
