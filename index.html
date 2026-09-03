@@ -576,19 +576,44 @@
 
             <!-- Callout Cards: Critical Issues & Quick Wins -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-12 max-w-3xl mx-auto">
-                <div class="callout-critical callout-spring rounded-2xl p-6 stagger-3">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                        <h5 class="text-sm font-bold text-red-400">Critical Issues</h5>
+                <div class="callout-critical callout-spring rounded-2xl p-6 stagger-3 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                                <h5 class="text-sm font-bold text-red-400">Critical Issues</h5>
+                            </div>
+                            <span id="callout-critical-badge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">0</span>
+                        </div>
+                        <div id="callout-critical-list" class="space-y-2 mb-3">
+                            <p class="text-xs text-gray-400 leading-relaxed">Issues that significantly impact SEO performance. Fix these first for maximum improvement.</p>
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-400 leading-relaxed">Issues that significantly impact SEO performance. Fix these first for maximum improvement.</p>
+                    <div id="callout-critical-footer" class="pt-2 border-t border-red-500/10 hidden">
+                        <button onclick="switchTab('recommendations')" class="text-xs font-semibold text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors">
+                            <span id="callout-critical-link-text">View all critical issues</span> &rarr;
+                        </button>
+                    </div>
                 </div>
-                <div class="callout-wins callout-spring rounded-2xl p-6 stagger-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                        <h5 class="text-sm font-bold text-green-400">Quick Wins</h5>
+
+                <div class="callout-wins callout-spring rounded-2xl p-6 stagger-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                <h5 class="text-sm font-bold text-green-400">Quick Wins</h5>
+                            </div>
+                            <span id="callout-wins-badge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30">0</span>
+                        </div>
+                        <div id="callout-wins-list" class="space-y-2 mb-3">
+                            <p class="text-xs text-gray-400 leading-relaxed">Low-effort improvements that can boost your score quickly. Often fixable in minutes.</p>
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-400 leading-relaxed">Low-effort improvements that can boost your score quickly. Often fixable in minutes.</p>
+                    <div id="callout-wins-footer" class="pt-2 border-t border-green-500/10 hidden">
+                        <button onclick="switchTab('recommendations')" class="text-xs font-semibold text-green-400 hover:text-green-300 flex items-center gap-1 transition-colors">
+                            <span id="callout-wins-link-text">View all quick wins</span> &rarr;
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
