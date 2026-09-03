@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Street Coders - AI-Powered SEO</title>
+    <meta name="description" content="AI-Powered, Real-Time Web Analysis — get instant SEO scores, actionable recommendations, and website previews.">
     <meta name="google-site-verification" content="5Dr2r7urth0q-iyzjv0O73N41QtoAQCKGhZMYou6mZg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,12 +20,14 @@
                     },
                     colors: {
                         primary: {
+                            400: '#2dd4bf',
                             500: '#14b8a6',
                             600: '#0d9488',
                             700: '#0f766e'
                         },
-                        darkBg: '#0f172a',
-                        darkCard: '#1e293b',
+                        darkBg: '#050a14',
+                        darkCard: 'rgba(15, 23, 42, 0.65)',
+                        darkCardSolid: '#0f172a',
                         scoreGreen: '#10b981',
                         scoreBlue: '#3b82f6',
                         scoreOrange: '#f97316',
@@ -32,25 +35,130 @@
                         chatPrimary: '#0d9488'
                     },
                     boxShadow: {
+                        'glass': '0 8px 32px rgba(0,0,0,0.25)',
+                        'glow': '0 0 20px rgba(20,184,166,0.15)',
+                        'glow-md': '0 0 30px rgba(20,184,166,0.2)',
+                        'glow-lg': '0 0 50px rgba(20,184,166,0.25)',
+                        'soft': '0 4px 24px rgba(0,0,0,0.12)',
                         '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.5)'
+                    },
+                    backdropBlur: {
+                        'glass': '16px'
                     }
                 }
             }
         }
     </script>
     <style>
+        /* ─── Base ────────────────────────────────────────────── */
+        body {
+            background: #050a14;
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20,184,166,0.08), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59,130,246,0.04), transparent);
+        }
+        .light body,
+        html.light body {
+            background: #f8fafc;
+            background-image: none;
+        }
+
+        /* ─── Glass Card ──────────────────────────────────────── */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(148,163,184,0.08);
+            border-radius: 1.25rem;
+            transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+        }
+        .glass-card:hover {
+            box-shadow: 0 0 24px rgba(20,184,166,0.12);
+            border-color: rgba(20,184,166,0.15);
+        }
+        .light .glass-card {
+            background: rgba(255,255,255,0.85);
+            border-color: rgba(0,0,0,0.06);
+        }
+
+        /* ─── Feature cards ───────────────────────────────────── */
         .feature-card {
-            transition: all 0.3s ease;
+            transition: all 0.35s cubic-bezier(.4,0,.2,1);
         }
         .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.2);
+            transform: translateY(-6px);
+            box-shadow: 0 0 30px rgba(20,184,166,0.15), 0 20px 40px -10px rgba(0,0,0,0.3);
+            border-color: rgba(20,184,166,0.2);
         }
+
+        /* ─── Score rings ─────────────────────────────────────── */
         .progress-circle {
             stroke-dasharray: 283;
             stroke-dashoffset: 283;
-            transition: stroke-dashoffset 1.5s ease-out;
+            transition: stroke-dashoffset 1.8s cubic-bezier(.4,0,.2,1);
         }
+        .score-ring-glow {
+            filter: drop-shadow(0 0 8px rgba(20,184,166,0.35));
+        }
+
+        /* ─── Input focus glow ────────────────────────────────── */
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(20,184,166,0.2), 0 0 20px rgba(20,184,166,0.1);
+            border-color: #14b8a6;
+        }
+
+        /* ─── CTA gradient button ─────────────────────────────── */
+        .btn-gradient {
+            background: linear-gradient(135deg, #0d9488, #14b8a6, #2dd4bf);
+            background-size: 200% 200%;
+            transition: all 0.4s ease;
+        }
+        .btn-gradient:hover {
+            background-position: 100% 100%;
+            box-shadow: 0 0 30px rgba(20,184,166,0.35);
+            transform: translateY(-1px);
+        }
+
+        /* ─── Pill tabs ───────────────────────────────────────── */
+        .tab-pill {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .tab-pill.active {
+            background: rgba(20,184,166,0.15);
+            color: #2dd4bf;
+            box-shadow: 0 0 16px rgba(20,184,166,0.2);
+            border-color: rgba(20,184,166,0.3);
+        }
+        .tab-content {
+            animation: fadeSlideIn 0.35s ease;
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── Connected step-tracker ──────────────────────────── */
+        .step-tracker {
+            position: relative;
+        }
+        .step-tracker::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(148,163,184,0.15);
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+        .step-node {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ─── Recommendation card ─────────────────────────────── */
         .recommendation-card {
             opacity: 0;
             transform: translateY(20px);
@@ -60,18 +168,24 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* ─── Spinner ─────────────────────────────────────────── */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         .spinner {
             animation: spin 0.8s linear infinite;
         }
+
+        /* ─── Chat ────────────────────────────────────────────── */
         #chat-window {
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
         #chat-window.active {
             display: flex !important;
         }
+
+        /* ─── Bounce ──────────────────────────────────────────── */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -79,293 +193,401 @@
         .animate-bounce {
             animation: bounce 1s infinite;
         }
+
+        /* ─── Shimmer ─────────────────────────────────────────── */
         @keyframes shimmer {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+
+        /* ─── Callout cards ───────────────────────────────────── */
+        .callout-critical {
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.15);
+        }
+        .callout-wins {
+            background: rgba(16,185,129,0.06);
+            border: 1px solid rgba(16,185,129,0.15);
+        }
+        .light .callout-critical {
+            background: rgba(239,68,68,0.05);
+            border-color: rgba(239,68,68,0.12);
+        }
+        .light .callout-wins {
+            background: rgba(16,185,129,0.05);
+            border-color: rgba(16,185,129,0.12);
+        }
+
+        /* ─── History glass cards ─────────────────────────────── */
+        .history-card {
+            transition: all 0.3s ease;
+        }
+        .history-card:hover {
+            background: rgba(20,184,166,0.04);
+            border-color: rgba(20,184,166,0.12);
+        }
+
+        /* ─── Section heading accent line ─────────────────────── */
+        .section-heading::after {
+            content: '';
+            display: block;
+            width: 48px;
+            height: 3px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #14b8a6, transparent);
+            margin-top: 0.5rem;
+        }
+        .section-heading.center::after {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ─── Subtle scrollbar ────────────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.35); }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300">
-    <header class="flex justify-between items-center py-4 px-4 md:px-8 max-w-7xl mx-auto">
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-primary-600 dark:text-primary-500 tracking-tight">
-            Street Coders
+<body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen">
+
+    <!-- ═══════════════════  HEADER  ═══════════════════ -->
+    <header class="flex justify-between items-center py-5 px-4 md:px-8 max-w-7xl mx-auto">
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <span class="text-primary-500">Street</span><span class="text-gray-300 dark:text-gray-400"> Coders</span>
         </h1>
-        <button id="theme-toggle" class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-            <svg class="w-6 h-6 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+        <button id="theme-toggle" class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/10">
+            <svg class="w-5 h-5 hidden dark:block text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
             </svg>
-            <svg class="w-6 h-6 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-5 h-5 block dark:hidden text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
             </svg>
         </button>
     </header>
 
-    <main class="container mx-auto max-w-7xl text-center pt-10 pb-20 px-4">
-        <h2 class="text-3xl sm:text-5xl lg:text-6xl font-black mb-4 tracking-tight leading-tight text-gray-800 dark:text-white">
-            Automating <span class="text-primary-600 dark:text-primary-500">Search Engine Optimization</span>
+    <!-- ═══════════════════  HERO + URL INPUT  ═══════════════════ -->
+    <main class="container mx-auto max-w-7xl text-center pt-16 pb-24 px-4">
+        <h2 class="text-4xl sm:text-5xl lg:text-7xl font-black mb-5 tracking-tight leading-[1.1] text-gray-800 dark:text-white">
+            Automating <br class="hidden sm:block"><span class="bg-gradient-to-r from-primary-500 to-primary-400 bg-clip-text text-transparent">Search Engine Optimization</span>
         </h2>
-        <h3 class="text-lg sm:text-3xl lg:text-4xl font-light mb-12 text-gray-600 dark:text-gray-300">
+        <h3 class="text-lg sm:text-xl lg:text-2xl font-light mb-16 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
             AI-Powered, Real-Time Web Analysis
         </h3>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16">
-            <div class="feature-card bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700">
-                <div class="text-4xl mb-3">
-                    <svg class="w-10 h-10 mx-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        <!-- Feature cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-20 max-w-5xl mx-auto">
+            <div class="feature-card glass-card p-7">
+                <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
                 </div>
-                <h4 class="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">Real-time Analysis</h4>
-                <p class="text-gray-600 dark:text-gray-400">Instantly monitor your website's performance</p>
+                <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Real-time Analysis</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Instantly monitor your website's performance</p>
             </div>
-            <div class="feature-card bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700">
-                <div class="text-4xl mb-3">
-                    <svg class="w-10 h-10 mx-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            <div class="feature-card glass-card p-7">
+                <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                     </svg>
                 </div>
-                <h4 class="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">Smart Recommendations</h4>
-                <p class="text-gray-600 dark:text-gray-400">AI-powered suggestions to boost rankings</p>
+                <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Smart Recommendations</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">AI-powered suggestions to boost rankings</p>
             </div>
-            <div class="feature-card bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700">
-                <div class="text-4xl mb-3">
-                    <svg class="w-10 h-10 mx-auto text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <div class="feature-card glass-card p-7">
+                <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <h4 class="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">Persistence History</h4>
-                <p class="text-gray-600 dark:text-gray-400">Track progress and improvements over time</p>
+                <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Persistence History</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Track progress and improvements over time</p>
             </div>
         </div>
 
-        <div class="mt-16 max-w-3xl mx-auto text-left">
-            <h4 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200 text-center">Analyze</h4>
-            <div class="flex flex-col sm:flex-row gap-3 p-2 bg-white dark:bg-darkCard rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700">
+        <!-- URL Input -->
+        <div class="max-w-2xl mx-auto">
+            <label class="block text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Enter a URL to Analyze</label>
+            <div class="glass-card p-2 flex flex-col sm:flex-row gap-2">
                 <input type="url" id="url-input" 
-                       placeholder="Enter website URL (e.g., https://example.com)"
-                       class="flex-grow p-4 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-600">
+                       placeholder="https://example.com"
+                       class="input-glow flex-grow p-4 rounded-xl focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-transparent text-base">
                 <button id="launch-btn" 
-                        class="bg-primary-600 hover:bg-primary-700 text-white font-extrabold py-4 px-8 rounded-xl transition-colors whitespace-nowrap">
+                        class="btn-gradient text-white font-bold py-4 px-8 rounded-xl whitespace-nowrap text-base tracking-wide">
                     Launch SEO Analyser
                 </button>
             </div>
         </div>
     </main>
 
-    <div id="loading-section" class="hidden max-w-5xl mx-auto px-4 py-8">
-        <div class="bg-white dark:bg-darkCard p-8 rounded-2xl shadow-xl text-center">
-            <div class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full spinner mx-auto mb-4"></div>
-            <p class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-6">Checking domain &amp; fetching page…</p>
-            <div class="flex flex-wrap justify-center gap-2 sm:gap-4 text-sm">
-                <span id="phase-domain" class="px-3 py-1 rounded-full bg-primary-500 text-white font-medium">1 · Domain</span>
-                <span id="phase-fetch"  class="px-3 py-1 rounded-full bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400 font-medium">2 · Fetch</span>
-                <span id="phase-score"  class="px-3 py-1 rounded-full bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400 font-medium">3 · Score</span>
+    <!-- ═══════════════════  LOADING STATE  ═══════════════════ -->
+    <div id="loading-section" class="hidden max-w-3xl mx-auto px-4 py-8">
+        <div class="glass-card p-10 text-center">
+            <div class="w-14 h-14 border-[3px] border-primary-500 border-t-transparent rounded-full spinner mx-auto mb-5"></div>
+            <p class="text-lg font-medium text-gray-300 mb-8">Checking domain &amp; fetching page…</p>
+            <!-- Connected step tracker -->
+            <div class="step-tracker flex items-center justify-center gap-0 max-w-sm mx-auto">
+                <div class="step-node flex flex-col items-center">
+                    <span id="phase-domain" class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-primary-500 text-white shadow-glow">1</span>
+                    <span class="text-[11px] mt-2 text-gray-400 font-medium">Domain</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-gray-700 relative z-0 mx-1">
+                    <div class="h-full bg-primary-500/40 rounded transition-all duration-700" style="width:0%"></div>
+                </div>
+                <div class="step-node flex flex-col items-center">
+                    <span id="phase-fetch" class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400">2</span>
+                    <span class="text-[11px] mt-2 text-gray-400 font-medium">Fetch</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-gray-700 relative z-0 mx-1">
+                    <div class="h-full bg-primary-500/40 rounded transition-all duration-700" style="width:0%"></div>
+                </div>
+                <div class="step-node flex flex-col items-center">
+                    <span id="phase-score" class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400">3</span>
+                    <span class="text-[11px] mt-2 text-gray-400 font-medium">Score</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="results-section" class="hidden max-w-5xl mx-auto px-4 pb-20">
-        <section class="mt-16 mb-16">
-            <h4 class="text-2xl sm:text-3xl font-extrabold mb-4 text-primary-600 dark:text-primary-500 text-center">
-                Overall Web Score: <span id="overall-score">0/100</span>
+    <!-- ═══════════════════  RESULTS  ═══════════════════ -->
+    <div id="results-section" class="hidden max-w-6xl mx-auto px-4 pb-24">
+
+        <!-- ── Score Dashboard ─────────────────────────────── -->
+        <section class="mt-12 mb-16">
+            <h4 class="text-lg sm:text-xl font-semibold mb-2 text-gray-400 dark:text-gray-500 text-center tracking-wide uppercase">
+                Overall Web Score: <span id="overall-score" class="text-primary-400">0/100</span>
             </h4>
-            <div class="text-center mb-8">
-                <button id="download-report-btn" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md hover:shadow-lg text-sm">
+            <div class="text-center mb-10">
+                <button id="download-report-btn" class="inline-flex items-center gap-2 btn-gradient text-white font-semibold py-2.5 px-6 rounded-xl text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                     </svg>
                     <span>Download PDF Report</span>
                 </button>
             </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
-                <div class="text-center">
-                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3">
+
+            <!-- Large focal score ring + category rings -->
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16">
+                <!-- Final Score Ring (large, focal) -->
+                <div class="glass-card p-8 flex flex-col items-center score-ring-glow">
+                    <div class="relative w-48 h-48 mx-auto">
                         <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
-                            <circle id="circle-onpage" cx="50" cy="50" r="45" fill="none" stroke="#3b82f6" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="6"></circle>
+                            <circle id="final-circle" cx="50" cy="50" r="45" fill="none" stroke="#14b8a6" stroke-width="6" class="progress-circle" stroke-linecap="round"></circle>
                         </svg>
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <span id="score-onpage" class="text-xl sm:text-2xl font-extrabold text-scoreBlue">0</span>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="final-score-text" class="text-5xl font-black text-primary-400">0</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-500 font-medium">/ 100</span>
                         </div>
                     </div>
-                    <h5 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">OnPage</h5>
-                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max: 40</p>
-                    <p id="reason-onpage" class="text-xs text-red-500 dark:text-red-400 mt-1 font-medium leading-tight px-2 max-w-[150px] mx-auto hidden"></p>
+                    <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-4">Final Score</p>
                 </div>
-                <div class="text-center">
-                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3">
-                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
-                            <circle id="circle-technical" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
-                        </svg>
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <span id="score-technical" class="text-xl sm:text-2xl font-extrabold text-scoreGreen">0</span>
+
+                <!-- Category rings grid -->
+                <div class="grid grid-cols-2 gap-6 sm:gap-8">
+                    <div class="text-center">
+                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
+                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
+                                <circle id="circle-onpage" cx="50" cy="50" r="45" fill="none" stroke="#3b82f6" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span id="score-onpage" class="text-xl sm:text-2xl font-extrabold text-scoreBlue">0</span>
+                            </div>
                         </div>
+                        <h5 class="text-sm font-bold text-gray-300">OnPage</h5>
+                        <p class="text-[11px] text-gray-500">Max: 40</p>
+                        <p id="reason-onpage" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
                     </div>
-                    <h5 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">Technical</h5>
-                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max: 30</p>
-                    <p id="reason-technical" class="text-xs text-red-500 dark:text-red-400 mt-1 font-medium leading-tight px-2 max-w-[150px] mx-auto hidden"></p>
+                    <div class="text-center">
+                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
+                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
+                                <circle id="circle-technical" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span id="score-technical" class="text-xl sm:text-2xl font-extrabold text-scoreGreen">0</span>
+                            </div>
+                        </div>
+                        <h5 class="text-sm font-bold text-gray-300">Technical</h5>
+                        <p class="text-[11px] text-gray-500">Max: 30</p>
+                        <p id="reason-technical" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
+                    </div>
+                    <div class="text-center">
+                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
+                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
+                                <circle id="circle-content" cx="50" cy="50" r="45" fill="none" stroke="#f97316" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span id="score-content" class="text-xl sm:text-2xl font-extrabold text-scoreOrange">0</span>
+                            </div>
+                        </div>
+                        <h5 class="text-sm font-bold text-gray-300">Content</h5>
+                        <p class="text-[11px] text-gray-500">Max: 20</p>
+                        <p id="reason-content" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
+                    </div>
+                    <div class="text-center">
+                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
+                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
+                                <circle id="circle-link" cx="50" cy="50" r="45" fill="none" stroke="#ef4444" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span id="score-link" class="text-xl sm:text-2xl font-extrabold text-scoreRed">0</span>
+                            </div>
+                        </div>
+                        <h5 class="text-sm font-bold text-gray-300">Link</h5>
+                        <p class="text-[11px] text-gray-500">Max: 10</p>
+                        <p id="reason-link" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3">
-                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
-                            <circle id="circle-content" cx="50" cy="50" r="45" fill="none" stroke="#f97316" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
-                        </svg>
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <span id="score-content" class="text-xl sm:text-2xl font-extrabold text-scoreOrange">0</span>
-                        </div>
+            </div>
+
+            <!-- Callout Cards: Critical Issues & Quick Wins -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-12 max-w-3xl mx-auto">
+                <div class="callout-critical rounded-2xl p-6">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                        <h5 class="text-sm font-bold text-red-400">Critical Issues</h5>
                     </div>
-                    <h5 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">Content</h5>
-                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max: 20</p>
-                    <p id="reason-content" class="text-xs text-red-500 dark:text-red-400 mt-1 font-medium leading-tight px-2 max-w-[150px] mx-auto hidden"></p>
+                    <p class="text-xs text-gray-400 leading-relaxed">Issues that significantly impact SEO performance. Fix these first for maximum improvement.</p>
                 </div>
-                <div class="text-center">
-                    <div class="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3">
-                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
-                            <circle id="circle-link" cx="50" cy="50" r="45" fill="none" stroke="#ef4444" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
-                        </svg>
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <span id="score-link" class="text-xl sm:text-2xl font-extrabold text-scoreRed">0</span>
-                        </div>
+                <div class="callout-wins rounded-2xl p-6">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                        <h5 class="text-sm font-bold text-green-400">Quick Wins</h5>
                     </div>
-                    <h5 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">Link</h5>
-                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Max: 10</p>
-                    <p id="reason-link" class="text-xs text-red-500 dark:text-red-400 mt-1 font-medium leading-tight px-2 max-w-[150px] mx-auto hidden"></p>
+                    <p class="text-xs text-gray-400 leading-relaxed">Low-effort improvements that can boost your score quickly. Often fixable in minutes.</p>
                 </div>
             </div>
         </section>
 
-        <section class="mt-16 max-w-xl mx-auto p-8 bg-white dark:bg-darkCard rounded-2xl shadow-2xl border-2 border-primary-500">
-            <h4 class="text-4xl font-black mb-8 text-primary-600 dark:text-primary-500 text-center">Final Score</h4>
-            <div class="relative w-48 h-48 mx-auto">
-                <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8" class="dark:stroke-slate-700"></circle>
-                    <circle id="final-circle" cx="50" cy="50" r="45" fill="none" stroke="#14b8a6" stroke-width="8" class="progress-circle" stroke-linecap="round"></circle>
-                </svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span id="final-score-text" class="text-6xl font-extrabold text-primary-600 dark:text-primary-500">0</span>
-                    <span class="text-2xl text-gray-500 dark:text-gray-400">/ 100</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="mt-16 p-8 bg-white dark:bg-darkCard rounded-2xl shadow-2xl">
-            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Overall Analysis Breakdown</h4>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-8">
-                <svg id="pie-chart-svg" viewBox="0 0 200 200" class="w-64 h-64"></svg>
-                <div id="pie-chart-legend" class="space-y-3"></div>
-            </div>
-        </section>
-
+        <!-- ── Detailed Analysis (Pill Tabs) ──────────────── -->
         <section class="mt-16">
-            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Quick Stats</h4>
-            <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-xl">
-                <div class="space-y-4">
-                    <div class="border-b border-gray-100 dark:border-slate-700 pb-4">
-                        <p class="text-sm font-semibold text-primary-600 dark:text-primary-500 uppercase">1. Website Title</p>
-                        <p id="stats-title" class="text-xl font-medium text-gray-800 dark:text-gray-200">---</p>
+            <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Detailed Analysis</h4>
+            
+            <!-- Tab pills -->
+            <div class="flex flex-wrap justify-center gap-2 mb-8">
+                <button onclick="switchTab('breakdown')" class="tab-pill active px-5 py-2.5 rounded-full text-sm font-semibold border border-white/5 bg-white/5 text-gray-300" data-tab="breakdown">
+                    Breakdown
+                </button>
+                <button onclick="switchTab('stats')" class="tab-pill px-5 py-2.5 rounded-full text-sm font-semibold border border-white/5 bg-white/5 text-gray-400" data-tab="stats">
+                    Quick Stats
+                </button>
+                <button onclick="switchTab('recommendations')" class="tab-pill px-5 py-2.5 rounded-full text-sm font-semibold border border-white/5 bg-white/5 text-gray-400" data-tab="recommendations">
+                    Recommendations
+                </button>
+            </div>
+
+            <!-- Tab: Breakdown -->
+            <div id="tab-breakdown" class="tab-content">
+                <div class="glass-card p-8">
+                    <h4 class="text-lg font-bold mb-6 text-gray-200">Overall Analysis Breakdown</h4>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-8">
+                        <svg id="pie-chart-svg" viewBox="0 0 200 200" class="w-56 h-56"></svg>
+                        <div id="pie-chart-legend" class="space-y-3"></div>
                     </div>
-                    <div class="border-b border-gray-100 dark:border-slate-700 pb-4">
-                        <p class="text-sm font-semibold text-primary-600 dark:text-primary-500 uppercase">2. Meta Description</p>
-                        <p id="stats-desc" class="text-xl font-medium text-gray-800 dark:text-gray-200">---</p>
-                    </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                        <div>
-                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">H1 Count</p>
-                            <p id="stats-h1" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
+                </div>
+            </div>
+
+            <!-- Tab: Quick Stats -->
+            <div id="tab-stats" class="tab-content hidden">
+                <div class="glass-card p-8">
+                    <div class="space-y-5">
+                        <div class="border-b border-white/5 pb-4">
+                            <p class="text-[11px] font-bold text-primary-400 uppercase tracking-widest mb-1">Website Title</p>
+                            <p id="stats-title" class="text-lg font-medium text-gray-200">---</p>
                         </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Word Count</p>
-                            <p id="stats-words" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
+                        <div class="border-b border-white/5 pb-4">
+                            <p class="text-[11px] font-bold text-primary-400 uppercase tracking-widest mb-1">Meta Description</p>
+                            <p id="stats-desc" class="text-lg font-medium text-gray-200">---</p>
                         </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Images</p>
-                            <p id="stats-images" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Links</p>
-                            <p id="stats-links" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">HTTPS</p>
-                            <p id="stats-https" class="text-2xl font-bold text-gray-800 dark:text-gray-200">---</p>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Keywords</p>
-                            <p id="stats-keywords" class="text-2xl font-bold text-gray-800 dark:text-gray-200">0</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5 pt-2">
+                            <div class="text-center">
+                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">H1 Count</p>
+                                <p id="stats-h1" class="text-2xl font-bold text-gray-200">0</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Word Count</p>
+                                <p id="stats-words" class="text-2xl font-bold text-gray-200">0</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Images</p>
+                                <p id="stats-images" class="text-2xl font-bold text-gray-200">0</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Links</p>
+                                <p id="stats-links" class="text-2xl font-bold text-gray-200">0</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">HTTPS</p>
+                                <p id="stats-https" class="text-2xl font-bold text-gray-200">---</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Keywords</p>
+                                <p id="stats-keywords" class="text-2xl font-bold text-gray-200">0</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Tab: Recommendations -->
+            <div id="tab-recommendations" class="tab-content hidden">
+                <div id="recommendations-list" class="grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
+            </div>
         </section>
 
+        <!-- ── Web Preview ─────────────────────────────────── -->
         <section class="mt-16">
-            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Actionable Recommendations</h4>
-            <div id="recommendations-list" class="grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
-        </section>
-
-        <section class="mt-16">
-            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Web Preview</h4>
-            <!-- Browser-window chrome card -->
-            <div class="bg-white dark:bg-darkCard rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-slate-700">
-
+            <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Web Preview</h4>
+            <div class="glass-card overflow-hidden">
                 <!-- Window chrome: traffic lights + URL bar -->
-                <div class="flex items-center gap-3 px-4 py-3 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
-                    <!-- Traffic-light dots -->
+                <div class="flex items-center gap-3 px-4 py-3 bg-black/20 border-b border-white/5">
                     <div class="flex items-center gap-1.5 shrink-0">
-                        <span class="w-3 h-3 rounded-full bg-red-400"></span>
-                        <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-                        <span class="w-3 h-3 rounded-full bg-green-400"></span>
+                        <span class="w-3 h-3 rounded-full bg-red-400/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-400/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-400/80"></span>
                     </div>
-                    <!-- URL bar -->
-                    <div class="flex items-center gap-2 flex-1 bg-white dark:bg-slate-700 rounded-lg px-3 py-1.5 text-sm min-w-0">
-                        <!-- HTTPS badge -->
-                        <span id="preview-https-badge" class="hidden items-center gap-1 text-green-600 dark:text-green-400 shrink-0 text-xs font-semibold">
+                    <div class="flex items-center gap-2 flex-1 bg-white/5 rounded-lg px-3 py-1.5 text-sm min-w-0 border border-white/5">
+                        <span id="preview-https-badge" class="hidden items-center gap-1 text-green-400 shrink-0 text-xs font-semibold">
                             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
                             </svg>
                             <span>Secure</span>
                         </span>
-                        <span id="preview-url-bar" class="text-gray-600 dark:text-gray-300 truncate">—</span>
+                        <span id="preview-url-bar" class="text-gray-400 truncate text-xs">—</span>
                     </div>
                 </div>
 
                 <!-- Preview body -->
-                <div id="preview-container" class="relative bg-gray-50 dark:bg-slate-900">
-
-                    <!-- Skeleton shimmer (shown while loading) -->
+                <div id="preview-container" class="relative bg-gray-900/40">
                     <div id="preview-skeleton" class="w-full h-72 animate-pulse" style="display:none;">
-                        <div class="h-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700" style="background-size:200% 100%;animation:shimmer 1.5s infinite;"></div>
+                        <div class="h-full bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" style="background-size:200% 100%;animation:shimmer 1.5s infinite;"></div>
                     </div>
-
-                    <!-- Spinner (initial state before skeleton shows) -->
                     <div id="preview-loading" class="w-full h-72 flex items-center justify-center">
-                        <div class="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full spinner"></div>
+                        <div class="w-10 h-10 border-[3px] border-primary-500 border-t-transparent rounded-full spinner"></div>
                     </div>
-
-                    <!-- Screenshot image (lazy-loaded) -->
                     <img id="web-preview-img"
                          src="" alt="Website Preview"
                          loading="lazy"
                          class="w-full block"
                          style="display:none;">
-
-                    <!-- Fallback state -->
                     <div id="preview-fallback" class="w-full h-72 flex flex-col items-center justify-center gap-4 p-8" style="display:none;">
                         <img id="preview-favicon" src="" alt="" class="w-10 h-10 rounded-lg" onerror="this.style.display='none'">
                         <div class="text-center">
-                            <p id="preview-fallback-domain" class="font-semibold text-gray-700 dark:text-gray-300 mb-1"></p>
-                            <p id="preview-error-message" class="text-sm text-gray-500 dark:text-gray-400">Preview unavailable</p>
+                            <p id="preview-fallback-domain" class="font-semibold text-gray-300 mb-1"></p>
+                            <p id="preview-error-message" class="text-sm text-gray-500">Preview unavailable</p>
                         </div>
                         <div class="flex gap-3">
                             <button id="preview-retry-btn"
-                                    class="px-4 py-2 text-sm font-semibold bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">
+                                    class="px-4 py-2 text-sm font-semibold btn-gradient text-white rounded-lg">
                                 Retry Preview
                             </button>
                             <a id="preview-visit-link" href="#" target="_blank" rel="noopener noreferrer"
-                               class="px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                               class="px-4 py-2 text-sm font-semibold border border-white/10 text-gray-300 hover:bg-white/5 rounded-lg transition-colors">
                                 Visit Site →
                             </a>
                         </div>
@@ -374,45 +596,46 @@
             </div>
         </section>
 
-
+        <!-- ── Analysis History ────────────────────────────── -->
         <section class="mt-16 mb-16">
-            <h4 class="text-xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Analysis History</h4>
-            <div id="history-list" class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-xl">
+            <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Analysis History</h4>
+            <div id="history-list" class="glass-card p-6">
                 <div class="flex flex-col items-center justify-center py-10 px-4 text-center">
-                    <svg class="w-12 h-12 text-gray-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-12 h-12 text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No analysis history yet</p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Audit websites to keep track of your scores over time.</p>
+                    <p class="text-sm font-medium text-gray-500">No analysis history yet</p>
+                    <p class="text-xs text-gray-600 mt-1">Audit websites to keep track of your scores over time.</p>
                 </div>
             </div>
         </section>
     </div>
 
-    <div id="error-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-darkCard rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 max-w-md w-full p-8 transform transition-all">
+    <!-- ═══════════════════  ERROR MODAL  ═══════════════════ -->
+    <div id="error-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full p-8 transform transition-all border-white/10">
             <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
-                    <svg class="h-10 w-10 text-red-600 dark:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-500/10 mb-4">
+                    <svg class="h-10 w-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
                 </div>
                 
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 class="text-2xl font-bold text-white mb-2">
                     Analysis Error
                 </h3>
                 
-                <p class="text-gray-600 dark:text-gray-400 mb-4" id="error-message">
+                <p class="text-gray-400 mb-4" id="error-message">
                     The domain you entered is not registered or does not exist.
                 </p>
                 
-                <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-xl p-3.5 mb-4">
-                    <p class="text-sm font-mono text-red-800 dark:text-red-400" id="error-domain">example.com</p>
+                <div class="bg-red-500/5 border border-red-500/15 rounded-xl p-3.5 mb-4">
+                    <p class="text-sm font-mono text-red-400" id="error-domain">example.com</p>
                 </div>
                 
-                <div class="text-left bg-gray-50 dark:bg-slate-800/40 rounded-xl p-4 mb-6">
-                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Suggested troubleshooting:</p>
-                    <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <div class="text-left bg-white/3 rounded-xl p-4 mb-6 border border-white/5">
+                    <p class="text-sm font-semibold text-gray-300 mb-2">Suggested troubleshooting:</p>
+                    <ul class="text-sm text-gray-400 space-y-1">
                         <li>• Check for typos in the domain name</li>
                         <li>• Verify the URL is public and online</li>
                         <li>• Ensure your internet connection is active</li>
@@ -421,25 +644,25 @@
                 </div>
                 
                 <div class="text-left mb-6">
-                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-center">Try these working examples:</p>
+                    <p class="text-sm font-semibold text-gray-300 mb-3 text-center">Try these working examples:</p>
                     <div class="flex flex-wrap gap-2 justify-center">
-                        <button onclick="tryExample('example.com')" class="text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-primary-600 dark:text-primary-400 px-3.5 py-2 rounded-full transition-all">
+                        <button onclick="tryExample('example.com')" class="text-xs font-semibold bg-white/5 hover:bg-primary-500/10 text-primary-400 px-3.5 py-2 rounded-full transition-all border border-white/5 hover:border-primary-500/20">
                             example.com
                         </button>
-                        <button onclick="tryExample('github.com')" class="text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-primary-600 dark:text-primary-400 px-3.5 py-2 rounded-full transition-all">
+                        <button onclick="tryExample('github.com')" class="text-xs font-semibold bg-white/5 hover:bg-primary-500/10 text-primary-400 px-3.5 py-2 rounded-full transition-all border border-white/5 hover:border-primary-500/20">
                             github.com
                         </button>
-                        <button onclick="tryExample('wikipedia.org')" class="text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-primary-600 dark:text-primary-400 px-3.5 py-2 rounded-full transition-all">
+                        <button onclick="tryExample('wikipedia.org')" class="text-xs font-semibold bg-white/5 hover:bg-primary-500/10 text-primary-400 px-3.5 py-2 rounded-full transition-all border border-white/5 hover:border-primary-500/20">
                             wikipedia.org
                         </button>
                     </div>
                 </div>
                 
                 <div class="flex gap-3">
-                    <button onclick="closeErrorModal()" class="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl transition">
+                    <button onclick="closeErrorModal()" class="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-gray-300 font-semibold rounded-xl transition border border-white/5">
                         Cancel
                     </button>
-                    <button onclick="retryWithCorrection()" class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition shadow-md hover:shadow-lg">
+                    <button onclick="retryWithCorrection()" class="flex-1 px-4 py-3 btn-gradient text-white font-semibold rounded-xl transition">
                         Try Again
                     </button>
                 </div>
@@ -447,33 +670,34 @@
         </div>
     </div>
 
+    <!-- ═══════════════════  CHATBOT  ═══════════════════ -->
     <div id="chatbot-container" class="fixed bottom-5 right-4 sm:right-5 z-50">
-        <div id="chat-window" class="w-[calc(100vw-2rem)] sm:w-96 h-[70vh] sm:h-[500px] bg-white dark:bg-darkCard rounded-xl shadow-3xl flex-col border border-gray-200 dark:border-slate-700" style="display: none;">
-            <div class="p-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold rounded-t-xl flex justify-between items-center">
+        <div id="chat-window" class="w-[calc(100vw-2rem)] sm:w-96 h-[70vh] sm:h-[500px] glass-card flex-col border-white/10" style="display: none;">
+            <div class="p-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold rounded-t-[1.25rem] flex justify-between items-center">
                 <div class="flex items-center gap-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
                     </svg>
-                    <span>AI SEO Assistant</span>
+                    <span class="text-sm">AI SEO Assistant</span>
                 </div>
-                <button id="chat-close-btn" class="hover:bg-primary-700 p-1 rounded transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button id="chat-close-btn" class="hover:bg-white/10 p-1.5 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-gray-50 dark:bg-slate-900" style="flex: 1; min-height: 0;">
+            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-black/20" style="flex: 1; min-height: 0;">
                 <div class="flex gap-2">
                     <div class="bg-primary-500 text-white p-3 rounded-2xl rounded-tl-none max-w-[80%]">
                         <p class="text-sm">👋 Hi! I'm your AI SEO assistant. Ask me anything about SEO optimization, keywords, or website performance!</p>
                     </div>
                 </div>
             </div>
-            <div class="p-4 bg-white dark:bg-darkCard border-t border-gray-200 dark:border-slate-700 rounded-b-xl">
+            <div class="p-4 bg-black/10 border-t border-white/5 rounded-b-[1.25rem]">
                 <div class="flex gap-2">
                     <input id="chat-input" type="text" placeholder="Ask about SEO..." 
-                           class="flex-grow p-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <button id="chat-send-btn" class="bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-lg transition-colors">
+                           class="input-glow flex-grow p-3 rounded-xl border border-white/10 bg-white/5 text-gray-100 placeholder-gray-500 focus:outline-none text-sm">
+                    <button id="chat-send-btn" class="btn-gradient text-white p-3 rounded-xl">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
@@ -481,12 +705,43 @@
                 </div>
             </div>
         </div>
-        <button id="chat-toggle-btn" class="w-16 h-16 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-2xl hover:scale-110 transition-transform flex items-center justify-center">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="chat-toggle-btn" class="w-14 h-14 rounded-full btn-gradient text-white shadow-glow-md hover:shadow-glow-lg hover:scale-110 transition-all flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
             </svg>
         </button>
     </div>
+
+    <!-- ═══════════════════  TAB SWITCHING (minimal JS)  ═══════════════════ -->
+    <script>
+    function switchTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        // Remove active from all pills
+        document.querySelectorAll('.tab-pill').forEach(el => {
+            el.classList.remove('active');
+            el.classList.add('text-gray-400');
+            el.classList.remove('text-gray-300');
+        });
+        // Show selected tab
+        const target = document.getElementById('tab-' + tabName);
+        if (target) {
+            target.classList.remove('hidden');
+            // Re-trigger animation
+            target.style.animation = 'none';
+            target.offsetHeight;
+            target.style.animation = '';
+        }
+        // Activate pill
+        const pill = document.querySelector('[data-tab="' + tabName + '"]');
+        if (pill) {
+            pill.classList.add('active');
+            pill.classList.remove('text-gray-400');
+            pill.classList.add('text-gray-300');
+        }
+    }
+    window.switchTab = switchTab;
+    </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="app.js"></script>
