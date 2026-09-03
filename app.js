@@ -236,23 +236,24 @@ function calculateDetailedScores(data) {
     scores.onPage += 10;
     if (data.metaDesc.length >= 120 && data.metaDesc.length <= 160) scores.onPage += 5;
   }
-  if (data.h1Count > 0) scores.onPage += 5;
+  if (data.h1Count > 0) scores.onPage += 3;
+  if (!data.imagesWithoutAlt || data.imagesWithoutAlt === 0) scores.onPage += 2;
   
   // Technical (max 30)
-  if (data.url.startsWith('https')) scores.technical += 10;
+  if (data.url && data.url.startsWith('https')) scores.technical += 10;
   if (data.hasViewport) scores.technical += 10; // Real viewport check from server
   if (data.h1Count === 1) scores.technical += 5;
-  if (data.wordCount > 300) scores.technical += 5;
+  if (data.wordCount >= 300) scores.technical += 5;
   
   // Content (max 20)
-  if (data.wordCount > 300) scores.content += 5;
-  if (data.wordCount > 600) scores.content += 5;
+  if (data.wordCount >= 300) scores.content += 5;
+  if (data.wordCount >= 600) scores.content += 5;
   if (data.h2Count > 0) scores.content += 5;
   scores.content += 5; // Base content score
   
   // Links (max 10)
-  if (data.linkCount > 5) scores.links += 5;
-  if (data.linkCount > 10) scores.links += 5;
+  if (data.linkCount >= 5) scores.links += 5;
+  if (data.linkCount >= 10) scores.links += 5;
   
   scores.total = scores.onPage + scores.technical + scores.content + scores.links;
   
@@ -480,8 +481,25 @@ function generateRecommendations(result) {
   // Render HTML structures
   container.innerHTML = '';
 
-  function renderGroup(title, list, badgeColor, borderColor) {
-    if (list.length === 0) return '';
+  function renderGroup(title, list, badgeColor, borderColor, emptyText) {
+    if (list.length === 0) {
+      if (!emptyText) return '';
+      return `
+        <div class="col-span-1 md:col-span-2 mt-4">
+          <h5 class="text-xl font-bold flex items-center gap-2 mb-4">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-green-500 text-white">0</span>
+            <span class="text-gray-800 dark:text-gray-200">${title}</span>
+          </h5>
+          <div class="recommendation-card is-visible bg-white dark:bg-darkCard rounded-2xl shadow-md p-6 border-l-4 border-green-500 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center font-bold text-base shrink-0">✓</div>
+            <div>
+              <p class="text-sm font-bold text-gray-900 dark:text-white">${emptyText}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">All evaluated checks in this category meet optimal search engine requirements.</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
     
     let groupHtml = `
       <div class="col-span-1 md:col-span-2 mt-4">
@@ -547,11 +565,106 @@ function generateRecommendations(result) {
 
   // Render in columns/grids
   let finalHtml = '';
-  finalHtml += renderGroup('Critical Issues', critical, 'bg-red-500 text-white', 'border-red-500');
-  finalHtml += renderGroup('Improvements Needed', improvement, 'bg-orange-500 text-white', 'border-orange-500');
-  finalHtml += renderGroup('Passed Checks', passed, 'bg-green-500 text-white', 'border-green-500');
+  finalHtml += renderGroup('Critical Issues', critical, 'bg-red-500 text-white', 'border-red-500', 'No critical issues found ✓');
+  finalHtml += renderGroup('Improvements Needed', improvement, 'bg-orange-500 text-white', 'border-orange-500', 'No improvements needed ✓');
+  finalHtml += renderGroup('Passed Checks', passed, 'bg-green-500 text-white', 'border-green-500', '');
 
   container.innerHTML = finalHtml;
+
+  // FIX 2: Populate top-level callout cards (Critical Issues & Quick Wins)
+  updateTopCalloutCards(critical, improvement);
+}
+
+// Populate the top-level Critical Issues and Quick Wins summary cards
+function updateTopCalloutCards(criticalList, improvementList) {
+  // 1. Critical Issues Callout
+  const criticalContainer = document.getElementById('callout-critical-list');
+  const criticalBadge = document.getElementById('callout-critical-badge');
+  const criticalFooter = document.getElementById('callout-critical-footer');
+  const criticalLinkText = document.getElementById('callout-critical-link-text');
+
+  if (criticalContainer) {
+    if (criticalList.length === 0) {
+      if (criticalBadge) criticalBadge.classList.add('hidden');
+      if (criticalFooter) criticalFooter.classList.add('hidden');
+      criticalContainer.innerHTML = `
+        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400">
+          <span class="font-bold text-sm">✓</span>
+          <p class="text-xs font-semibold">No critical issues found ✓</p>
+        </div>
+      `;
+    } else {
+      if (criticalBadge) {
+        criticalBadge.textContent = criticalList.length;
+        criticalBadge.classList.remove('hidden');
+      }
+      const topItems = criticalList.slice(0, 3);
+      criticalContainer.innerHTML = topItems.map(item => `
+        <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-black/20 border border-red-500/20 text-xs">
+          <span class="text-red-400 font-bold shrink-0 mt-0.5">•</span>
+          <div class="min-w-0">
+            <p class="font-semibold text-gray-200 truncate">${item.name}</p>
+            <p class="text-[11px] text-gray-400 truncate">${item.status}</p>
+          </div>
+        </div>
+      `).join('');
+
+      if (criticalFooter) {
+        criticalFooter.classList.remove('hidden');
+        if (criticalLinkText) {
+          criticalLinkText.textContent = `View all ${criticalList.length} critical ${criticalList.length === 1 ? 'issue' : 'issues'}`;
+        }
+      }
+    }
+  }
+
+  // 2. Quick Wins Callout (Low implementation effort: metadata, headings, alt tags)
+  const winsContainer = document.getElementById('callout-wins-list');
+  const winsBadge = document.getElementById('callout-wins-badge');
+  const winsFooter = document.getElementById('callout-wins-footer');
+  const winsLinkText = document.getElementById('callout-wins-link-text');
+
+  if (winsContainer) {
+    // Filter improvement list for quick wins (e.g. meta descriptions, H2 subheadings, alt tags, single H1)
+    const quickWinNames = ['Meta Description Audit', 'H2 Subheadings Presence', 'Image Alt Tags Audit', 'Single H1 Restriction'];
+    let quickWins = improvementList.filter(item => quickWinNames.includes(item.name));
+    if (quickWins.length === 0 && improvementList.length > 0) {
+      quickWins = improvementList; // Fallback to whatever improvements exist
+    }
+
+    if (quickWins.length === 0) {
+      if (winsBadge) winsBadge.classList.add('hidden');
+      if (winsFooter) winsFooter.classList.add('hidden');
+      winsContainer.innerHTML = `
+        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400">
+          <span class="font-bold text-sm">✓</span>
+          <p class="text-xs font-semibold">No quick wins needed ✓</p>
+        </div>
+      `;
+    } else {
+      if (winsBadge) {
+        winsBadge.textContent = quickWins.length;
+        winsBadge.classList.remove('hidden');
+      }
+      const topWins = quickWins.slice(0, 3);
+      winsContainer.innerHTML = topWins.map(item => `
+        <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-black/20 border border-green-500/20 text-xs">
+          <span class="text-green-400 font-bold shrink-0 mt-0.5">⚡</span>
+          <div class="min-w-0">
+            <p class="font-semibold text-gray-200 truncate">${item.name}</p>
+            <p class="text-[11px] text-gray-400 truncate">${item.status}</p>
+          </div>
+        </div>
+      `).join('');
+
+      if (winsFooter) {
+        winsFooter.classList.remove('hidden');
+        if (winsLinkText) {
+          winsLinkText.textContent = `View all ${quickWins.length} quick ${quickWins.length === 1 ? 'win' : 'wins'}`;
+        }
+      }
+    }
+  }
 }
 
 
@@ -629,11 +742,14 @@ function displayResults(result) {
     reasons.onPage.push('Suboptimal Meta description length (-5)');
   }
   if (result.h1Count === 0) {
-    reasons.onPage.push('H1 tag missing (-5)');
+    reasons.onPage.push('H1 tag missing (-3)');
+  }
+  if (result.imagesWithoutAlt && result.imagesWithoutAlt > 0) {
+    reasons.onPage.push(`Missing alt attributes (${result.imagesWithoutAlt} img) (-2)`);
   }
 
   // Technical failed checks compile
-  if (!result.url.startsWith('https')) {
+  if (!result.url || !result.url.startsWith('https')) {
     reasons.technical.push('Insecure HTTP Connection (-10)');
   }
   if (!result.hasViewport) {
@@ -642,14 +758,14 @@ function displayResults(result) {
   if (result.h1Count !== 1) {
     reasons.technical.push('Page H1 count is not exactly 1 (-5)');
   }
-  if (result.wordCount <= 300) {
+  if (result.wordCount < 300) {
     reasons.technical.push('Thin content word count (-5)');
   }
 
   // Content failed checks compile
-  if (result.wordCount <= 300) {
+  if (result.wordCount < 300) {
     reasons.content.push('Word count is below 300 (-10)');
-  } else if (result.wordCount <= 600) {
+  } else if (result.wordCount < 600) {
     reasons.content.push('Word count is below 600 (-5)');
   }
   if (result.h2Count === 0) {
@@ -657,9 +773,9 @@ function displayResults(result) {
   }
 
   // Link failed checks compile
-  if (result.linkCount <= 5) {
+  if (result.linkCount < 5) {
     reasons.link.push('Link count is below 5 (-10)');
-  } else if (result.linkCount <= 10) {
+  } else if (result.linkCount < 10) {
     reasons.link.push('Link count is below 10 (-5)');
   }
 
