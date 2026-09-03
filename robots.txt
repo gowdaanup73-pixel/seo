@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://streetcoders-seo-analyzer.vercel.app/sitemap.xml

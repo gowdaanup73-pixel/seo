@@ -18,6 +18,8 @@ const MIME = {
   '.jpg':  'image/jpeg',
   '.svg':  'image/svg+xml',
   '.ico':  'image/x-icon',
+  '.txt':  'text/plain',
+  '.xml':  'application/xml',
 };
 
 // Lazy-load API handlers (ESM dynamic import)

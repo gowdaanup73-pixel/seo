@@ -215,22 +215,79 @@
             }
         }
 
-        .animate-entrance {
-            animation: springSlideUp var(--duration-slow) var(--ease-out) both;
+        /* ─── Ambient Background Depth ────────────────────────── */
+        #ambient-mesh {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .stagger-1 { animation-delay: 60ms; }
-        .stagger-2 { animation-delay: 130ms; }
-        .stagger-3 { animation-delay: 200ms; }
-        .stagger-4 { animation-delay: 270ms; }
-        .stagger-5 { animation-delay: 340ms; }
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.65;
+            pointer-events: none;
+            will-change: transform;
+        }
+
+        /* Orb 1: Subtle Teal (top left periphery) */
+        .ambient-orb-1 {
+            width: 650px;
+            height: 650px;
+            top: -150px;
+            left: 10%;
+            background: radial-gradient(circle, rgba(20, 184, 166, 0.14) 0%, rgba(20, 184, 166, 0) 70%);
+            animation: ambientDrift1 24s ease-in-out infinite;
+        }
+
+        /* Orb 2: Deep Blue (top right periphery) */
+        .ambient-orb-2 {
+            width: 750px;
+            height: 750px;
+            top: 10%;
+            right: -200px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0) 70%);
+            animation: ambientDrift2 28s ease-in-out infinite;
+        }
+
+        /* Orb 3: Cyan/Teal (bottom left periphery) */
+        .ambient-orb-3 {
+            width: 550px;
+            height: 550px;
+            bottom: 5%;
+            left: -100px;
+            background: radial-gradient(circle, rgba(45, 212, 191, 0.08) 0%, rgba(45, 212, 191, 0) 70%);
+            animation: ambientDrift3 22s ease-in-out infinite;
+        }
+
+        .light .ambient-orb {
+            opacity: 0.35;
+        }
+
+        @keyframes ambientDrift1 {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(35px, 25px, 0) scale(1.04); }
+        }
+
+        @keyframes ambientDrift2 {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(-30px, 30px, 0) scale(0.97); }
+        }
+
+        @keyframes ambientDrift3 {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(25px, -25px, 0) scale(1.03); }
+        }
 
         /* ─── Base ────────────────────────────────────────────── */
         body {
             background: #050a14;
             background-image:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20,184,166,0.08), transparent),
-                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59,130,246,0.04), transparent);
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20,184,166,0.06), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59,130,246,0.03), transparent);
         }
         .light body,
         html.light body {
@@ -293,14 +350,38 @@
             box-shadow: var(--shadow-hover);
         }
 
+        /* ─── Choreographed Reveal Sequence ──────────────────── */
+        /* (a) Score ring: draws over 600ms ease-out */
+        .progress-circle {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 600ms var(--ease-out), stroke 200ms ease;
+        }
+        .score-ring-glow {
+            filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.35));
+        }
+
+        /* (b) Category cards: start at 600ms, 40ms apart each */
         .category-ring-card {
-            animation: springSlideUp var(--duration-slow) var(--ease-out) both;
             transition: transform var(--duration-standard) var(--ease-spring);
         }
         .category-ring-card:hover {
             transform: translateY(-3px);
         }
+        .category-card-1 {
+            animation: springSlideUp var(--duration-slow) var(--ease-out) 600ms both;
+        }
+        .category-card-2 {
+            animation: springSlideUp var(--duration-slow) var(--ease-out) 640ms both;
+        }
+        .category-card-3 {
+            animation: springSlideUp var(--duration-slow) var(--ease-out) 680ms both;
+        }
+        .category-card-4 {
+            animation: springSlideUp var(--duration-slow) var(--ease-out) 720ms both;
+        }
 
+        /* (c) Callout cards (Critical / Quick Wins): together, 150ms after category cards finish (720 + 400 + 150 = 1270ms) */
         .callout-critical {
             border-radius: var(--radius-md);
             background: rgba(239, 68, 68, 0.06);
@@ -323,7 +404,6 @@
         .callout-spring {
             border-radius: var(--radius-md);
             box-shadow: var(--shadow-rest);
-            animation: springSlideUp var(--duration-slow) var(--ease-out) both;
             transition: transform var(--duration-standard) var(--ease-spring),
                         box-shadow var(--duration-standard) var(--ease-out);
         }
@@ -331,15 +411,27 @@
             transform: translateY(-2px);
             box-shadow: var(--shadow-hover);
         }
-
-        /* ─── Score rings ─────────────────────────────────────── */
-        .progress-circle {
-            stroke-dasharray: 283;
-            stroke-dashoffset: 283;
-            transition: stroke-dashoffset 1.8s cubic-bezier(.4, 0, .2, 1);
+        .callout-reveal {
+            animation: springSlideUp var(--duration-slow) var(--ease-out) 1270ms both;
         }
-        .score-ring-glow {
-            filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.35));
+
+        /* (d) Detailed tabs section: fades in last (1270 + 400 = 1670ms) */
+        .tabs-reveal {
+            animation: springSlideUp var(--duration-slow) var(--ease-out) 1670ms both;
+        }
+
+        /* ─── Button Idle Glow Pulse ──────────────────────────── */
+        @keyframes btnIdlePulse {
+            0%, 100% {
+                box-shadow: 0 0 14px rgba(20, 184, 166, 0.2), 0 4px 12px rgba(0, 0, 0, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 28px rgba(20, 184, 166, 0.45), 0 0 8px rgba(45, 212, 191, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        .btn-pulse-idle {
+            animation: btnIdlePulse 3s ease-in-out infinite;
         }
 
         /* ─── Input focus glow ────────────────────────────────── */
@@ -390,19 +482,19 @@
             transform: translateY(-1px);
         }
 
-        /* ─── Tab Content Crossfade / Slide Transition ────────── */
+        /* ─── Tab Content Crossfade (150ms) ───────────────────── */
         @keyframes tabSlideCrossfade {
             0% {
                 opacity: 0;
-                transform: translateY(var(--space-2)) scale(0.995);
+                transform: translateY(4px);
             }
             100% {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
             }
         }
         .tab-content {
-            animation: tabSlideCrossfade var(--duration-slow) var(--ease-out) both;
+            animation: tabSlideCrossfade var(--duration-fast) var(--ease-out) both;
         }
 
         /* ─── Web Preview Chrome with Spring & Depth ──────────── */
@@ -417,6 +509,31 @@
             transform: translateY(-3px);
             box-shadow: var(--shadow-hover);
             border-color: rgba(20, 184, 166, 0.2);
+        }
+
+        /* Web preview screenshot fade in (300ms) & skeleton crossfade */
+        #web-preview-img {
+            transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
+        }
+        #web-preview-img.preview-fade-in {
+            animation: previewFadeIn 300ms var(--ease-out) both;
+        }
+        @keyframes previewFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.985);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        #preview-skeleton {
+            transition: opacity 300ms ease;
+        }
+        #preview-skeleton.fade-out {
+            opacity: 0;
+            pointer-events: none;
         }
 
         /* ─── Connected step-tracker ──────────────────────────── */
@@ -458,12 +575,25 @@
             animation: spin 0.8s linear infinite;
         }
 
-        /* ─── Chat ────────────────────────────────────────────── */
+        /* ─── Chat Window & Message Entrance (200ms, ease-out) ── */
         #chat-window {
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
         #chat-window.active {
             display: flex !important;
+        }
+        #chat-messages > div {
+            animation: chatMessageEntrance 200ms var(--ease-out) both;
+        }
+        @keyframes chatMessageEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ─── Bounce ──────────────────────────────────────────── */
@@ -481,14 +611,67 @@
             100% { background-position: -200% 0; }
         }
 
-
-        /* ─── History glass cards ─────────────────────────────── */
+        /* ─── History glass cards & Entrance Stagger ──────────── */
         .history-card {
             transition: all 0.3s ease;
         }
         .history-card:hover {
             background: rgba(20,184,166,0.04);
             border-color: rgba(20,184,166,0.12);
+        }
+        #history-list > div {
+            animation: springSlideUp var(--duration-slow) var(--ease-out) both;
+            transition: transform var(--duration-standard) var(--ease-spring),
+                        background-color var(--duration-fast) ease,
+                        border-color var(--duration-fast) ease;
+        }
+        #history-list > div:nth-child(1) { animation-delay: 40ms; }
+        #history-list > div:nth-child(2) { animation-delay: 80ms; }
+        #history-list > div:nth-child(3) { animation-delay: 120ms; }
+        #history-list > div:nth-child(4) { animation-delay: 160ms; }
+        #history-list > div:nth-child(5) { animation-delay: 200ms; }
+
+        /* ─── Accessibility Fallback: prefers-reduced-motion ─── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+
+            .ambient-orb,
+            .ambient-orb-1,
+            .ambient-orb-2,
+            .ambient-orb-3 {
+                animation: none !important;
+                transform: none !important;
+            }
+
+            .btn-pulse-idle {
+                animation: none !important;
+            }
+
+            .category-card-1,
+            .category-card-2,
+            .category-card-3,
+            .category-card-4,
+            .callout-reveal,
+            .tabs-reveal,
+            .score-focal-card,
+            .feature-card,
+            .animate-entrance,
+            .tab-content,
+            #chat-messages > div,
+            #history-list > div,
+            #web-preview-img,
+            .progress-circle {
+                animation: none !important;
+                animation-delay: 0ms !important;
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none !important;
+            }
         }
 
         /* ─── Section heading accent line ─────────────────────── */
@@ -513,10 +696,17 @@
         ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.35); }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen">
+<body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen relative overflow-x-hidden">
+
+    <!-- ═══════════════════  AMBIENT BACKGROUND MESH  ═══════════════════ -->
+    <div id="ambient-mesh" class="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
+        <div class="ambient-orb ambient-orb-1"></div>
+        <div class="ambient-orb ambient-orb-2"></div>
+        <div class="ambient-orb ambient-orb-3"></div>
+    </div>
 
     <!-- ═══════════════════  HEADER  ═══════════════════ -->
-    <header class="flex justify-between items-center py-5 px-4 md:px-8 max-w-7xl mx-auto">
+    <header class="relative z-10 flex justify-between items-center py-5 px-4 md:px-8 max-w-7xl mx-auto">
         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
             <span class="text-primary-500">Street</span><span class="text-gray-300 dark:text-gray-400"> Coders</span>
         </h1>
@@ -531,7 +721,7 @@
     </header>
 
     <!-- ═══════════════════  HERO + URL INPUT  ═══════════════════ -->
-    <main class="container mx-auto max-w-7xl text-center pt-16 pb-24 px-4">
+    <main class="relative z-10 container mx-auto max-w-7xl text-center pt-16 pb-24 px-4">
         <h2 class="text-4xl sm:text-5xl lg:text-7xl font-black mb-5 tracking-tight leading-[1.1] text-gray-800 dark:text-white">
             Automating <br class="hidden sm:block"><span class="bg-gradient-to-r from-primary-500 to-primary-400 bg-clip-text text-transparent">Search Engine Optimization</span>
         </h2>
@@ -578,7 +768,7 @@
                        placeholder="https://example.com"
                        class="input-glow flex-grow p-4 rounded-xl focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-transparent text-base">
                 <button id="launch-btn" 
-                        class="btn-gradient text-white font-bold py-4 px-8 rounded-xl whitespace-nowrap text-base tracking-wide">
+                        class="btn-gradient btn-pulse-idle text-white font-bold py-4 px-8 rounded-xl whitespace-nowrap text-base tracking-wide">
                     Launch SEO Analyser
                 </button>
             </div>
@@ -633,8 +823,8 @@
 
             <!-- Large focal score ring + category rings -->
             <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16">
-                <!-- Final Score Ring (large, focal) -->
-                <div class="glass-card p-8 flex flex-col items-center score-ring-glow score-focal-card stagger-1">
+                <!-- Final Score Ring (large, focal: draws itself 600ms ease-out) -->
+                <div class="glass-card p-8 flex flex-col items-center score-ring-glow score-focal-card">
                     <div class="relative w-48 h-48 mx-auto">
                         <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                             <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="6"></circle>
@@ -648,9 +838,9 @@
                     <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-4">Final Score</p>
                 </div>
 
-                <!-- Category rings grid -->
+                <!-- Category rings grid: choreographed 40ms apart starting at 600ms -->
                 <div class="grid grid-cols-2 gap-6 sm:gap-8">
-                    <div class="category-ring-card text-center stagger-2">
+                    <div class="category-ring-card category-card-1 text-center">
                         <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
                             <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
@@ -664,7 +854,7 @@
                         <p class="text-[11px] text-gray-500">Max: 40</p>
                         <p id="reason-onpage" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
                     </div>
-                    <div class="category-ring-card text-center stagger-3">
+                    <div class="category-ring-card category-card-2 text-center">
                         <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
                             <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
@@ -678,7 +868,7 @@
                         <p class="text-[11px] text-gray-500">Max: 30</p>
                         <p id="reason-technical" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
                     </div>
-                    <div class="category-ring-card text-center stagger-4">
+                    <div class="category-ring-card category-card-3 text-center">
                         <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
                             <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
@@ -692,7 +882,7 @@
                         <p class="text-[11px] text-gray-500">Max: 20</p>
                         <p id="reason-content" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
                     </div>
-                    <div class="category-ring-card text-center stagger-5">
+                    <div class="category-ring-card category-card-4 text-center">
                         <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
                             <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
@@ -709,16 +899,16 @@
                 </div>
             </div>
 
-            <!-- Callout Cards: Critical Issues & Quick Wins -->
+            <!-- Callout Cards: Critical Issues & Quick Wins (reveals 150ms after category cards finish: 1270ms) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-12 max-w-3xl mx-auto">
-                <div class="callout-critical callout-spring rounded-2xl p-6 stagger-3">
+                <div class="callout-critical callout-spring rounded-2xl p-6 callout-reveal">
                     <div class="flex items-center gap-2 mb-2">
                         <div class="w-2 h-2 rounded-full bg-red-500"></div>
                         <h5 class="text-sm font-bold text-red-400">Critical Issues</h5>
                     </div>
                     <p class="text-xs text-gray-400 leading-relaxed">Issues that significantly impact SEO performance. Fix these first for maximum improvement.</p>
                 </div>
-                <div class="callout-wins callout-spring rounded-2xl p-6 stagger-4">
+                <div class="callout-wins callout-spring rounded-2xl p-6 callout-reveal">
                     <div class="flex items-center gap-2 mb-2">
                         <div class="w-2 h-2 rounded-full bg-green-500"></div>
                         <h5 class="text-sm font-bold text-green-400">Quick Wins</h5>
@@ -728,8 +918,8 @@
             </div>
         </section>
 
-        <!-- ── Detailed Analysis (Pill Tabs) ──────────────── -->
-        <section class="mt-16">
+        <!-- ── Detailed Analysis (Pill Tabs - fades in last: 1670ms) ──────────────── -->
+        <section class="mt-16 tabs-reveal">
             <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Detailed Analysis</h4>
             
             <!-- Tab pills -->
@@ -1064,6 +1254,13 @@
                 if (previewLink && isVisible) {
                     previewLink.href = getAnalyzedUrl();
                 }
+                if (isVisible) {
+                    previewImg.classList.add('preview-fade-in');
+                    const skeleton = document.getElementById('preview-skeleton');
+                    if (skeleton) {
+                        skeleton.classList.add('fade-out');
+                    }
+                }
             };
 
             const observer = new MutationObserver(updatePreviewState);
@@ -1074,5 +1271,205 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="app.js"></script>
+    <script>
+    /* ─── Animated Score Counting, Ring Transitions & Interaction Controls ─── */
+    (function() {
+        function getScoreColor(val) {
+            if (val < 50) return '#ef4444'; // red 0-49
+            if (val < 70) return '#f97316'; // orange 50-69
+            return '#14b8a6';              // teal 70-100
+        }
+
+        function animateNumber(element, start, end, duration, formatFn) {
+            if (!element) return;
+            const startTime = performance.now();
+            function tick(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // Ease-out cubic: 1 - (1 - progress)^3
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(start + (end - start) * easeOut);
+                if (formatFn) {
+                    formatFn(current, easeOut, progress);
+                } else {
+                    element.textContent = current;
+                }
+                if (progress < 1) {
+                    requestAnimationFrame(tick);
+                } else {
+                    if (formatFn) formatFn(end, 1, 1);
+                    else element.textContent = end;
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        let animationRunning = false;
+        function runScoreAnimations(scores) {
+            if (!scores || animationRunning) return;
+            animationRunning = true;
+            setTimeout(() => { animationRunning = false; }, 1000);
+
+            const circumference = 2 * Math.PI * 45; // ~282.74
+            const finalPercent = (scores.total / 100) * 100;
+            const finalOffset = circumference - (finalPercent / 100) * circumference;
+
+            const finalCircle = document.getElementById('final-circle');
+            const finalScoreEl = document.getElementById('final-score-text');
+            const overallScoreEl = document.getElementById('overall-score');
+            const onpageEl = document.getElementById('score-onpage');
+            const techEl = document.getElementById('score-technical');
+            const contentEl = document.getElementById('score-content');
+            const linkEl = document.getElementById('score-link');
+
+            // TASK A: Accessibility check for prefers-reduced-motion
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (prefersReducedMotion) {
+                // Jump straight to final values without animated counting
+                const col = getScoreColor(scores.total);
+                if (finalScoreEl) {
+                    finalScoreEl.textContent = scores.total;
+                    finalScoreEl.style.color = col;
+                }
+                if (finalCircle) {
+                    finalCircle.style.stroke = col;
+                    finalCircle.style.strokeDashoffset = finalOffset;
+                }
+                if (overallScoreEl) overallScoreEl.textContent = `${scores.total}/100`;
+                if (onpageEl) onpageEl.textContent = scores.onPage;
+                if (techEl) techEl.textContent = scores.technical;
+                if (contentEl) contentEl.textContent = scores.content;
+                if (linkEl) linkEl.textContent = scores.links;
+                return;
+            }
+
+            // (a) Score ring draws itself immediately over 600ms ease-out
+            if (finalCircle) {
+                finalCircle.style.stroke = getScoreColor(0);
+                requestAnimationFrame(() => {
+                    finalCircle.style.strokeDashoffset = finalOffset;
+                });
+            }
+
+            // (1 & 4) Animate final score and real-time ring stroke color
+            if (finalScoreEl) {
+                finalScoreEl.textContent = '0';
+                finalScoreEl.style.color = getScoreColor(0);
+                animateNumber(finalScoreEl, 0, scores.total, 800, (curr) => {
+                    finalScoreEl.textContent = curr;
+                    const col = getScoreColor(curr);
+                    finalScoreEl.style.color = col;
+                    if (finalCircle) finalCircle.style.stroke = col;
+                });
+            }
+
+            // Overall score text in dashboard header
+            if (overallScoreEl) {
+                overallScoreEl.textContent = '0/100';
+                animateNumber(overallScoreEl, 0, scores.total, 800, (curr) => {
+                    overallScoreEl.textContent = `${curr}/100`;
+                });
+            }
+
+            // (1) Animate category numbers (0 to final value over 800ms ease-out)
+            const onpageEl = document.getElementById('score-onpage');
+            if (onpageEl) {
+                onpageEl.textContent = '0';
+                animateNumber(onpageEl, 0, scores.onPage, 800);
+            }
+
+            const techEl = document.getElementById('score-technical');
+            if (techEl) {
+                techEl.textContent = '0';
+                animateNumber(techEl, 0, scores.technical, 800);
+            }
+
+            const contentEl = document.getElementById('score-content');
+            if (contentEl) {
+                contentEl.textContent = '0';
+                animateNumber(contentEl, 0, scores.content, 800);
+            }
+
+            const linkEl = document.getElementById('score-link');
+            if (linkEl) {
+                linkEl.textContent = '0';
+                animateNumber(linkEl, 0, scores.links, 800);
+            }
+
+            // (1) Animate pie chart breakdown percentages over 800ms
+            setTimeout(() => {
+                const legendSpans = document.querySelectorAll('#pie-chart-legend span');
+                legendSpans.forEach(span => {
+                    const txt = span.textContent;
+                    const match = txt.match(/\(([0-9.]+)%\)/);
+                    if (match) {
+                        const targetPct = parseFloat(match[1]);
+                        const prefix = txt.substring(0, txt.indexOf('('));
+                        span.textContent = `${prefix}(0.0%)`;
+                        animateNumber(span, 0, targetPct, 800, (curr, easeOut) => {
+                            const val = (targetPct * easeOut).toFixed(1);
+                            span.textContent = `${prefix}(${val}%)`;
+                        });
+                    }
+                });
+            }, 60);
+        }
+
+        // Hook displayResults from app.js
+        const origDisplayResults = window.displayResults;
+        if (typeof origDisplayResults === 'function') {
+            window.displayResults = function(result) {
+                origDisplayResults(result);
+                if (result && result.scores) {
+                    runScoreAnimations(result.scores);
+                }
+                const launchBtn = document.getElementById('launch-btn');
+                if (launchBtn) launchBtn.classList.remove('btn-pulse-idle');
+            };
+        }
+
+        // Fallback MutationObserver on results-section
+        const resultsSec = document.getElementById('results-section');
+        if (resultsSec) {
+            let prevHidden = true;
+            const obs = new MutationObserver(() => {
+                const isHidden = resultsSec.classList.contains('hidden');
+                if (prevHidden && !isHidden) {
+                    prevHidden = false;
+                    if (window.appState && window.appState.currentResult && window.appState.currentResult.scores) {
+                        runScoreAnimations(window.appState.currentResult.scores);
+                    }
+                } else if (isHidden) {
+                    prevHidden = true;
+                }
+            });
+            obs.observe(resultsSec, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        // Button idle glow pulse controls
+        const launchBtn = document.getElementById('launch-btn');
+        if (launchBtn) {
+            launchBtn.addEventListener('click', () => {
+                launchBtn.classList.remove('btn-pulse-idle');
+            });
+        }
+
+        const loadingSec = document.getElementById('loading-section');
+        if (loadingSec) {
+            const obs = new MutationObserver(() => {
+                const isLoading = !loadingSec.classList.contains('hidden');
+                if (isLoading && launchBtn) {
+                    launchBtn.classList.remove('btn-pulse-idle');
+                } else if (!isLoading && launchBtn) {
+                    const resHidden = resultsSec ? resultsSec.classList.contains('hidden') : true;
+                    if (resHidden) {
+                        launchBtn.classList.add('btn-pulse-idle');
+                    }
+                }
+            });
+            obs.observe(loadingSec, { attributes: true, attributeFilter: ['class'] });
+        }
+    })();
+    </script>
 </body>
 </html>
