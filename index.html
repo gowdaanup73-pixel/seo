@@ -50,6 +50,64 @@
         }
     </script>
     <style>
+        /* ─── Global Motion & Spring Interaction System ──────── */
+        :root {
+            --spring-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --spring-duration: 0.35s;
+            --press-duration: 0.1s;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Press-down feedback (~0.97 scale with ~100ms transition) */
+        button,
+        .btn-gradient,
+        .tab-pill,
+        .press-feedback,
+        #theme-toggle,
+        #web-preview-link,
+        .feature-card,
+        .spring-card {
+            transition: transform var(--press-duration) ease,
+                        box-shadow var(--spring-duration) var(--spring-easing),
+                        background-color var(--spring-duration) ease,
+                        border-color var(--spring-duration) ease;
+        }
+
+        button:active,
+        .btn-gradient:active,
+        .tab-pill:active,
+        .press-feedback:active,
+        #theme-toggle:active,
+        #web-preview-link:active {
+            transform: scale(0.97) !important;
+            transition: transform var(--press-duration) ease !important;
+        }
+
+        /* ─── Card Entrance Keyframes & Stagger ──────────────── */
+        @keyframes springSlideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-entrance {
+            animation: springSlideUp 0.6s var(--spring-easing) both;
+        }
+
+        .stagger-1 { animation-delay: 60ms; }
+        .stagger-2 { animation-delay: 130ms; }
+        .stagger-3 { animation-delay: 200ms; }
+        .stagger-4 { animation-delay: 270ms; }
+        .stagger-5 { animation-delay: 340ms; }
+
         /* ─── Base ────────────────────────────────────────────── */
         body {
             background: #050a14;
@@ -63,32 +121,71 @@
             background-image: none;
         }
 
-        /* ─── Glass Card ──────────────────────────────────────── */
+        /* ─── Glass Card & Hover Depth ────────────────────────── */
         .glass-card {
             background: rgba(15, 23, 42, 0.55);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(148,163,184,0.08);
             border-radius: 1.25rem;
-            transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+            transition: box-shadow var(--spring-duration) var(--spring-easing),
+                        transform var(--spring-duration) var(--spring-easing),
+                        border-color var(--spring-duration) ease;
         }
         .glass-card:hover {
-            box-shadow: 0 0 24px rgba(20,184,166,0.12);
-            border-color: rgba(20,184,166,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 16px 36px -10px rgba(0,0,0,0.35), 0 0 24px rgba(20,184,166,0.14);
+            border-color: rgba(20,184,166,0.2);
         }
         .light .glass-card {
             background: rgba(255,255,255,0.85);
             border-color: rgba(0,0,0,0.06);
         }
+        .light .glass-card:hover {
+            box-shadow: 0 16px 36px -10px rgba(0,0,0,0.12), 0 0 24px rgba(20,184,166,0.12);
+        }
 
-        /* ─── Feature cards ───────────────────────────────────── */
+        /* ─── Feature cards (Hero) with Spring & Entrance ────── */
         .feature-card {
-            transition: all 0.35s cubic-bezier(.4,0,.2,1);
+            animation: springSlideUp 0.65s var(--spring-easing) both;
+            transition: transform var(--spring-duration) var(--spring-easing),
+                        box-shadow var(--spring-duration) var(--spring-easing),
+                        border-color 0.3s ease;
         }
         .feature-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 0 30px rgba(20,184,166,0.15), 0 20px 40px -10px rgba(0,0,0,0.3);
-            border-color: rgba(20,184,166,0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45), 0 0 30px rgba(20, 184, 166, 0.2);
+            border-color: rgba(20,184,166,0.25);
+        }
+
+        /* ─── Score Dashboard Cards & Rings ───────────────────── */
+        .score-focal-card {
+            animation: springSlideUp 0.65s var(--spring-easing) both;
+            transition: transform var(--spring-duration) var(--spring-easing),
+                        box-shadow var(--spring-duration) var(--spring-easing),
+                        border-color 0.3s ease;
+        }
+        .score-focal-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 30px rgba(20, 184, 166, 0.25);
+        }
+
+        .category-ring-card {
+            animation: springSlideUp 0.6s var(--spring-easing) both;
+            transition: transform var(--spring-duration) var(--spring-easing);
+        }
+        .category-ring-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .callout-spring {
+            animation: springSlideUp 0.65s var(--spring-easing) both;
+            transition: transform var(--spring-duration) var(--spring-easing),
+                        box-shadow var(--spring-duration) var(--spring-easing);
+        }
+        .callout-spring:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
         }
 
         /* ─── Score rings ─────────────────────────────────────── */
@@ -107,35 +204,67 @@
             border-color: #14b8a6;
         }
 
-        /* ─── CTA gradient button ─────────────────────────────── */
+        /* ─── CTA gradient button with Spring ─────────────────── */
         .btn-gradient {
             background: linear-gradient(135deg, #0d9488, #14b8a6, #2dd4bf);
             background-size: 200% 200%;
-            transition: all 0.4s ease;
+            transition: transform var(--spring-duration) var(--spring-easing),
+                        box-shadow var(--spring-duration) var(--spring-easing),
+                        background-position 0.4s ease;
         }
         .btn-gradient:hover {
             background-position: 100% 100%;
-            box-shadow: 0 0 30px rgba(20,184,166,0.35);
+            box-shadow: 0 0 32px rgba(20,184,166,0.35);
+            transform: translateY(-2px);
+        }
+
+        /* ─── Pill tabs with Spring Transitions ───────────────── */
+        .tab-pill {
+            transition: transform var(--spring-duration) var(--spring-easing),
+                        background var(--spring-duration) ease,
+                        color 0.2s ease,
+                        box-shadow var(--spring-duration) var(--spring-easing),
+                        border-color var(--spring-duration) ease;
+            position: relative;
+        }
+        .tab-pill:hover:not(.active) {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+        }
+        .tab-pill.active {
+            background: rgba(20,184,166,0.16);
+            color: #2dd4bf;
+            box-shadow: 0 0 18px rgba(20,184,166,0.22);
+            border-color: rgba(20,184,166,0.35);
             transform: translateY(-1px);
         }
 
-        /* ─── Pill tabs ───────────────────────────────────────── */
-        .tab-pill {
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        .tab-pill.active {
-            background: rgba(20,184,166,0.15);
-            color: #2dd4bf;
-            box-shadow: 0 0 16px rgba(20,184,166,0.2);
-            border-color: rgba(20,184,166,0.3);
+        /* ─── Tab Content Crossfade / Slide Transition ────────── */
+        @keyframes tabSlideCrossfade {
+            0% {
+                opacity: 0;
+                transform: translateY(8px) scale(0.995);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
         .tab-content {
-            animation: fadeSlideIn 0.35s ease;
+            animation: tabSlideCrossfade 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        @keyframes fadeSlideIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
+
+        /* ─── Web Preview Chrome with Spring & Depth ──────────── */
+        .preview-card {
+            transition: transform var(--spring-duration) var(--spring-easing),
+                        box-shadow var(--spring-duration) var(--spring-easing),
+                        border-color 0.3s ease;
+        }
+        .preview-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 30px rgba(20, 184, 166, 0.16);
+            border-color: rgba(20, 184, 166, 0.2);
         }
 
         /* ─── Connected step-tracker ──────────────────────────── */
@@ -277,7 +406,7 @@
 
         <!-- Feature cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-20 max-w-5xl mx-auto">
-            <div class="feature-card glass-card p-7">
+            <div class="feature-card glass-card p-7 stagger-1">
                 <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
                     <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -286,7 +415,7 @@
                 <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Real-time Analysis</h4>
                 <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Instantly monitor your website's performance</p>
             </div>
-            <div class="feature-card glass-card p-7">
+            <div class="feature-card glass-card p-7 stagger-2">
                 <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
                     <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
@@ -295,7 +424,7 @@
                 <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Smart Recommendations</h4>
                 <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">AI-powered suggestions to boost rankings</p>
             </div>
-            <div class="feature-card glass-card p-7">
+            <div class="feature-card glass-card p-7 stagger-3">
                 <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
                     <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -309,7 +438,7 @@
         <!-- URL Input -->
         <div class="max-w-2xl mx-auto">
             <label class="block text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Enter a URL to Analyze</label>
-            <div class="glass-card p-2 flex flex-col sm:flex-row gap-2">
+            <div class="glass-card spring-card p-2 flex flex-col sm:flex-row gap-2">
                 <input type="url" id="url-input" 
                        placeholder="https://example.com"
                        class="input-glow flex-grow p-4 rounded-xl focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-transparent text-base">
@@ -370,7 +499,7 @@
             <!-- Large focal score ring + category rings -->
             <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16">
                 <!-- Final Score Ring (large, focal) -->
-                <div class="glass-card p-8 flex flex-col items-center score-ring-glow">
+                <div class="glass-card p-8 flex flex-col items-center score-ring-glow score-focal-card stagger-1">
                     <div class="relative w-48 h-48 mx-auto">
                         <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                             <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="6"></circle>
@@ -386,7 +515,7 @@
 
                 <!-- Category rings grid -->
                 <div class="grid grid-cols-2 gap-6 sm:gap-8">
-                    <div class="text-center">
+                    <div class="category-ring-card text-center stagger-2">
                         <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
                             <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
@@ -400,7 +529,7 @@
                         <p class="text-[11px] text-gray-500">Max: 40</p>
                         <p id="reason-onpage" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
                     </div>
-                    <div class="text-center">
+                    <div class="category-ring-card text-center stagger-3">
                         <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
                             <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
@@ -414,7 +543,7 @@
                         <p class="text-[11px] text-gray-500">Max: 30</p>
                         <p id="reason-technical" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
                     </div>
-                    <div class="text-center">
+                    <div class="category-ring-card text-center stagger-4">
                         <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
                             <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
@@ -428,7 +557,7 @@
                         <p class="text-[11px] text-gray-500">Max: 20</p>
                         <p id="reason-content" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
                     </div>
-                    <div class="text-center">
+                    <div class="category-ring-card text-center stagger-5">
                         <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
                             <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
@@ -447,14 +576,14 @@
 
             <!-- Callout Cards: Critical Issues & Quick Wins -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-12 max-w-3xl mx-auto">
-                <div class="callout-critical rounded-2xl p-6">
+                <div class="callout-critical callout-spring rounded-2xl p-6 stagger-3">
                     <div class="flex items-center gap-2 mb-2">
                         <div class="w-2 h-2 rounded-full bg-red-500"></div>
                         <h5 class="text-sm font-bold text-red-400">Critical Issues</h5>
                     </div>
                     <p class="text-xs text-gray-400 leading-relaxed">Issues that significantly impact SEO performance. Fix these first for maximum improvement.</p>
                 </div>
-                <div class="callout-wins rounded-2xl p-6">
+                <div class="callout-wins callout-spring rounded-2xl p-6 stagger-4">
                     <div class="flex items-center gap-2 mb-2">
                         <div class="w-2 h-2 rounded-full bg-green-500"></div>
                         <h5 class="text-sm font-bold text-green-400">Quick Wins</h5>
@@ -543,7 +672,7 @@
         <!-- ── Web Preview ─────────────────────────────────── -->
         <section class="mt-16">
             <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Web Preview</h4>
-            <div class="glass-card overflow-hidden">
+            <div class="glass-card overflow-hidden preview-card">
                 <!-- Window chrome: traffic lights + URL bar -->
                 <div class="flex items-center gap-3 px-4 py-3 bg-black/20 border-b border-white/5">
                     <div class="flex items-center gap-1.5 shrink-0">
@@ -570,11 +699,25 @@
                     <div id="preview-loading" class="w-full h-72 flex items-center justify-center">
                         <div class="w-10 h-10 border-[3px] border-primary-500 border-t-transparent rounded-full spinner"></div>
                     </div>
-                    <img id="web-preview-img"
-                         src="" alt="Website Preview"
-                         loading="lazy"
-                         class="w-full block"
-                         style="display:none;">
+                    <!-- Clickable Web Preview with Hover Visit Badge -->
+                    <a id="web-preview-link" href="#" target="_blank" rel="noopener noreferrer"
+                       onclick="openAnalyzedSite(event, this)"
+                       class="group relative block overflow-hidden cursor-pointer"
+                       title="Visit analyzed site">
+                        <img id="web-preview-img"
+                             src="" alt="Website Preview"
+                             loading="lazy"
+                             class="w-full block transition-transform duration-500 ease-out group-hover:scale-[1.015]"
+                             style="display:none;">
+                        <div id="preview-hover-badge"
+                             class="pointer-events-none absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/80 backdrop-blur-md border border-white/10 text-white text-xs font-semibold flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-y-1 group-hover:translate-y-0 shadow-lg"
+                             style="display:none;">
+                            <span>Visit site</span>
+                            <svg class="w-3.5 h-3.5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                        </div>
+                    </a>
                     <div id="preview-fallback" class="w-full h-72 flex flex-col items-center justify-center gap-4 p-8" style="display:none;">
                         <img id="preview-favicon" src="" alt="" class="w-10 h-10 rounded-lg" onerror="this.style.display='none'">
                         <div class="text-center">
@@ -712,7 +855,7 @@
         </button>
     </div>
 
-    <!-- ═══════════════════  TAB SWITCHING (minimal JS)  ═══════════════════ -->
+    <!-- ═══════════════════  TAB SWITCHING & PREVIEW CLICKTHROUGH (minimal JS)  ═══════════════════ -->
     <script>
     function switchTab(tabName) {
         // Hide all tab contents
@@ -727,7 +870,7 @@
         const target = document.getElementById('tab-' + tabName);
         if (target) {
             target.classList.remove('hidden');
-            // Re-trigger animation
+            // Re-trigger spring crossfade animation
             target.style.animation = 'none';
             target.offsetHeight;
             target.style.animation = '';
@@ -741,6 +884,57 @@
         }
     }
     window.switchTab = switchTab;
+
+    // Helper to retrieve the active analyzed URL
+    function getAnalyzedUrl() {
+        const visitLink = document.getElementById('preview-visit-link')?.getAttribute('href');
+        if (visitLink && visitLink !== '#' && !visitLink.startsWith('javascript:')) {
+            return visitLink.startsWith('http') ? visitLink : 'https://' + visitLink;
+        }
+        const inputVal = document.getElementById('url-input')?.value?.trim();
+        if (inputVal) {
+            return inputVal.startsWith('http') ? inputVal : 'https://' + inputVal;
+        }
+        const urlBarText = document.getElementById('preview-url-bar')?.textContent?.trim();
+        if (urlBarText && urlBarText !== '—') {
+            return urlBarText.startsWith('http') ? urlBarText : 'https://' + urlBarText;
+        }
+        return '#';
+    }
+    window.getAnalyzedUrl = getAnalyzedUrl;
+
+    // Handler when clicking preview image to open analyzed URL in new tab
+    function openAnalyzedSite(e, el) {
+        const url = getAnalyzedUrl();
+        if (url && url !== '#') {
+            el.href = url;
+        } else {
+            e.preventDefault();
+        }
+    }
+    window.openAnalyzedSite = openAnalyzedSite;
+
+    // Observe web-preview-img to toggle hover badge and populate href
+    document.addEventListener('DOMContentLoaded', () => {
+        const previewImg = document.getElementById('web-preview-img');
+        const previewBadge = document.getElementById('preview-hover-badge');
+        const previewLink = document.getElementById('web-preview-link');
+        
+        if (previewImg) {
+            const updatePreviewState = () => {
+                const isVisible = previewImg.style.display !== 'none' && previewImg.getAttribute('src');
+                if (previewBadge) {
+                    previewBadge.style.display = isVisible ? 'flex' : 'none';
+                }
+                if (previewLink && isVisible) {
+                    previewLink.href = getAnalyzedUrl();
+                }
+            };
+
+            const observer = new MutationObserver(updatePreviewState);
+            observer.observe(previewImg, { attributes: true, attributeFilter: ['style', 'src'] });
+        }
+    });
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
