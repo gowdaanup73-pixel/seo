@@ -72,11 +72,19 @@ Make sure you have Node.js (v18+) installed.
      ```
 
 4. **Launch Local Server**:
-   Run the dev server script:
    ```bash
-   node scratch/dev-server.js
+   node dev-server.js
    ```
-   Open `http://localhost:3000` in your web browser.
+   Open `http://localhost:3000` in your browser.
+
+   > ⚠️ **You must use `dev-server.js`** — it is the only server that serves
+   > static files **and** proxies `/api/*` requests to the Vercel-style
+   > serverless handlers in `api/`. Alternatives will **not** work:
+   >
+   > | Command | Problem |
+   > |---|---|
+   > | `npx serve` | Static-only file server — all `/api/*` routes return **404**. |
+   > | `vercel dev` | Requires interactive OAuth login to the Vercel dashboard. |
 
 ---
 
@@ -86,8 +94,7 @@ Make sure you have Node.js (v18+) installed.
 │   ├── ai-recommend.js  # OpenRouter proxy, data payload inject, 24h caching
 │   ├── analyze.js       # DNS validation, page content scraper, JSDOM parser
 │   └── preview.js       # SSRF-guarded thum.io screenshot proxying
-├── scratch/
-│   └── dev-server.js    # Local static files & API routes dev server
+├── dev-server.js        # Local dev server — static files + API route proxy
 ├── app.js               # Client-side state layer, calculations, PDF export, history
 ├── index.html           # Main visual shell & CSS components layout
 ├── package.json         # Node metadata & Vercel package imports
