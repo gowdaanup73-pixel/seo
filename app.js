@@ -1,4 +1,5 @@
 // In-memory storage (localStorage blocked in sandbox)
+
 const appState = {
   history: [],
   currentResult: null,
