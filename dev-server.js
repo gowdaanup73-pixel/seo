@@ -1,4 +1,5 @@
 // dev-server.js — Local dev server that bridges Vercel-style serverless handlers
+
 // Serves static files from project root + routes /api/* to api/*.js handlers
 import http from 'node:http';
 import fs from 'node:fs';
