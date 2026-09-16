@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = 3000;
 
-// MIME types for static files
+// MIME Types for static files
 const MIME = {
   '.html': 'text/html',
   '.js':   'application/javascript',
