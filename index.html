@@ -81,6 +81,76 @@
           <div id="terrain-inspector-card"></div>
         </div>
 
+        <!-- ═══════════ Site Architecture & SERP Intelligence Deck ═══════════ -->
+        <section class="intelligence-deck" id="intelligence-deck" aria-label="Site Architecture and SERP Intelligence">
+          <div class="deck-header">
+            <div class="deck-label">SITE INTELLIGENCE <span>● REAL-TIME DIRECTIVES &amp; SERP SIMULATOR</span></div>
+            <div class="preset-targets">
+              <span class="preset-label">Quick Run:</span>
+              <button type="button" class="preset-btn" data-preset="https://github.com">github.com</button>
+              <button type="button" class="preset-btn" data-preset="https://vercel.com">vercel.com</button>
+              <button type="button" class="preset-btn" data-preset="https://stripe.com">stripe.com</button>
+              <button type="button" class="preset-btn" data-preset="https://news.ycombinator.com">ycombinator</button>
+            </div>
+          </div>
+
+          <div class="deck-grid">
+            <!-- Left: Google Search Preview (SERP Snippet Simulator) -->
+            <div class="serp-card">
+              <div class="serp-header">
+                <span>Google SERP Preview</span>
+                <div class="serp-gauges">
+                  <span class="serp-gauge">Title: <b id="serp-title-count">0</b>/60</span>
+                  <span class="serp-gauge">Meta: <b id="serp-desc-count">0</b>/160</span>
+                </div>
+              </div>
+
+              <div class="serp-preview-box">
+                <div class="serp-site-row">
+                  <div class="serp-favicon" id="serp-favicon">⌘</div>
+                  <div class="serp-site-info">
+                    <span class="serp-source-name" id="serp-source-name">Streetcoders SEO</span>
+                    <span class="serp-url-breadcrumb" id="serp-url-preview">https://example.com › search-visibility</span>
+                  </div>
+                </div>
+                <a class="serp-title-link" id="serp-title-preview" href="#website-url">Enter a website URL above to preview live Google search snippet</a>
+                <p class="serp-description-snippet" id="serp-desc-preview">Real-time simulation of how your page title, URL breadcrumb hierarchy, and meta description render inside desktop and mobile Google Search results.</p>
+              </div>
+            </div>
+
+            <!-- Right: Core Signals & Architecture Matrix -->
+            <div class="signals-matrix-card">
+              <div class="matrix-header">
+                <span>Core Crawler Directives</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🔒</i> SSL / HTTPS Transport</span>
+                <span class="signal-badge" id="signal-https">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">📱</i> Mobile Viewport Ready</span>
+                <span class="signal-badge" id="signal-viewport">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🏷</i> Canonical URL Reference</span>
+                <span class="signal-badge" id="signal-canonical">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🤖</i> Robots.txt &amp; Sitemap</span>
+                <span class="signal-badge" id="signal-robots">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🔤</i> Semantic H1 Structure</span>
+                <span class="signal-badge" id="signal-h1">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🌐</i> OpenGraph Social Tags</span>
+                <span class="signal-badge" id="signal-og">Awaiting Scan</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="metric-grid" aria-label="SEO summary metrics">
           <article class="metric-card">
             <div class="metric-label">PAGES CRAWLED <span>↗</span></div>

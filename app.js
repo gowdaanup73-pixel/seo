@@ -504,8 +504,89 @@ function renderDashboard(data) {
   // Dynamic Opportunities Panel on Top
   renderOpportunities(issues);
 
+  // Intelligence Deck (SERP Simulator & Crawler Directives Matrix)
+  renderIntelligenceDeck(data);
+
   // Map Hotspots to Real Findings
   mapHotspotsToAudit(issues);
+}
+
+// ---------------------------------------------------------------------------
+// Site Intelligence Deck (SERP Simulator & Crawler Directives Matrix)
+// ---------------------------------------------------------------------------
+function renderIntelligenceDeck(data) {
+  if (!data) return;
+  const targetUrl = data.url || 'https://example.com';
+  let hostname = 'example.com';
+  try {
+    hostname = new URL(targetUrl).hostname;
+  } catch {}
+
+  // 1. Google SERP Simulator
+  const serpSourceName = document.getElementById('serp-source-name');
+  const serpUrlPreview = document.getElementById('serp-url-preview');
+  const serpTitlePreview = document.getElementById('serp-title-preview');
+  const serpDescPreview = document.getElementById('serp-desc-preview');
+  const serpTitleCount = document.getElementById('serp-title-count');
+  const serpDescCount = document.getElementById('serp-desc-count');
+  const serpFavicon = document.getElementById('serp-favicon');
+
+  if (serpSourceName) serpSourceName.textContent = hostname.replace(/^www\./, '');
+  if (serpUrlPreview) serpUrlPreview.textContent = `${targetUrl.replace(/\/$/, '')} › search`;
+
+  const pageTitle = (data.title || '').trim() || `${hostname} — Official Website`;
+  if (serpTitlePreview) {
+    serpTitlePreview.textContent = pageTitle;
+    serpTitlePreview.href = targetUrl;
+  }
+  if (serpTitleCount) {
+    serpTitleCount.textContent = pageTitle.length;
+    serpTitleCount.style.color = (pageTitle.length >= 30 && pageTitle.length <= 60) ? 'var(--green)' : 'var(--amber)';
+  }
+
+  const metaDesc = (data.metaDesc || '').trim() || `Comprehensive SEO audit and performance intelligence for ${hostname}. Discovered ${data.linkCount || 0} links and calculated health score.`;
+  if (serpDescPreview) serpDescPreview.textContent = metaDesc;
+  if (serpDescCount) {
+    serpDescCount.textContent = metaDesc.length;
+    serpDescCount.style.color = (metaDesc.length >= 110 && metaDesc.length <= 160) ? 'var(--green)' : 'var(--amber)';
+  }
+
+  if (serpFavicon) {
+    serpFavicon.innerHTML = `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=32" alt="" style="width:14px; height:14px; border-radius:50%; vertical-align:middle;" onerror="this.parentElement.textContent='⌘'">`;
+  }
+
+  // 2. Core Directives & Architecture Matrix
+  const setSignalBadge = (elId, text, state) => {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.textContent = text;
+    el.className = `signal-badge ${state}`;
+  };
+
+  const isHttps = targetUrl.startsWith('https://');
+  setSignalBadge('signal-https', isHttps ? 'Encrypted TLS' : 'Insecure HTTP', isHttps ? 'pass' : 'fail');
+
+  const hasViewport = !!data.hasViewport;
+  setSignalBadge('signal-viewport', hasViewport ? 'Mobile Optimized' : 'Missing Viewport', hasViewport ? 'pass' : 'fail');
+
+  const hasCanonical = !!data.canonical;
+  setSignalBadge('signal-canonical', hasCanonical ? 'Canonical Defined' : 'Implicit Self', hasCanonical ? 'pass' : 'warn');
+
+  const robots = data.robotsInfo;
+  const hasRobots = !!(robots && (robots.hasRobots || robots.hasSitemap));
+  setSignalBadge('signal-robots', hasRobots ? 'Directives Found' : 'Not Detected', hasRobots ? 'pass' : 'warn');
+
+  const h1Count = Array.isArray(data.h1Tags) ? data.h1Tags.length : (data.h1 ? 1 : 0);
+  if (h1Count === 1) {
+    setSignalBadge('signal-h1', 'Optimized (1 H1)', 'pass');
+  } else if (h1Count === 0) {
+    setSignalBadge('signal-h1', 'Missing H1', 'fail');
+  } else {
+    setSignalBadge('signal-h1', `Multiple (${h1Count} H1s)`, 'warn');
+  }
+
+  const hasOg = !!(data.ogTitle || data.ogDesc || data.ogImage);
+  setSignalBadge('signal-og', hasOg ? 'OG Metadata Active' : 'Missing OpenGraph', hasOg ? 'pass' : 'warn');
 }
 
 // ---------------------------------------------------------------------------
@@ -1630,4 +1711,16 @@ document.addEventListener('DOMContentLoaded', () => {
       analyzeDomain(url.href, mode, competitorUrl);
     });
   }
+
+  // Quick Run Preset Target Chips
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.preset;
+      const input = document.getElementById('website-url');
+      if (input && target) {
+        input.value = target;
+        analyzeDomain(target, 'full');
+      }
+    });
+  });
 });
