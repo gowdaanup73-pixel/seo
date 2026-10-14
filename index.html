@@ -130,27 +130,27 @@
         <section class="metric-grid" aria-label="SEO summary metrics">
           <article class="metric-card">
             <div class="metric-label">PAGES CRAWLED <span>↗</span></div>
-            <div class="metric-value" id="pages-crawled">248 <small id="pages-crawled-badge">↑ 12%</small></div>
+            <div class="metric-value" id="pages-crawled">— <small id="pages-crawled-badge" style="display:none;">↑ 0%</small></div>
             <div class="mini-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-            <p id="pages-crawled-sub">out of 312 found</p>
+            <p id="pages-crawled-sub">Enter website URL above</p>
           </article>
           <article class="metric-card">
             <div class="metric-label">ISSUES FOUND <span>↗</span></div>
-            <div class="metric-value" id="issues-found-total">64</div>
+            <div class="metric-value" id="issues-found-total">—</div>
             <div class="issue-legend">
-              <span><i class="dot critical"></i>High <b id="issues-high-count">12</b></span>
-              <span><i class="dot warning"></i>Medium <b id="issues-med-count">28</b></span>
-              <span><i class="dot healthy"></i>Low <b id="issues-low-count">24</b></span>
+              <span><i class="dot critical"></i>High <b id="issues-high-count">0</b></span>
+              <span><i class="dot warning"></i>Medium <b id="issues-med-count">0</b></span>
+              <span><i class="dot healthy"></i>Low <b id="issues-low-count">0</b></span>
             </div>
           </article>
           <article class="metric-card">
             <div class="metric-label">EST. TRAFFIC POTENTIAL <span>↗</span></div>
-            <div class="metric-value" id="traffic-potential-value">2.4K <small>↑ 35%</small></div>
+            <div class="metric-value" id="traffic-potential-value">— <small style="display:none;">↑ 0%</small></div>
             <svg class="sparkline" viewBox="0 0 240 52" preserveAspectRatio="none" aria-label="Illustrative upward trend">
-              <path d="M0 43 C25 40 28 44 52 33 S85 39 112 22 S145 26 168 16 S207 12 240 2 L240 52 L0 52 Z" fill="rgba(65,103,67,.12)"></path>
-              <path d="M0 43 C25 40 28 44 52 33 S85 39 112 22 S145 26 168 16 S207 12 240 2" fill="none" stroke="#456a46" stroke-width="1.5"></path>
+              <path d="M0 43 C25 40 28 44 52 33 S85 39 112 22 S145 26 168 16 S207 12 240 2 L240 52 L0 52 Z" fill="rgba(65,103,67,.06)"></path>
+              <path d="M0 43 C25 40 28 44 52 33 S85 39 112 22 S145 26 168 16 S207 12 240 2" fill="none" stroke="#456a46" stroke-width="1.2" opacity="0.4"></path>
             </svg>
-            <p>additional monthly visits · illustrative</p>
+            <p>Calculated live after audit</p>
           </article>
         </section>
       </div>
@@ -159,11 +159,11 @@
         <section class="panel live-panel">
           <div class="panel-heading"><h2>⌁ &nbsp; LIVE ANALYSIS</h2><span class="status-dot"></span></div>
           <ol class="analysis-steps" id="analysis-steps">
-            <li id="step-crawl" class="done">Crawling website... <span id="step-crawl-info">124 pages</span></li>
-            <li id="step-content" class="done">Analyzing content...</li>
-            <li id="step-tech">Checking technical SEO...</li>
-            <li id="step-links">Mapping internal links...</li>
-            <li id="step-opportunities">Finding opportunities...</li>
+            <li id="step-crawl">1. Connect &amp; inspect server <span id="step-crawl-info">Ready</span></li>
+            <li id="step-content">2. Crawl DOM &amp; analyze structure</li>
+            <li id="step-tech">3. Check technical signals &amp; protocols</li>
+            <li id="step-links">4. Map internal &amp; external links</li>
+            <li id="step-opportunities">5. Measure Web Vitals &amp; prescriptions</li>
           </ol>
           <div class="mini-terrain" aria-hidden="true">
             <img src="assets/mountain-reference.jpg" id="mini-terrain-img" alt="Website preview reference">
@@ -171,11 +171,11 @@
         </section>
 
         <section class="panel score-panel">
-          <div class="panel-heading"><h2>SEO HEALTH SCORE</h2><span class="score-status" id="score-status-text">Good</span></div>
+          <div class="panel-heading"><h2>SEO HEALTH SCORE</h2><span class="score-status" id="score-status-text">Ready to Scan</span></div>
           <div class="score-layout">
             <div class="score-orb">
               <div>
-                <strong id="health-score"><span id="score-total">78</span></strong>
+                <strong id="health-score"><span id="score-total">—</span></strong>
                 <span>/100</span>
               </div>
             </div>
@@ -183,36 +183,36 @@
               <div class="score-row">
                 <span class="category-icon">⌘</span>
                 <div>
-                  <label>Technical <b id="score-technical-val">82</b></label>
-                  <div class="progress"><i id="bar-technical" style="width:82%"></i></div>
+                  <label>Technical <b id="score-technical-val">—</b></label>
+                  <div class="progress"><i id="bar-technical" style="width:0%"></i></div>
                 </div>
               </div>
               <div class="score-row">
                 <span class="category-icon">◇</span>
                 <div>
-                  <label>Content <b id="score-content-val">76</b></label>
-                  <div class="progress"><i id="bar-content" style="width:76%"></i></div>
+                  <label>Content <b id="score-content-val">—</b></label>
+                  <div class="progress"><i id="bar-content" style="width:0%"></i></div>
                 </div>
               </div>
               <div class="score-row">
                 <span class="category-icon">↗</span>
                 <div>
-                  <label>On-Page <b id="score-onpage-val">71</b></label>
-                  <div class="progress amber"><i id="bar-onpage" style="width:71%"></i></div>
+                  <label>On-Page <b id="score-onpage-val">—</b></label>
+                  <div class="progress amber"><i id="bar-onpage" style="width:0%"></i></div>
                 </div>
               </div>
               <div class="score-row">
                 <span class="category-icon">↗</span>
                 <div>
-                  <label>Backlinks <b id="score-links-val">68</b></label>
-                  <div class="progress amber"><i id="bar-links" style="width:68%"></i></div>
+                  <label>Backlinks <b id="score-links-val">—</b></label>
+                  <div class="progress amber"><i id="bar-links" style="width:0%"></i></div>
                 </div>
               </div>
               <div class="score-row">
                 <span class="category-icon">◉</span>
                 <div>
-                  <label>UX &amp; Performance <b id="score-ux-val">83</b></label>
-                  <div class="progress"><i id="bar-ux" style="width:83%"></i></div>
+                  <label>UX &amp; Performance <b id="score-ux-val">—</b></label>
+                  <div class="progress"><i id="bar-ux" style="width:0%"></i></div>
                 </div>
               </div>
             </div>
@@ -226,26 +226,9 @@
           </div>
           
           <div id="recommendations-container" class="recommendations-container">
-            <button class="opportunity" data-issue="Missing metadata">
-              <span class="op-number">01</span>
-              <span class="op-copy"><strong>Add missing meta descriptions</strong><small>18 pages are missing meta descriptions.</small></span>
-              <span class="priority high">↑ High</span>
-            </button>
-            <button class="opportunity" data-issue="Slow pages">
-              <span class="op-number">02</span>
-              <span class="op-copy"><strong>Improve page load speed</strong><small>24 pages can be optimized (LCP &gt; 2.5s).</small></span>
-              <span class="priority medium">↑ Medium</span>
-            </button>
-            <button class="opportunity" data-issue="Broken links">
-              <span class="op-number">03</span>
-              <span class="op-copy"><strong>Fix broken internal links</strong><small>8 internal links are broken.</small></span>
-              <span class="priority medium">↑ Medium</span>
-            </button>
-            <button class="opportunity" data-issue="Images">
-              <span class="op-number">04</span>
-              <span class="op-copy"><strong>Optimize images</strong><small>36 images may need compression.</small></span>
-              <span class="priority low">↑ Low</span>
-            </button>
+            <p style="font-size:11px; color:var(--muted); padding:16px 8px; line-height:1.6; margin:0;">
+              Ready to analyze. Enter a public website URL above and click <strong>→</strong> to run a live scan and discover prioritized opportunities.
+            </p>
           </div>
 
           <div class="all-opportunities" id="all-opportunities" hidden>
@@ -411,29 +394,29 @@
               <p style="margin:0; font-size:11px; color:var(--muted);">Internal crawling graph, external references, nofollow ratios, and anchor density.</p>
             </div>
             <div class="link-health-badge" id="backlinks-health-badge">
-              <span class="dot healthy"></span> <span>Link Equity: <strong id="backlinks-equity-score">84/100</strong></span>
+              <span class="dot healthy"></span> <span>Link Equity: <strong id="backlinks-equity-score">—</strong></span>
             </div>
           </div>
 
           <div class="backlinks-grid">
             <div class="stat-box link-metric">
               <small>TOTAL DISCOVERED</small>
-              <strong id="backlinks-total-count">0</strong>
+              <strong id="backlinks-total-count">—</strong>
               <span class="sub-label" id="backlinks-total-sub">All page anchor tags</span>
             </div>
             <div class="stat-box link-metric">
               <small>INTERNAL CRAWL LINKS</small>
-              <strong id="backlinks-internal-count">0</strong>
-              <span class="sub-label" id="backlinks-internal-pct">0% of topology</span>
+              <strong id="backlinks-internal-count">—</strong>
+              <span class="sub-label" id="backlinks-internal-pct">Awaiting scan</span>
             </div>
             <div class="stat-box link-metric">
               <small>EXTERNAL REFERENCES</small>
-              <strong id="backlinks-external-count">0</strong>
-              <span class="sub-label" id="backlinks-external-pct">0% outbound</span>
+              <strong id="backlinks-external-count">—</strong>
+              <span class="sub-label" id="backlinks-external-pct">Awaiting scan</span>
             </div>
             <div class="stat-box link-metric">
               <small>NOFOLLOW ATTRIBUTES</small>
-              <strong id="backlinks-nofollow-count">0</strong>
+              <strong id="backlinks-nofollow-count">—</strong>
               <span class="sub-label" id="backlinks-nofollow-sub">Crawler directive links</span>
             </div>
           </div>
@@ -442,12 +425,12 @@
             <div class="backlinks-distribution-panel">
               <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Internal vs External Equity</h5>
               <div class="link-bar-container">
-                <div class="link-bar-fill internal" id="backlinks-bar-internal" style="width:70%;"></div>
-                <div class="link-bar-fill external" id="backlinks-bar-external" style="width:30%;"></div>
+                <div class="link-bar-fill internal" id="backlinks-bar-internal" style="width:0%;"></div>
+                <div class="link-bar-fill external" id="backlinks-bar-external" style="width:0%;"></div>
               </div>
               <div class="link-bar-legend">
-                <span><i class="legend-color-dot" style="background:var(--green);"></i> Internal Links (<b id="backlinks-legend-internal">0</b>)</span>
-                <span><i class="legend-color-dot" style="background:#b87333;"></i> External Links (<b id="backlinks-legend-external">0</b>)</span>
+                <span><i class="legend-color-dot" style="background:var(--green);"></i> Internal Links (<b id="backlinks-legend-internal">—</b>)</span>
+                <span><i class="legend-color-dot" style="background:#b87333;"></i> External Links (<b id="backlinks-legend-external">—</b>)</span>
               </div>
             </div>
 
@@ -456,8 +439,8 @@
               <div class="audit-check-item" id="check-link-density">
                 <span class="check-icon">✓</span>
                 <div class="check-text">
-                  <strong>Link-to-Content Ratio: <span id="link-density-val">Healthy</span></strong>
-                  <small id="link-density-detail">Adequate contextual anchors distributed across content.</small>
+                  <strong>Link-to-Content Ratio: <span id="link-density-val">Awaiting Scan</span></strong>
+                  <small id="link-density-detail">Submit a website URL above to map internal and external link architecture in real-time.</small>
                 </div>
               </div>
               <div class="audit-check-item" id="check-orphan-risk">
@@ -488,7 +471,7 @@
               <p style="margin:0; font-size:11px; color:var(--muted);">Simulated field performance metrics, rendering bottlenecks, and asset optimization signals.</p>
             </div>
             <div class="perf-health-badge" id="perf-health-badge">
-              <span class="dot healthy"></span> <span>UX Score: <strong id="perf-ux-score">83/100</strong></span>
+              <span class="dot healthy"></span> <span>UX Score: <strong id="perf-ux-score">—</strong></span>
             </div>
           </div>
 
@@ -496,40 +479,40 @@
             <div class="vital-card">
               <div class="vital-label">
                 <span>LARGEST CONTENTFUL PAINT (LCP)</span>
-                <span class="vital-badge good" id="vital-lcp-badge">Good</span>
+                <span class="vital-badge" id="vital-lcp-badge">Awaiting Scan</span>
               </div>
-              <div class="vital-value" id="vital-lcp-val">1.8s</div>
-              <div class="vital-progress"><i id="vital-lcp-bar" style="width:72%; background:var(--green);"></i></div>
+              <div class="vital-value" id="vital-lcp-val">—</div>
+              <div class="vital-progress"><i id="vital-lcp-bar" style="width:0%; background:var(--green);"></i></div>
               <small class="vital-sub">Target &le; 2.5s for optimal search ranking</small>
             </div>
 
             <div class="vital-card">
               <div class="vital-label">
                 <span>CUMULATIVE LAYOUT SHIFT (CLS)</span>
-                <span class="vital-badge good" id="vital-cls-badge">Good</span>
+                <span class="vital-badge" id="vital-cls-badge">Awaiting Scan</span>
               </div>
-              <div class="vital-value" id="vital-cls-val">0.04</div>
-              <div class="vital-progress"><i id="vital-cls-bar" style="width:85%; background:var(--green);"></i></div>
+              <div class="vital-value" id="vital-cls-val">—</div>
+              <div class="vital-progress"><i id="vital-cls-bar" style="width:0%; background:var(--green);"></i></div>
               <small class="vital-sub">Target &le; 0.1 visual stability score</small>
             </div>
 
             <div class="vital-card">
               <div class="vital-label">
                 <span>FIRST INPUT DELAY (FID / INP)</span>
-                <span class="vital-badge good" id="vital-fid-badge">Good</span>
+                <span class="vital-badge" id="vital-fid-badge">Awaiting Scan</span>
               </div>
-              <div class="vital-value" id="vital-fid-val">38ms</div>
-              <div class="vital-progress"><i id="vital-fid-bar" style="width:90%; background:var(--green);"></i></div>
+              <div class="vital-value" id="vital-fid-val">—</div>
+              <div class="vital-progress"><i id="vital-fid-bar" style="width:0%; background:var(--green);"></i></div>
               <small class="vital-sub">Target &le; 100ms for instantaneous interactivity</small>
             </div>
 
             <div class="vital-card">
               <div class="vital-label">
                 <span>TIME TO FIRST BYTE (TTFB)</span>
-                <span class="vital-badge good" id="vital-ttfb-badge">Fast</span>
+                <span class="vital-badge" id="vital-ttfb-badge">Awaiting Scan</span>
               </div>
-              <div class="vital-value" id="vital-ttfb-val">140ms</div>
-              <div class="vital-progress"><i id="vital-ttfb-bar" style="width:88%; background:var(--green);"></i></div>
+              <div class="vital-value" id="vital-ttfb-val">—</div>
+              <div class="vital-progress"><i id="vital-ttfb-bar" style="width:0%; background:var(--green);"></i></div>
               <small class="vital-sub">Target &le; 800ms server response time</small>
             </div>
           </div>
@@ -540,23 +523,23 @@
               <ul class="perf-diag-list">
                 <li>
                   <span>Image Optimization</span>
-                  <strong id="perf-diag-images">Checked</strong>
+                  <strong id="perf-diag-images">—</strong>
                 </li>
                 <li>
                   <span>Mobile Viewport Tag</span>
-                  <strong id="perf-diag-viewport">Configured</strong>
+                  <strong id="perf-diag-viewport">—</strong>
                 </li>
                 <li>
                   <span>Scripts Detected</span>
-                  <strong id="perf-diag-scripts">0 bundles</strong>
+                  <strong id="perf-diag-scripts">—</strong>
                 </li>
                 <li>
                   <span>Stylesheets Loaded</span>
-                  <strong id="perf-diag-styles">0 sheets</strong>
+                  <strong id="perf-diag-styles">—</strong>
                 </li>
                 <li>
                   <span>Transport Protocol</span>
-                  <strong id="perf-diag-protocol">HTTPS / TLS</strong>
+                  <strong id="perf-diag-protocol">—</strong>
                 </li>
               </ul>
             </div>

@@ -21,16 +21,12 @@ const MIME = {
   '.ico':  'image/x-icon',
 };
 
-// Lazy-load API handlers (ESM dynamic import)
-const handlerCache = {};
+// Dynamic load API handlers (cache-busting query so edits reload immediately)
 async function loadHandler(name) {
-  if (!handlerCache[name]) {
-    const modulePath = path.join(__dirname, 'api', `${name}.js`);
-    if (!fs.existsSync(modulePath)) return null;
-    const mod = await import(`file://${modulePath.replace(/\\/g, '/')}`);
-    handlerCache[name] = mod.default;
-  }
-  return handlerCache[name];
+  const modulePath = path.join(__dirname, 'api', `${name}.js`);
+  if (!fs.existsSync(modulePath)) return null;
+  const mod = await import(`file://${modulePath.replace(/\\/g, '/')}?v=${Date.now()}`);
+  return mod.default;
 }
 
 // Minimal req/res shim to match Vercel's (req.body, res.status().json())

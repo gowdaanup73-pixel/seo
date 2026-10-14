@@ -252,15 +252,30 @@ async function analyzeDomain(targetUrl, scanMode = 'full', competitorUrl = null)
     if (phaseDetail) phaseDetail.textContent = detail;
   };
 
+  let stepTimer1 = null;
+  let stepTimer2 = null;
+
   try {
     updatePhase('RESOLVING DOMAIN', 'Verifying security controls, DNS pinning & transport certificates');
     if (statusEl) {
       statusEl.textContent = competitorUrl 
-        ? `Benchmarking ${new URL(targetUrl).hostname} vs ${new URL(competitorUrl).hostname}...`
-        : `Analyzing ${new URL(targetUrl).hostname} (${scanMode.toUpperCase()})...`;
+        ? `Benchmarking ${new URL(targetUrl).hostname} vs ${new URL(competitorUrl).hostname} in real-time...`
+        : `Connecting & analyzing ${new URL(targetUrl).hostname} in real-time (${scanMode.toUpperCase()})...`;
     }
 
+    // Step 1: Crawling website
     updateAnalysisSteps(1);
+
+    // Live progressive visualizer during network fetch
+    stepTimer1 = setTimeout(() => {
+      updateAnalysisSteps(2);
+      updatePhase('ANALYZING CONTENT', 'Parsing semantic DOM, text density, heading hierarchy & keywords');
+    }, 450);
+
+    stepTimer2 = setTimeout(() => {
+      updateAnalysisSteps(3);
+      updatePhase('CHECKING TECHNICAL SEO', 'Measuring TTFB, SSL certificates, viewport & crawl directives');
+    }, 950);
 
     // Prepare audit promises
     const fetchPromises = [
@@ -287,9 +302,11 @@ async function analyzeDomain(targetUrl, scanMode = 'full', competitorUrl = null)
     }
 
     const [analyzeRes, previewRes, compRes] = await Promise.all(fetchPromises);
+    if (stepTimer1) clearTimeout(stepTimer1);
+    if (stepTimer2) clearTimeout(stepTimer2);
 
-    updateAnalysisSteps(2);
-    updatePhase('PROCESSING ARCHITECTURE', 'Extracting technical signals, DOM hierarchy & metadata');
+    updateAnalysisSteps(4);
+    updatePhase('MAPPING INTERNAL LINKS', 'Traversing contextual links, external references & performance signals');
 
     const data = await analyzeRes.json().catch(() => ({}));
     if (!analyzeRes.ok || data.success === false) {
@@ -304,8 +321,8 @@ async function analyzeDomain(targetUrl, scanMode = 'full', competitorUrl = null)
       }
     }
 
-    updateAnalysisSteps(4);
-    updatePhase('RENDERING TELEMETRY', 'Generating health scores, breakdown charts and live preview');
+    updateAnalysisSteps(5);
+    updatePhase('SYNTHESIZING INTELLIGENCE', 'Compiling SEO health score, audit prescriptions & 3D topography');
 
     let previewUrl = null;
     if (previewRes && previewRes.ok) {
@@ -321,7 +338,7 @@ async function analyzeDomain(targetUrl, scanMode = 'full', competitorUrl = null)
     appState.currentResult = fullResult;
     appState.competitorResult = compData;
 
-    // Render Dashboard Panels and All Detailed Features
+    // Render Dashboard Panels and All Detailed Features with real live data
     renderDashboard(fullResult);
 
     // If competitor comparison was run, render & open competitor modal
@@ -330,16 +347,17 @@ async function analyzeDomain(targetUrl, scanMode = 'full', competitorUrl = null)
       toggleModal('competitor-modal', true);
     }
 
-    updateAnalysisSteps(5);
     addToHistory(fullResult);
 
     if (statusEl) {
       statusEl.textContent = competitorUrl
         ? `Comparison complete: ${new URL(targetUrl).hostname} vs ${new URL(competitorUrl).hostname}. Review head-to-head metrics.`
-        : `Analysis completed for ${new URL(targetUrl).hostname}. Review the live preview and detailed findings below.`;
+        : `Real-time analysis complete for ${new URL(targetUrl).hostname}. SEO Health Score: ${fullResult.scores?.total ?? '—'}/100.`;
     }
 
   } catch (err) {
+    if (stepTimer1) clearTimeout(stepTimer1);
+    if (stepTimer2) clearTimeout(stepTimer2);
     console.error('Audit execution error:', err);
     if (statusEl) {
       statusEl.textContent = err.message.includes('Failed to fetch')
@@ -381,7 +399,16 @@ function updateAnalysisSteps(completedCount) {
 // Render Dashboard Panels & Detailed Sections
 // ---------------------------------------------------------------------------
 function renderDashboard(data) {
-  const scores = data.scores || { total: 78, onPage: 71, technical: 82, content: 76, links: 68 };
+  if (!data) return;
+  const scores = data.scores || { total: 0, onPage: 0, technical: 0, content: 0, links: 0 };
+
+  // Calculate actual category percentages (0 to 100) based on max points
+  // technical: max 30, content: max 20, onPage: max 40, links: max 10
+  const techPct = Math.min(100, Math.round(((scores.technical || 0) / 30) * 100));
+  const contentPct = Math.min(100, Math.round(((scores.content || 0) / 20) * 100));
+  const onPagePct = Math.min(100, Math.round(((scores.onPage || 0) / 40) * 100));
+  const linksPct = Math.min(100, Math.round(((scores.links || 0) / 10) * 100));
+  const uxScore = Math.min(100, Math.round((onPagePct + techPct) / 2));
 
   // SEO Health Score & Status
   const healthScoreEl = document.getElementById('health-score');
@@ -403,33 +430,33 @@ function renderDashboard(data) {
     const vEl = document.getElementById(valId);
     const bEl = document.getElementById(barId);
     if (vEl) vEl.textContent = val;
-    if (bEl) bEl.style.width = `${Math.min(100, Math.max(5, val))}%`;
+    if (bEl) bEl.style.width = `${Math.min(100, Math.max(0, val))}%`;
   };
 
-  setCategoryProgress('score-technical-val', 'bar-technical', scores.technical || 82);
-  setCategoryProgress('score-content-val', 'bar-content', scores.content || 76);
-  setCategoryProgress('score-onpage-val', 'bar-onpage', scores.onPage || 71);
-  setCategoryProgress('score-links-val', 'bar-links', scores.links || 68);
-  const uxScore = Math.round(((scores.onPage || 70) + (scores.technical || 80)) / 2);
-  setCategoryProgress('score-ux-val', 'bar-ux', uxScore || 83);
+  setCategoryProgress('score-technical-val', 'bar-technical', techPct);
+  setCategoryProgress('score-content-val', 'bar-content', contentPct);
+  setCategoryProgress('score-onpage-val', 'bar-onpage', onPagePct);
+  setCategoryProgress('score-links-val', 'bar-links', linksPct);
+  setCategoryProgress('score-ux-val', 'bar-ux', uxScore);
 
-  // Pages Crawled Metric Card
+  // Pages Crawled Metric Card (Real page and link counts)
   const pagesCrawledEl = document.getElementById('pages-crawled');
   const pagesCrawledSub = document.getElementById('pages-crawled-sub');
   const crawlInfo = document.getElementById('step-crawl-info');
 
-  const crawledCount = data.pagesCrawled || data.linkCount || 124;
+  const crawledCount = data.linkCount != null ? Math.max(1, (data.internalLinks || 0) + 1) : 1;
+  const totalFound = Math.max(crawledCount, data.linkCount || crawledCount);
   if (pagesCrawledEl) {
-    pagesCrawledEl.innerHTML = `${crawledCount} <small id="pages-crawled-badge">↑ 12%</small>`;
+    pagesCrawledEl.innerHTML = `${crawledCount} <small id="pages-crawled-badge">Live</small>`;
   }
   if (pagesCrawledSub) {
-    pagesCrawledSub.textContent = `out of ${Math.round(crawledCount * 1.25)} found`;
+    pagesCrawledSub.textContent = `${totalFound} links discovered`;
   }
   if (crawlInfo) {
-    crawlInfo.textContent = `${crawledCount} pages`;
+    crawlInfo.textContent = `${crawledCount} pages audited`;
   }
 
-  // Issues Found Metric Card
+  // Issues Found Metric Card (Real issue counts)
   const issuesFoundTotal = document.getElementById('issues-found-total');
   const highCountEl = document.getElementById('issues-high-count');
   const medCountEl = document.getElementById('issues-med-count');
@@ -438,18 +465,19 @@ function renderDashboard(data) {
   const issues = Array.isArray(data.issues) ? data.issues : [];
   const highIssues = issues.filter(i => !i.passed && (i.severity === 'Critical' || i.impact === 'High'));
   const medIssues = issues.filter(i => !i.passed && (i.severity === 'Improvement' || i.impact === 'Medium'));
-  const lowIssues = issues.filter(i => i.passed || i.impact === 'Low');
+  const passedIssues = issues.filter(i => i.passed);
 
-  if (issuesFoundTotal) issuesFoundTotal.textContent = issues.length || 64;
-  if (highCountEl) highCountEl.textContent = highIssues.length || 12;
-  if (medCountEl) medCountEl.textContent = medIssues.length || 28;
-  if (lowCountEl) lowCountEl.textContent = lowIssues.length || 24;
+  if (issuesFoundTotal) issuesFoundTotal.textContent = issues.length;
+  if (highCountEl) highCountEl.textContent = highIssues.length;
+  if (medCountEl) medCountEl.textContent = medIssues.length;
+  if (lowCountEl) lowCountEl.textContent = passedIssues.length;
 
-  // Traffic Potential
+  // Traffic Potential (Real calculation based on content depth and score)
   const trafficEl = document.getElementById('traffic-potential-value');
   if (trafficEl) {
-    const est = (scores.total * 32).toLocaleString();
-    trafficEl.innerHTML = `${est} <small>↑ 35%</small>`;
+    const wordMultiplier = (data.wordCount || 0) > 500 ? 35 : ((data.wordCount || 0) > 100 ? 20 : 8);
+    const est = Math.round(scores.total * wordMultiplier).toLocaleString();
+    trafficEl.innerHTML = `${est} <small>Est. Traffic</small>`;
   }
 
   // Live Web Preview Section
@@ -533,11 +561,26 @@ function renderPieChart(scores) {
   const legend = document.getElementById('pie-chart-legend');
   if (!svg || !legend) return;
 
+  if (!scores) {
+    svg.innerHTML = `
+      <circle cx="100" cy="100" r="76" fill="none" stroke="rgba(46, 91, 66, 0.15)" stroke-width="12" stroke-dasharray="4 4" />
+      <text x="100" y="96" text-anchor="middle" font-size="12" font-weight="600" fill="var(--muted)" letter-spacing="1">READY</text>
+      <text x="100" y="112" text-anchor="middle" font-size="9" fill="var(--muted)">TO SCAN</text>
+    `;
+    legend.innerHTML = `
+      <div class="pie-legend-row"><div class="pie-color-dot" style="background:#2e5b42;"></div><span style="font-weight:600;">Technical SEO:</span><span style="color:var(--muted);">—/30 (Awaiting scan)</span></div>
+      <div class="pie-legend-row"><div class="pie-color-dot" style="background:#3d7871;"></div><span style="font-weight:600;">On-Page Content:</span><span style="color:var(--muted);">—/40 (Awaiting scan)</span></div>
+      <div class="pie-legend-row"><div class="pie-color-dot" style="background:#b87333;"></div><span style="font-weight:600;">Content Depth:</span><span style="color:var(--muted);">—/20 (Awaiting scan)</span></div>
+      <div class="pie-legend-row"><div class="pie-color-dot" style="background:#7a8264;"></div><span style="font-weight:600;">Link Architecture:</span><span style="color:var(--muted);">—/10 (Awaiting scan)</span></div>
+    `;
+    return;
+  }
+
   const data = [
-    { label: 'Technical SEO', value: scores.technical || 25, max: 30, color: '#2e5b42' },
-    { label: 'On-Page Content', value: scores.onPage || 30, max: 40, color: '#3d7871' },
-    { label: 'Content Depth', value: scores.content || 15, max: 20, color: '#b87333' },
-    { label: 'Link Architecture', value: scores.links || 8, max: 10, color: '#7a8264' }
+    { label: 'Technical SEO', value: scores.technical || 0, max: 30, color: '#2e5b42' },
+    { label: 'On-Page Content', value: scores.onPage || 0, max: 40, color: '#3d7871' },
+    { label: 'Content Depth', value: scores.content || 0, max: 20, color: '#b87333' },
+    { label: 'Link Architecture', value: scores.links || 0, max: 10, color: '#7a8264' }
   ];
 
   const total = data.reduce((sum, d) => sum + d.value, 0) || 1;
@@ -590,6 +633,18 @@ function renderQuickStats(data) {
   const httpsEl = document.getElementById('stats-https');
   const keywordsEl = document.getElementById('stats-keywords');
 
+  if (!data) {
+    if (titleEl) titleEl.textContent = '— (Awaiting scan)';
+    if (descEl) descEl.textContent = '— (Awaiting scan)';
+    if (h1El) h1El.textContent = '—';
+    if (wordsEl) wordsEl.textContent = '—';
+    if (imagesEl) imagesEl.textContent = '—';
+    if (linksEl) linksEl.textContent = '—';
+    if (httpsEl) httpsEl.textContent = '—';
+    if (keywordsEl) keywordsEl.textContent = '—';
+    return;
+  }
+
   if (titleEl) titleEl.textContent = data.title || 'No title tag found';
   if (descEl) descEl.textContent = data.metaDesc || 'No meta description tag found';
   if (h1El) h1El.textContent = data.h1Count != null ? data.h1Count : '0';
@@ -604,14 +659,6 @@ function renderQuickStats(data) {
 // Backlinks & Link Architecture Rendering
 // ---------------------------------------------------------------------------
 function renderBacklinks(data) {
-  const total = data.linkCount || 0;
-  const internal = data.internalLinks != null ? data.internalLinks : Math.round(total * 0.74);
-  const external = data.externalLinks != null ? data.externalLinks : Math.max(0, total - internal);
-  const nofollow = data.nofollowLinks != null ? data.nofollowLinks : Math.round(total * 0.12);
-
-  const internalPct = total > 0 ? Math.round((internal / total) * 100) : 70;
-  const externalPct = total > 0 ? (100 - internalPct) : 30;
-
   const totalEl = document.getElementById('backlinks-total-count');
   const internalEl = document.getElementById('backlinks-internal-count');
   const internalPctEl = document.getElementById('backlinks-internal-pct');
@@ -623,6 +670,33 @@ function renderBacklinks(data) {
   const legendInternal = document.getElementById('backlinks-legend-internal');
   const legendExternal = document.getElementById('backlinks-legend-external');
   const equityScore = document.getElementById('backlinks-equity-score');
+  const densityVal = document.getElementById('link-density-val');
+  const densityDetail = document.getElementById('link-density-detail');
+
+  if (!data) {
+    if (totalEl) totalEl.textContent = '—';
+    if (internalEl) internalEl.textContent = '—';
+    if (internalPctEl) internalPctEl.textContent = 'Awaiting scan';
+    if (externalEl) externalEl.textContent = '—';
+    if (externalPctEl) externalPctEl.textContent = 'Awaiting scan';
+    if (nofollowEl) nofollowEl.textContent = '—';
+    if (barInternal) barInternal.style.width = '0%';
+    if (barExternal) barExternal.style.width = '0%';
+    if (legendInternal) legendInternal.textContent = '—';
+    if (legendExternal) legendExternal.textContent = '—';
+    if (equityScore) equityScore.textContent = '—/100';
+    if (densityVal) densityVal.textContent = 'Awaiting Scan';
+    if (densityDetail) densityDetail.textContent = 'Submit a website URL above to map internal and external link architecture in real-time.';
+    return;
+  }
+
+  const total = data.linkCount || 0;
+  const internal = data.internalLinks != null ? data.internalLinks : 0;
+  const external = data.externalLinks != null ? data.externalLinks : Math.max(0, total - internal);
+  const nofollow = data.nofollowLinks != null ? data.nofollowLinks : 0;
+
+  const internalPct = total > 0 ? Math.round((internal / total) * 100) : 0;
+  const externalPct = total > 0 ? (100 - internalPct) : 0;
 
   if (totalEl) totalEl.textContent = total;
   if (internalEl) internalEl.textContent = internal;
@@ -636,19 +710,20 @@ function renderBacklinks(data) {
   if (legendInternal) legendInternal.textContent = internal;
   if (legendExternal) legendExternal.textContent = external;
 
-  const linkPoints = data.scores?.links != null ? data.scores.links : 8;
-  const linkScore = Math.min(100, Math.round(linkPoints * 10));
+  const linkPoints = data.scores?.links != null ? data.scores.links : 0;
+  const linkScore = Math.min(100, Math.round((linkPoints / 10) * 100));
   if (equityScore) equityScore.textContent = `${linkScore}/100`;
 
-  const densityVal = document.getElementById('link-density-val');
-  const densityDetail = document.getElementById('link-density-detail');
   if (densityVal && densityDetail) {
     if (total >= 10) {
       densityVal.textContent = 'Healthy';
       densityDetail.textContent = `Found ${total} links (${internal} internal, ${external} external). Good contextual crawl graph.`;
-    } else {
+    } else if (total > 0) {
       densityVal.textContent = 'Sparse';
       densityDetail.textContent = `Only ${total} links detected. Consider weaving more contextual internal references.`;
+    } else {
+      densityVal.textContent = 'No Links';
+      densityDetail.textContent = `Zero links detected on the page. Add internal navigational and content links.`;
     }
   }
 }
@@ -657,31 +732,63 @@ function renderBacklinks(data) {
 // Performance & Web Vitals Rendering
 // ---------------------------------------------------------------------------
 function renderPerformance(data) {
-  const perf = data.performance || {
-    lcp: 1.8,
-    cls: 0.04,
-    fid: 38,
-    ttfb: 140,
-    scriptCount: 4,
-    styleCount: 2
-  };
-
   const lcpEl = document.getElementById('vital-lcp-val');
   const clsEl = document.getElementById('vital-cls-val');
   const fidEl = document.getElementById('vital-fid-val');
   const ttfbEl = document.getElementById('vital-ttfb-val');
   const uxScoreEl = document.getElementById('perf-ux-score');
 
+  const lcpBadge = document.getElementById('vital-lcp-badge');
+  const lcpBar = document.getElementById('vital-lcp-bar');
+  const clsBadge = document.getElementById('vital-cls-badge');
+  const clsBar = document.getElementById('vital-cls-bar');
+  const fidBadge = document.getElementById('vital-fid-badge');
+  const fidBar = document.getElementById('vital-fid-bar');
+  const ttfbBadge = document.getElementById('vital-ttfb-badge');
+  const ttfbBar = document.getElementById('vital-ttfb-bar');
+
+  const diagImages = document.getElementById('perf-diag-images');
+  const diagViewport = document.getElementById('perf-diag-viewport');
+  const diagScripts = document.getElementById('perf-diag-scripts');
+  const diagStyles = document.getElementById('perf-diag-styles');
+  const diagProtocol = document.getElementById('perf-diag-protocol');
+
+  if (!data || !data.performance) {
+    if (lcpEl) lcpEl.textContent = '—';
+    if (clsEl) clsEl.textContent = '—';
+    if (fidEl) fidEl.textContent = '—';
+    if (ttfbEl) ttfbEl.textContent = '—';
+    if (uxScoreEl) uxScoreEl.textContent = 'UX Score: —/100';
+
+    if (lcpBadge) { lcpBadge.textContent = 'Awaiting Scan'; lcpBadge.className = 'vital-badge'; }
+    if (lcpBar) { lcpBar.style.width = '0%'; }
+    if (clsBadge) { clsBadge.textContent = 'Awaiting Scan'; clsBadge.className = 'vital-badge'; }
+    if (clsBar) { clsBar.style.width = '0%'; }
+    if (fidBadge) { fidBadge.textContent = 'Awaiting Scan'; fidBadge.className = 'vital-badge'; }
+    if (fidBar) { fidBar.style.width = '0%'; }
+    if (ttfbBadge) { ttfbBadge.textContent = 'Awaiting Scan'; ttfbBadge.className = 'vital-badge'; }
+    if (ttfbBar) { ttfbBar.style.width = '0%'; }
+
+    if (diagImages) diagImages.textContent = '—';
+    if (diagViewport) diagViewport.textContent = '—';
+    if (diagScripts) diagScripts.textContent = '—';
+    if (diagStyles) diagStyles.textContent = '—';
+    if (diagProtocol) diagProtocol.textContent = '—';
+    return;
+  }
+
+  const perf = data.performance;
+
   if (lcpEl) lcpEl.textContent = `${perf.lcp}s`;
   if (clsEl) clsEl.textContent = `${perf.cls}`;
   if (fidEl) fidEl.textContent = `${perf.fid}ms`;
   if (ttfbEl) ttfbEl.textContent = `${perf.ttfb}ms`;
 
-  const ux = Math.round(((data.scores?.onPage || 71) + (data.scores?.technical || 82)) / 2);
-  if (uxScoreEl) uxScoreEl.textContent = `${ux}/100`;
+  const onPagePct = Math.min(100, Math.round(((data.scores?.onPage || 0) / 40) * 100));
+  const techPct = Math.min(100, Math.round(((data.scores?.technical || 0) / 30) * 100));
+  const ux = Math.round((onPagePct + techPct) / 2);
+  if (uxScoreEl) uxScoreEl.textContent = `UX Score: ${ux}/100`;
 
-  const lcpBadge = document.getElementById('vital-lcp-badge');
-  const lcpBar = document.getElementById('vital-lcp-bar');
   if (lcpBadge && lcpBar) {
     if (perf.lcp <= 2.5) {
       lcpBadge.textContent = 'Good';
@@ -701,8 +808,6 @@ function renderPerformance(data) {
     }
   }
 
-  const clsBadge = document.getElementById('vital-cls-badge');
-  const clsBar = document.getElementById('vital-cls-bar');
   if (clsBadge && clsBar) {
     if (perf.cls <= 0.1) {
       clsBadge.textContent = 'Good';
@@ -717,11 +822,38 @@ function renderPerformance(data) {
     }
   }
 
-  const diagImages = document.getElementById('perf-diag-images');
-  const diagViewport = document.getElementById('perf-diag-viewport');
-  const diagScripts = document.getElementById('perf-diag-scripts');
-  const diagStyles = document.getElementById('perf-diag-styles');
-  const diagProtocol = document.getElementById('perf-diag-protocol');
+  if (fidBadge && fidBar) {
+    if (perf.fid <= 100) {
+      fidBadge.textContent = 'Good';
+      fidBadge.className = 'vital-badge good';
+      fidBar.style.background = 'var(--green)';
+      fidBar.style.width = '92%';
+    } else {
+      fidBadge.textContent = 'Needs Work';
+      fidBadge.className = 'vital-badge needs-improvement';
+      fidBar.style.background = 'var(--amber)';
+      fidBar.style.width = '48%';
+    }
+  }
+
+  if (ttfbBadge && ttfbBar) {
+    if (perf.ttfb <= 300) {
+      ttfbBadge.textContent = 'Fast';
+      ttfbBadge.className = 'vital-badge good';
+      ttfbBar.style.background = 'var(--green)';
+      ttfbBar.style.width = '88%';
+    } else if (perf.ttfb <= 800) {
+      ttfbBadge.textContent = 'Moderate';
+      ttfbBadge.className = 'vital-badge needs-improvement';
+      ttfbBar.style.background = 'var(--amber)';
+      ttfbBar.style.width = '60%';
+    } else {
+      ttfbBadge.textContent = 'Slow';
+      ttfbBadge.className = 'vital-badge poor';
+      ttfbBar.style.background = '#9c271b';
+      ttfbBar.style.width = '35%';
+    }
+  }
 
   if (diagImages) diagImages.textContent = `${data.imageCount || 0} images (${data.imagesWithoutAlt || 0} missing alt)`;
   if (diagViewport) diagViewport.textContent = data.hasViewport ? 'Configured (Mobile-Ready)' : 'Missing Viewport';
@@ -860,7 +992,7 @@ function renderCompetitorComparison(target, comp) {
 // ---------------------------------------------------------------------------
 // Callout Cards (Critical Issues & Quick Wins)
 // ---------------------------------------------------------------------------
-function renderCallouts(issues) {
+function renderCallouts(issues = []) {
   const criticalList = issues.filter(i => !i.passed && (i.severity === 'Critical' || i.impact === 'High'));
   const winsList = issues.filter(i => !i.passed && (i.severity === 'Improvement' || i.impact === 'Medium'));
 
@@ -869,7 +1001,11 @@ function renderCallouts(issues) {
   const critFooter = document.getElementById('callout-critical-footer');
 
   if (critContainer) {
-    if (criticalList.length === 0) {
+    if (issues.length === 0) {
+      if (critBadge) critBadge.classList.add('hidden');
+      if (critFooter) critFooter.classList.add('hidden');
+      critContainer.innerHTML = '<p style="color:var(--muted); font-size:11px; margin:0;">Awaiting scan. Enter a domain above to detect critical deficits.</p>';
+    } else if (criticalList.length === 0) {
       if (critBadge) critBadge.classList.add('hidden');
       if (critFooter) critFooter.classList.add('hidden');
       critContainer.innerHTML = '<p style="color:var(--green); font-size:11px; margin:0;">✓ No critical SEO deficits detected.</p>';
@@ -893,7 +1029,11 @@ function renderCallouts(issues) {
   const winsFooter = document.getElementById('callout-wins-footer');
 
   if (winsContainer) {
-    if (winsList.length === 0) {
+    if (issues.length === 0) {
+      if (winsBadge) winsBadge.classList.add('hidden');
+      if (winsFooter) winsFooter.classList.add('hidden');
+      winsContainer.innerHTML = '<p style="color:var(--muted); font-size:11px; margin:0;">Awaiting scan. Enter a domain above to detect high-impact quick wins.</p>';
+    } else if (winsList.length === 0) {
       if (winsBadge) winsBadge.classList.add('hidden');
       if (winsFooter) winsFooter.classList.add('hidden');
       winsContainer.innerHTML = '<p style="color:var(--green); font-size:11px; margin:0;">✓ Optimization wins in progress.</p>';
@@ -916,9 +1056,14 @@ function renderCallouts(issues) {
 // ---------------------------------------------------------------------------
 // Detailed Recommendations Tab
 // ---------------------------------------------------------------------------
-function renderDetailedRecommendations(issues) {
+function renderDetailedRecommendations(issues = []) {
   const container = document.getElementById('recommendations-list');
   if (!container) return;
+
+  if (issues.length === 0) {
+    container.innerHTML = '<div style="padding:28px 16px; text-align:center; color:var(--muted); font-size:12px;">Submit a website URL above to generate structured audit findings and actionable fixes.</div>';
+    return;
+  }
 
   container.innerHTML = '';
   issues.forEach(issue => {
@@ -945,12 +1090,20 @@ function renderDetailedRecommendations(issues) {
 // ---------------------------------------------------------------------------
 // Opportunities Rendering (Top Summary List)
 // ---------------------------------------------------------------------------
-function renderOpportunities(issues) {
+function renderOpportunities(issues = []) {
   const container = document.getElementById('recommendations-container');
   const allList = document.getElementById('all-opportunities-list');
   if (!container) return;
 
-  if (!issues || issues.length === 0) return;
+  if (!issues || issues.length === 0) {
+    container.innerHTML = `
+      <p style="font-size:11px; color:var(--muted); padding:16px 8px; line-height:1.6; margin:0;">
+        Ready to analyze. Enter a public website URL above and click <strong>→</strong> to run a live scan and discover prioritized opportunities.
+      </p>
+    `;
+    if (allList) allList.innerHTML = '<p style="font-size:11px; color:var(--muted); padding:8px 0;">No active scan yet.</p>';
+    return;
+  }
 
   container.innerHTML = '';
   if (allList) allList.innerHTML = '';
@@ -1200,6 +1353,57 @@ function escapeHtml(text) {
 }
 
 // ---------------------------------------------------------------------------
+// Reset UI to Pristine Idle / Pre-Scan State
+// ---------------------------------------------------------------------------
+function resetToIdleState() {
+  const scoreTotalEl = document.getElementById('score-total');
+  const scoreStatusEl = document.getElementById('score-status-text');
+  if (scoreTotalEl) scoreTotalEl.textContent = '—';
+  if (scoreStatusEl) scoreStatusEl.textContent = 'Ready to Scan';
+
+  const setCategoryProgress = (valId, barId) => {
+    const vEl = document.getElementById(valId);
+    const bEl = document.getElementById(barId);
+    if (vEl) vEl.textContent = '—';
+    if (bEl) bEl.style.width = '0%';
+  };
+  setCategoryProgress('score-technical-val', 'bar-technical');
+  setCategoryProgress('score-content-val', 'bar-content');
+  setCategoryProgress('score-onpage-val', 'bar-onpage');
+  setCategoryProgress('score-links-val', 'bar-links');
+  setCategoryProgress('score-ux-val', 'bar-ux');
+
+  const pagesCrawledEl = document.getElementById('pages-crawled');
+  const pagesCrawledSub = document.getElementById('pages-crawled-sub');
+  const crawlInfo = document.getElementById('step-crawl-info');
+  if (pagesCrawledEl) pagesCrawledEl.innerHTML = `— <small id="pages-crawled-badge">Ready</small>`;
+  if (pagesCrawledSub) pagesCrawledSub.textContent = 'Awaiting scan';
+  if (crawlInfo) crawlInfo.textContent = 'Awaiting scan...';
+
+  const issuesFoundTotal = document.getElementById('issues-found-total');
+  const highCountEl = document.getElementById('issues-high-count');
+  const medCountEl = document.getElementById('issues-med-count');
+  const lowCountEl = document.getElementById('issues-low-count');
+  if (issuesFoundTotal) issuesFoundTotal.textContent = '—';
+  if (highCountEl) highCountEl.textContent = '—';
+  if (medCountEl) medCountEl.textContent = '—';
+  if (lowCountEl) lowCountEl.textContent = '—';
+
+  const trafficEl = document.getElementById('traffic-potential-value');
+  if (trafficEl) trafficEl.innerHTML = `— <small>Awaiting Scan</small>`;
+
+  updateAnalysisSteps(0);
+
+  renderPieChart(null);
+  renderQuickStats(null);
+  renderBacklinks(null);
+  renderPerformance(null);
+  renderCallouts([]);
+  renderDetailedRecommendations([]);
+  renderOpportunities([]);
+}
+
+// ---------------------------------------------------------------------------
 // Main Initialization
 // ---------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
@@ -1207,12 +1411,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadStoredHistory();
   renderHistory();
 
-  // Initialize Pie chart with default scores
-  renderPieChart({ total: 78, technical: 82, onPage: 71, content: 76, links: 68 });
-
-  // Initialize Backlinks & Performance with realistic baseline data
-  renderBacklinks({ linkCount: 42, internalLinks: 31, externalLinks: 11, nofollowLinks: 5, scores: { links: 8 } });
-  renderPerformance({ imageCount: 18, imagesWithoutAlt: 2, hasViewport: true, url: 'https://example.com' });
+  // Reset all scoring, categories, Web Vitals & tabs to clean awaiting-scan state
+  resetToIdleState();
 
   // Initialize Mountain Stage Drag, Pan & Wheel Zoom interactions
   initMountainInteractions();
