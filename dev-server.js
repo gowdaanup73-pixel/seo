@@ -1,6 +1,6 @@
 // dev-server.js — Local dev server that bridges Vercel-style serverless handlers
+// Serves static files from project root + routes /api/* to api/*.js handlers with security headers
 
-// Serves static files from project root + routes /api/* to api/*.js handlers
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -40,6 +40,11 @@ function shimRequest(req, body) {
 }
 
 function shimResponse(res) {
+  // Apply baseline security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   res.status = (code) => { res.statusCode = code; return res; };
   res.json = (data) => {
     res.setHeader('Content-Type', 'application/json');
@@ -58,7 +63,10 @@ const server = http.createServer(async (req, res) => {
     const handlerName = apiMatch[1];
     const handler = await loadHandler(handlerName);
     if (!handler) {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.writeHead(404, {
+        'Content-Type': 'application/json',
+        'X-Content-Type-Options': 'nosniff'
+      });
       res.end(JSON.stringify({ error: `No handler for /api/${handlerName}` }));
       return;
     }
@@ -70,10 +78,13 @@ const server = http.createServer(async (req, res) => {
     try {
       await handler(shimRequest(req, body), shimResponse(res));
     } catch (err) {
-      console.error(`[API ERROR] /api/${handlerName}:`, err);
+      console.error(`[API ERROR] /api/${handlerName}:`, err.message);
       if (!res.writableEnded) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: err.message }));
+        res.writeHead(500, {
+          'Content-Type': 'application/json',
+          'X-Content-Type-Options': 'nosniff'
+        });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
       }
     }
     return;
@@ -85,21 +96,30 @@ const server = http.createServer(async (req, res) => {
 
   // Security: don't serve outside project root
   if (!filePath.startsWith(__dirname)) {
-    res.writeHead(403); res.end('Forbidden'); return;
+    res.writeHead(403, { 'X-Content-Type-Options': 'nosniff' });
+    res.end('Forbidden');
+    return;
   }
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      res.writeHead(404); res.end('Not found'); return;
+      res.writeHead(404, { 'X-Content-Type-Options': 'nosniff' });
+      res.end('Not found');
+      return;
     }
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+    res.writeHead(200, {
+      'Content-Type': MIME[ext] || 'application/octet-stream',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'SAMEORIGIN',
+      'Referrer-Policy': 'strict-origin-when-cross-origin'
+    });
     fs.createReadStream(filePath).pipe(res);
   });
 });
 
 server.listen(PORT, () => {
-  console.log(`\n  🚀  Dev server running at  http://localhost:${PORT}\n`);
-  console.log(`  Static files:  ${__dirname}`);
-  console.log(`  API routes:    /api/analyze, /api/preview, /api/ai-recommend\n`);
+  console.log(`\n  🏔️  Terra Incognita Dev Server running at  http://localhost:${PORT}\n`);
+  console.log(`  Static directory:  ${__dirname}`);
+  console.log(`  Protected API endpoints:  /api/analyze, /api/preview\n`);
 });
