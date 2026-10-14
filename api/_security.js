@@ -332,19 +332,19 @@ function createSafeAgent(isHttps) {
     timeout: DEFAULT_TIMEOUT_MS,
     lookup: (hostname, lookupOpts, callback) => {
       const cleanHost = hostname.replace(/^\[|\]$/g, '');
-      dns.lookup(cleanHost, { ...lookupOpts, all: true }, (err, addresses) => {
+      dns.lookup(cleanHost, lookupOpts, (err, addresses, family) => {
         if (err) return callback(err);
-        const list = Array.isArray(addresses) ? addresses : [addresses];
-        for (const addr of list) {
-          const ip = typeof addr === 'string' ? addr : addr.address;
+        const list = Array.isArray(addresses) ? addresses : [{ address: addresses, family }];
+        for (const record of list) {
+          const ip = typeof record === 'string' ? record : record.address;
           if (isPrivateOrReservedIP(ip)) {
             return callback(new Error(`SSRF blocked: Socket connection resolves to restricted IP ${ip}`));
           }
         }
         if (Array.isArray(addresses)) {
-          callback(null, addresses[0].address, addresses[0].family);
+          callback(null, addresses);
         } else {
-          callback(null, addresses.address, addresses.family);
+          callback(null, addresses, family);
         }
       });
     }
