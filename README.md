@@ -1,56 +1,55 @@
-# 🚀 Street Coders - AI-Powered SEO Analyzer
+# 🏔️ Terra Incognita — Topographic SEO Intelligence Platform
 
-[![Live Demo](https://img.shields.io/badge/Demo-Live%20on%20Vercel-teal?style=for-the-badge)](https://streetcoders-seo-analyzer.vercel.app/)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20JS-yellow?style=for-the-badge&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![Vercel Serverless](https://img.shields.io/badge/Backend-Vercel%20Serverless-black?style=for-the-badge&logo=vercel)](https://vercel.com/)
+[![License](https://img.shields.io/badge/License-MIT-stone?style=for-the-badge)](LICENSE)
+[![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20ES6%2B-stone?style=for-the-badge&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Three.js](https://img.shields.io/badge/3D%20Engine-Three.js-2d635e?style=for-the-badge&logo=three.js)](https://threejs.org/)
+[![Vercel Serverless](https://img.shields.io/badge/Backend-Vercel%20Serverless-1c1b18?style=for-the-badge&logo=vercel)](https://vercel.com/)
 
-A fast, highly interactive, and beautiful SEO audit platform that analyzes websites in real-time, compiles actionable checklists, displays live site screenshot previews, and provides prioritized SEO intelligence.
-
----
-
-## 🔗 Live Application
-Deploy Link: [https://streetcoders-seo-analyzer.vercel.app/](https://streetcoders-seo-analyzer.vercel.app/)
+A distinctive, production-quality SEO intelligence platform featuring an interactive 3D mountain landscape. Built with sculptural aesthetics inspired by architectural visualization, geological surveys, and precision instrumentation.
 
 ---
 
-## ✨ Features
+## ✨ Signature Features
 
-- **⚡ Parallel Audits**: Check domain health (via Google DNS) and scrape page contents simultaneously. A strict 8-second fetch timeout guarantees fast responses.
-- **🎨 Interactive Data Visualizations**: Overall score indicator and category rings (On-Page, Technical, Content, and Links) dynamically rendered, highlighting deductions.
-- **📋 Actionable Recommendations**: Issues are grouped into **Critical Issues** (failed high priority), **Improvements Needed** (failed low/medium priority), and **Passed Checks** cards. Includes copies for one-click CSS/HTML code fixes.
-- **💾 Offline Caching Layer**: In-memory caching on Vercel Serverless (1-hour TTL for page crawls, 24-hour TTL for previews). Cache hits load instantly in under 15ms.
-- **📄 Downloadable PDF Reports**: Compile and download styled, client-ready A4 PDF reports (powered by `jsPDF`) containing audit breakdowns, points deductions, and metrics.
-- **🕒 Persistent Analysis History**: Browser `localStorage` stores the last 20 analyzed domains complete with favicon/screenshots, scores, timestamps, click-to-load/reload logic, and delete options.
-- **📱 Fully Responsive Layout**: Responsive breakpoints designed to scale card columns and radial rings from narrow mobile devices (<640px) to desktops.
-- **🛡️ SSRF & Error Guards**: Robust server-side security checks block private IP ranges (like `192.168.x.x`), parse malformed URLs, and capture connection resets, bot blocks (403), or unreachable domains.
+- **🏔️ Interactive 3D Mountain Landscape**: Procedurally generated 3D terrain visualizing site architecture, crawlability, on-page health, and link watersheds. Summit elevation dynamically deforms to reflect real crawl scores.
+- **📍 Real Data Issue Beacons**: Interactive monoliths placed directly onto geological ridges. Hovering or clicking markers reveals contextual diagnostics with one-click navigation to code prescriptions.
+- **🧭 Geological Camera Controls**: Summit Vantage, Ridge Profile, and Orthographic survey presets with smooth interpolation and inertia rotation.
+- **🎨 Terra Incognita Design System**: Handcrafted editorial palette featuring warm mineral ivory, charcoal typography, forest green signals, oxidized copper highlights, restrained amber warnings, and muted stone grey contours.
+- **🛡️ SSRF & Security Hardening**:
+  - Full CIDR filtering across IPv4 and IPv6 (loopback, private, link-local, multicast, CGNAT, AWS/GCP metadata `169.254.169.254`).
+  - Pre-flight DNS resolution and socket-level IP pinning to prevent DNS rebinding attacks.
+  - Manual, validated redirect traversal (max 5 hops).
+  - Strict 8-second fetch timeouts and 5MB body size caps.
+  - Per-IP sliding-window rate limiting.
+- **📄 Editorial PDF Export**: Generate styled, client-ready A4 executive audit reports directly in the browser (powered by `jsPDF`).
+- **💾 Survey Archive**: Persistent local history of inspected domains with quick re-survey actions.
+- **♿ Inclusive & Accessible**: Native `prefers-reduced-motion` compliance and an automatic 2D topographic contour elevation profile fallback when WebGL is unavailable.
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## 🛠️ Architecture
 
-- **Frontend**: Vanilla ES6+ JS, HTML5, Tailwind CSS (via CDN)
-- **Backend / Serverless**: Node.js ESM Vercel Serverless APIs (`/api/analyze`, `/api/preview`)
-- **Third-Party APIs**:
-  - **DNS Resolution**: Google DNS API (`https://dns.google/resolve`)
-  - **Screenshots**: Proxied `thum.io` image generator (secured server-side)
-- **PDF Generation**: Client-side `jsPDF` integration
+- **Frontend**: Vanilla ES6+ JS, HTML5, Three.js, Tailwind CSS
+- **3D Engine**: Procedural mesh deformation, elevation shaders, raycasting markers (`terrain.js`)
+- **Backend / Serverless**: Node.js ESM Vercel Serverless APIs:
+  - `/api/analyze`: SSRF-hardened web crawler and JSDOM DOM parser
+  - `/api/preview`: Validated website screenshot proxy via `thum.io`
+- **Security Utilities**: `api/_security.js` (IP bitwise checks, DNS pinning, rate limiter)
+- **Test Suite**: Native Node.js test runner (`node --test`)
 
 ---
 
 ## 💻 Local Setup & Development
 
-Because Vercel CLI locally requires interactive OAuth credentials, the project includes a custom dev server to run and debug Vercel Serverless functions locally.
-
 ### Prerequisites
-Make sure you have Node.js (v18+) installed.
+- Node.js (v18+)
 
 ### Setup Steps
-1. **Clone the Repository**:
+1. **Clone & Switch to Branch**:
    ```bash
    git clone https://github.com/gowdaanup73-pixel/seo.git
    cd seo
+   git checkout feature/interactive-terrain-ui
    ```
 
 2. **Install Dependencies**:
@@ -58,48 +57,13 @@ Make sure you have Node.js (v18+) installed.
    npm install
    ```
 
-3. **Configure Environment Variables**:
-   Set your OpenRouter API key:
-   - **Windows (PowerShell)**:
-     ```powershell
-     $env:OPENROUTER_API_KEY="your_api_key_here"
-     ```
-   - **Linux / macOS (Bash)**:
-     ```bash
-     export OPENROUTER_API_KEY="your_api_key_here"
-     ```
-
-4. **Launch Local Server**:
+3. **Run Automated Test Suite**:
    ```bash
-   node dev-server.js
+   npm test
    ```
-   Open `http://localhost:3000` in your browser.
 
-   > ⚠️ **You must use `dev-server.js`** — it is the only server that serves
-   > static files **and** proxies `/api/*` requests to the Vercel-style
-   > serverless handlers in `api/`. Alternatives will **not** work:
-   >
-   > | Command | Problem |
-   > |---|---|
-   > | `npx serve` | Static-only file server — all `/api/*` routes return **404**. |
-   > | `vercel dev` | Requires interactive OAuth login to the Vercel dashboard. |
-
----
-
-## 📁 Repository Structure
-```
-├── api/
-│   ├── ai-recommend.js  # OpenRouter proxy, data payload inject, 24h caching
-│   ├── analyze.js       # DNS validation, page content scraper, JSDOM parser
-│   └── preview.js       # SSRF-guarded thum.io screenshot proxying
-├── dev-server.js        # Local dev server — static files + API route proxy
-├── app.js               # Client-side state layer, calculations, PDF export, history
-├── index.html           # Main visual shell & CSS components layout
-├── package.json         # Node metadata & Vercel package imports
-└── README.md            # You are here!
-```
-
----
-
-## 📄 License
-This project is licensed under the MIT License.
+4. **Start Development Server**:
+   ```bash
+   npm start
+   # Server runs at http://localhost:3000
+   ```
