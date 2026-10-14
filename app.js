@@ -342,6 +342,8 @@ function renderWebPreview(data) {
   const previewLink = document.getElementById('web-preview-link');
   const urlBar = document.getElementById('preview-url-bar');
   const httpsBadge = document.getElementById('preview-https-badge');
+  const previewLoading = document.getElementById('preview-loading');
+  const hoverBadge = document.getElementById('preview-hover-badge');
 
   if (urlBar) urlBar.textContent = data.url || 'https://example.com';
   if (previewLink) previewLink.href = data.url || '#';
@@ -349,8 +351,31 @@ function renderWebPreview(data) {
   const isHttps = data.url && data.url.startsWith('https://');
   if (httpsBadge) httpsBadge.classList.toggle('hidden', !isHttps);
 
-  if (previewImg && data.previewUrl) {
-    previewImg.src = data.previewUrl;
+  const cleanUrl = data.url ? data.url.replace(/\/$/, '') : '';
+  const screenshot = data.previewUrl || (cleanUrl ? `https://image.thum.io/get/width/1200/crop/800/noanimate/${cleanUrl}` : null);
+
+  if (previewImg && screenshot) {
+    if (previewLoading) previewLoading.classList.remove('hidden');
+    previewImg.style.opacity = '0.4';
+
+    previewImg.onload = () => {
+      if (previewLoading) previewLoading.classList.add('hidden');
+      previewImg.style.opacity = '1';
+      if (hoverBadge) hoverBadge.style.display = 'flex';
+    };
+
+    previewImg.onerror = () => {
+      if (!previewImg.dataset.retried && cleanUrl) {
+        previewImg.dataset.retried = 'true';
+        previewImg.src = `https://api.microlink.io?url=${encodeURIComponent(cleanUrl)}&screenshot=true&meta=false&embed=screenshot.url`;
+      } else {
+        if (previewLoading) previewLoading.classList.add('hidden');
+        previewImg.style.opacity = '1';
+      }
+    };
+
+    delete previewImg.dataset.retried;
+    previewImg.src = screenshot;
   }
 }
 

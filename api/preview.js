@@ -72,33 +72,25 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: cached.screenshotUrl, cached: true, success: true });
   }
 
-  // Build thum.io URL
+  // Primary screenshot URL (thum.io)
   const screenshotUrl = THUM_BASE + cacheKey;
+  const fallbackUrl = `https://api.microlink.io?url=${encodeURIComponent(cacheKey)}&screenshot=true&meta=false&embed=screenshot.url`;
 
-  // Verify thum.io will serve image (5s timeout)
+  let finalUrl = screenshotUrl;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
     const probe = await fetch(screenshotUrl, { method: 'HEAD', signal: controller.signal });
     clearTimeout(timeoutId);
 
     if (!probe.ok) {
-      return res.status(502).json({
-        success: false,
-        error: 'preview-unavailable',
-        message: 'Preview service returned an error. Target site may block rendering.'
-      });
+      finalUrl = fallbackUrl;
     }
-  } catch (err) {
-    const isTimeout = err.name === 'AbortError';
-    return res.status(502).json({
-      success: false,
-      error: isTimeout ? 'preview-timeout' : 'preview-unreachable',
-      message: isTimeout ? 'Screenshot generation timed out.' : 'Screenshot service unreachable.'
-    });
+  } catch {
+    finalUrl = fallbackUrl;
   }
 
-  cache.set(cacheKey, { screenshotUrl, expiresAt: Date.now() + CACHE_TTL_MS });
+  cache.set(cacheKey, { screenshotUrl: finalUrl, expiresAt: Date.now() + CACHE_TTL_MS });
   res.setHeader('X-Preview-Cache', 'MISS');
-  return res.status(200).json({ url: screenshotUrl, success: true });
+  return res.status(200).json({ url: finalUrl, success: true });
 }

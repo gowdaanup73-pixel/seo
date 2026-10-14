@@ -90,6 +90,7 @@ body{
 .nav-item{
   position:relative;
   border:0;
+  outline:none;
   background:transparent;
   text-align:left;
   display:flex;
@@ -102,6 +103,8 @@ body{
   cursor:pointer;
   transition:background-color .15s ease, color .15s ease;
 }
+.nav-item:focus{outline:none}
+.nav-item:focus-visible{outline:2px solid var(--green);outline-offset:1px}
 
 .nav-item>span{font-size:17px;width:16px;text-align:center}
 .nav-item:hover,.nav-item.active{background:#e9e7dd}
