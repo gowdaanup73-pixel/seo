@@ -60,6 +60,9 @@
             <input id="website-url" type="url" placeholder="https://example.com" required>
             <button type="submit" id="analyze-submit-btn" aria-label="Analyze website">→</button>
           </div>
+          <div id="competitor-input-group" class="url-input-row" style="margin-top:8px; display:none;">
+            <input id="competitor-url" type="url" placeholder="https://competitor.com (Competitor URL)">
+          </div>
           <div class="scan-modes">
             <label><input type="radio" name="scan-mode" value="full" checked> Full Scan</label>
             <label><input type="radio" name="scan-mode" value="quick"> Quick Audit</label>
@@ -73,18 +76,26 @@
           <div class="map-label">SITE TOPOGRAPHY <span>● LIVE MODEL</span></div>
           
           <div class="mountain-stage" id="mountain-stage">
-            <!-- Three.js 3D Interactive Mountain Canvas Container -->
-            <div id="mountain-canvas-container" class="mountain-canvas-container"></div>
+            <div class="mountain-viewport" id="mountain-viewport">
+              <!-- Three.js 3D Interactive Mountain Canvas Container -->
+              <div id="mountain-canvas-container" class="mountain-canvas-container"></div>
 
-            <!-- Fallback Mountain Reference Image -->
-            <img src="assets/mountain-reference.jpg" alt="Floating mountain landscape representing the website's SEO structure" class="mountain-image" id="mountain-image">
-            <div class="mountain-vignette"></div>
-            
-            <svg class="contours" viewBox="0 0 800 600" preserveAspectRatio="none" aria-hidden="true">
-              <ellipse cx="405" cy="310" rx="320" ry="112"></ellipse>
-              <ellipse cx="405" cy="310" rx="255" ry="84"></ellipse>
-              <ellipse cx="405" cy="310" rx="190" ry="58"></ellipse>
-            </svg>
+              <!-- Fallback Mountain Reference Image -->
+              <img src="assets/mountain-reference.jpg" alt="Floating mountain landscape representing the website's SEO structure" class="mountain-image" id="mountain-image">
+              <div class="mountain-vignette"></div>
+              
+              <svg class="contours" viewBox="0 0 800 600" preserveAspectRatio="none" aria-hidden="true">
+                <ellipse cx="405" cy="310" rx="320" ry="112"></ellipse>
+                <ellipse cx="405" cy="310" rx="255" ry="84"></ellipse>
+                <ellipse cx="405" cy="310" rx="190" ry="58"></ellipse>
+              </svg>
+
+              <!-- Interactive Hotspots / Monoliths -->
+              <button class="hotspot hotspot-one" data-issue="Orphan pages" data-count="12" data-detail="Pages with no meaningful internal links pointing to them." aria-label="12 orphan pages"><span></span><b>12</b><small>Orphan Pages</small></button>
+              <button class="hotspot hotspot-two" data-issue="Broken links" data-count="8" data-detail="Internal links that lead to unavailable or invalid destinations." aria-label="8 broken links"><span class="red"></span><b>8</b><small>Broken Links</small></button>
+              <button class="hotspot hotspot-three" data-issue="Slow pages" data-count="24" data-detail="Pages that may benefit from Core Web Vitals and asset optimization." aria-label="24 slow pages"><span></span><b>24</b><small>Slow Pages</small></button>
+              <button class="hotspot hotspot-four" data-issue="Missing metadata" data-count="36" data-detail="Pages missing useful title tags or meta descriptions." aria-label="36 pages missing metadata"><span></span><b>36</b><small>Missing Meta</small></button>
+            </div>
 
             <!-- Live Scanning Overlay -->
             <div id="mountain-scanning-overlay" class="mountain-scanning-overlay hidden" aria-live="polite">
@@ -93,12 +104,6 @@
               <span id="scanning-phase-title" style="font-size:12px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase;">SCANNING ARCHITECTURE</span>
               <small id="scanning-phase-detail" style="font-size:9px; color:#d8d3c7; margin-top:4px;">Mapping topographic strata &amp; audit signals...</small>
             </div>
-
-            <!-- Interactive Hotspots / Monoliths -->
-            <button class="hotspot hotspot-one" data-issue="Orphan pages" data-count="12" data-detail="Pages with no meaningful internal links pointing to them." aria-label="12 orphan pages"><span></span><b>12</b><small>Orphan Pages</small></button>
-            <button class="hotspot hotspot-two" data-issue="Broken links" data-count="8" data-detail="Internal links that lead to unavailable or invalid destinations." aria-label="8 broken links"><span class="red"></span><b>8</b><small>Broken Links</small></button>
-            <button class="hotspot hotspot-three" data-issue="Slow pages" data-count="24" data-detail="Pages that may benefit from Core Web Vitals and asset optimization." aria-label="24 slow pages"><span></span><b>24</b><small>Slow Pages</small></button>
-            <button class="hotspot hotspot-four" data-issue="Missing metadata" data-count="36" data-detail="Pages missing useful title tags or meta descriptions." aria-label="36 pages missing metadata"><span></span><b>36</b><small>Missing Meta</small></button>
 
             <!-- Contextual Inspector Card -->
             <div class="issue-inspector" id="issue-inspector" hidden>
@@ -335,6 +340,8 @@
       <div class="analysis-tabs-nav" role="tablist">
         <button class="tab-pill active" data-tab="breakdown" role="tab" aria-selected="true">Category Breakdown</button>
         <button class="tab-pill" data-tab="stats" role="tab" aria-selected="false">Quick Stats</button>
+        <button class="tab-pill" data-tab="backlinks" role="tab" aria-selected="false">Backlinks</button>
+        <button class="tab-pill" data-tab="performance" role="tab" aria-selected="false">Performance</button>
         <button class="tab-pill" data-tab="recommendations" role="tab" aria-selected="false">Recommendations</button>
       </div>
 
@@ -395,11 +402,211 @@
         </div>
       </div>
 
+      <!-- Tab: Backlinks & Link Architecture -->
+      <div id="tab-backlinks" class="tab-pane" role="tabpanel">
+        <div class="metric-card backlinks-card">
+          <div class="backlinks-header">
+            <div>
+              <h4 style="margin:0 0 4px; font-size:15px; font-weight:600;">Link Topology &amp; Architecture</h4>
+              <p style="margin:0; font-size:11px; color:var(--muted);">Internal crawling graph, external references, nofollow ratios, and anchor density.</p>
+            </div>
+            <div class="link-health-badge" id="backlinks-health-badge">
+              <span class="dot healthy"></span> <span>Link Equity: <strong id="backlinks-equity-score">84/100</strong></span>
+            </div>
+          </div>
+
+          <div class="backlinks-grid">
+            <div class="stat-box link-metric">
+              <small>TOTAL DISCOVERED</small>
+              <strong id="backlinks-total-count">0</strong>
+              <span class="sub-label" id="backlinks-total-sub">All page anchor tags</span>
+            </div>
+            <div class="stat-box link-metric">
+              <small>INTERNAL CRAWL LINKS</small>
+              <strong id="backlinks-internal-count">0</strong>
+              <span class="sub-label" id="backlinks-internal-pct">0% of topology</span>
+            </div>
+            <div class="stat-box link-metric">
+              <small>EXTERNAL REFERENCES</small>
+              <strong id="backlinks-external-count">0</strong>
+              <span class="sub-label" id="backlinks-external-pct">0% outbound</span>
+            </div>
+            <div class="stat-box link-metric">
+              <small>NOFOLLOW ATTRIBUTES</small>
+              <strong id="backlinks-nofollow-count">0</strong>
+              <span class="sub-label" id="backlinks-nofollow-sub">Crawler directive links</span>
+            </div>
+          </div>
+
+          <div class="backlinks-analysis-split">
+            <div class="backlinks-distribution-panel">
+              <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Internal vs External Equity</h5>
+              <div class="link-bar-container">
+                <div class="link-bar-fill internal" id="backlinks-bar-internal" style="width:70%;"></div>
+                <div class="link-bar-fill external" id="backlinks-bar-external" style="width:30%;"></div>
+              </div>
+              <div class="link-bar-legend">
+                <span><i class="legend-color-dot" style="background:var(--green);"></i> Internal Links (<b id="backlinks-legend-internal">0</b>)</span>
+                <span><i class="legend-color-dot" style="background:#b87333;"></i> External Links (<b id="backlinks-legend-external">0</b>)</span>
+              </div>
+            </div>
+
+            <div class="backlinks-audit-checklist">
+              <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Architecture Diagnostics</h5>
+              <div class="audit-check-item" id="check-link-density">
+                <span class="check-icon">✓</span>
+                <div class="check-text">
+                  <strong>Link-to-Content Ratio: <span id="link-density-val">Healthy</span></strong>
+                  <small id="link-density-detail">Adequate contextual anchors distributed across content.</small>
+                </div>
+              </div>
+              <div class="audit-check-item" id="check-orphan-risk">
+                <span class="check-icon">✓</span>
+                <div class="check-text">
+                  <strong>Orphan Page Prevention</strong>
+                  <small id="link-orphan-detail">Navigation menus and footers provide crawler discoverability.</small>
+                </div>
+              </div>
+              <div class="audit-check-item" id="check-outbound-hygiene">
+                <span class="check-icon">✓</span>
+                <div class="check-text">
+                  <strong>External Link Hygiene</strong>
+                  <small id="link-outbound-detail">External links point to valid authoritative protocols.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Performance & Web Vitals -->
+      <div id="tab-performance" class="tab-pane" role="tabpanel">
+        <div class="metric-card performance-card">
+          <div class="perf-header">
+            <div>
+              <h4 style="margin:0 0 4px; font-size:15px; font-weight:600;">Core Web Vitals &amp; Page Speed</h4>
+              <p style="margin:0; font-size:11px; color:var(--muted);">Simulated field performance metrics, rendering bottlenecks, and asset optimization signals.</p>
+            </div>
+            <div class="perf-health-badge" id="perf-health-badge">
+              <span class="dot healthy"></span> <span>UX Score: <strong id="perf-ux-score">83/100</strong></span>
+            </div>
+          </div>
+
+          <div class="vitals-grid">
+            <div class="vital-card">
+              <div class="vital-label">
+                <span>LARGEST CONTENTFUL PAINT (LCP)</span>
+                <span class="vital-badge good" id="vital-lcp-badge">Good</span>
+              </div>
+              <div class="vital-value" id="vital-lcp-val">1.8s</div>
+              <div class="vital-progress"><i id="vital-lcp-bar" style="width:72%; background:var(--green);"></i></div>
+              <small class="vital-sub">Target &le; 2.5s for optimal search ranking</small>
+            </div>
+
+            <div class="vital-card">
+              <div class="vital-label">
+                <span>CUMULATIVE LAYOUT SHIFT (CLS)</span>
+                <span class="vital-badge good" id="vital-cls-badge">Good</span>
+              </div>
+              <div class="vital-value" id="vital-cls-val">0.04</div>
+              <div class="vital-progress"><i id="vital-cls-bar" style="width:85%; background:var(--green);"></i></div>
+              <small class="vital-sub">Target &le; 0.1 visual stability score</small>
+            </div>
+
+            <div class="vital-card">
+              <div class="vital-label">
+                <span>FIRST INPUT DELAY (FID / INP)</span>
+                <span class="vital-badge good" id="vital-fid-badge">Good</span>
+              </div>
+              <div class="vital-value" id="vital-fid-val">38ms</div>
+              <div class="vital-progress"><i id="vital-fid-bar" style="width:90%; background:var(--green);"></i></div>
+              <small class="vital-sub">Target &le; 100ms for instantaneous interactivity</small>
+            </div>
+
+            <div class="vital-card">
+              <div class="vital-label">
+                <span>TIME TO FIRST BYTE (TTFB)</span>
+                <span class="vital-badge good" id="vital-ttfb-badge">Fast</span>
+              </div>
+              <div class="vital-value" id="vital-ttfb-val">140ms</div>
+              <div class="vital-progress"><i id="vital-ttfb-bar" style="width:88%; background:var(--green);"></i></div>
+              <small class="vital-sub">Target &le; 800ms server response time</small>
+            </div>
+          </div>
+
+          <div class="perf-diagnostics-grid">
+            <div class="perf-diag-box">
+              <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Asset &amp; Payload Diagnostics</h5>
+              <ul class="perf-diag-list">
+                <li>
+                  <span>Image Optimization</span>
+                  <strong id="perf-diag-images">Checked</strong>
+                </li>
+                <li>
+                  <span>Mobile Viewport Tag</span>
+                  <strong id="perf-diag-viewport">Configured</strong>
+                </li>
+                <li>
+                  <span>Scripts Detected</span>
+                  <strong id="perf-diag-scripts">0 bundles</strong>
+                </li>
+                <li>
+                  <span>Stylesheets Loaded</span>
+                  <strong id="perf-diag-styles">0 sheets</strong>
+                </li>
+                <li>
+                  <span>Transport Protocol</span>
+                  <strong id="perf-diag-protocol">HTTPS / TLS</strong>
+                </li>
+              </ul>
+            </div>
+
+            <div class="perf-diag-box">
+              <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Speed Optimization Advice</h5>
+              <div class="perf-tips-list" id="perf-tips-container">
+                <div class="perf-tip">
+                  <span class="tip-dot">⚡</span>
+                  <div>
+                    <strong>Compress and modernize imagery</strong>
+                    <p>Serve images in WebP or AVIF format to reduce payload by up to 60%.</p>
+                  </div>
+                </div>
+                <div class="perf-tip">
+                  <span class="tip-dot">⚡</span>
+                  <div>
+                    <strong>Minify JavaScript &amp; CSS</strong>
+                    <p>Defer non-essential third-party scripts to keep the main thread idle.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Tab 3: Detailed Recommendations Grid -->
       <div id="tab-recommendations" class="tab-pane" role="tabpanel">
         <div id="recommendations-list" class="recommendations-grid"></div>
       </div>
     </section>
+
+    <!-- Competitor Compare Modal -->
+    <div class="modal-backdrop hidden" id="competitor-modal" role="dialog" aria-modal="true" aria-labelledby="competitor-modal-title">
+      <div class="modal-card competitor-modal-card">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="brand-mark" style="width:20px;height:20px;font-size:11px;">⚔</span>
+            <h3 id="competitor-modal-title">Head-to-Head Competitor Comparison</h3>
+          </div>
+          <button class="modal-close" id="competitor-modal-close" aria-label="Close competitor comparison">×</button>
+        </div>
+        <p style="font-size:11px; color:var(--muted); margin-bottom:14px;">Side-by-side technical and search visibility benchmark.</p>
+        
+        <div id="competitor-modal-content">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+    </div>
 
     <!-- History Archive Modal -->
     <div class="modal-backdrop hidden" id="history-modal" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
