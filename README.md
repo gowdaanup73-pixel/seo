@@ -1,107 +1,120 @@
-# 🚀 Street Coders - AI-Powered SEO Analyzer
+# Streetcoders SEO
 
-[![Live Demo](https://img.shields.io/badge/Demo-Live%20on%20Vercel-teal?style=for-the-badge)](https://streetcoders-seo-analyzer.vercel.app/)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20JS-yellow?style=for-the-badge&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![Vercel Serverless](https://img.shields.io/badge/Backend-Vercel%20Serverless-black?style=for-the-badge&logo=vercel)](https://vercel.com/)
+> See your website from a higher ground.
 
-A fast, highly interactive, and beautiful SEO audit platform that analyzes websites in real-time, compiles actionable checklists, displays live site screenshot previews, and provides prioritized, context-aware AI recommendations via an integrated chatbot.
+Most SEO tools feel like bloated Excel spreadsheets stuffed into a dashboard. **Streetcoders SEO** was built out of frustration with that—it is a fast, clean, and tactile website audit tool that cuts through the noise and shows you what actually matters for search visibility.
+
+Type in any public URL, pick a scan mode (or run a head-to-head competitor audit), and get a real-time technical breakdown, a Google SERP simulator, performance estimates, and a clean list of prioritized fixes you can actually hand to an engineer.
 
 ---
 
-## 🔗 Live Application
-Deploy Link: [https://streetcoders-seo-analyzer.vercel.app/](https://streetcoders-seo-analyzer.vercel.app/)
+## What It Does
+
+- **Real-Time Website Crawler & Audit**  
+  Spiders your target page, parses its semantic structure, checks technical headers, and calculates an objective **0–100 SEO Health Score** weighted across four core disciplines: On-Page (40%), Technical (30%), Content Depth (20%), and Link Architecture (10%).
+
+- **Google SERP Snippet Simulator**  
+  Shows you how your page actually renders in Google Search results on desktop and mobile. Includes live character counters for your `<title>` (30–60 chars) and `<meta name="description">` (110–160 chars) so you know if your snippets are getting truncated before you deploy.
+
+- **Core Crawler Directives Matrix**  
+  Instant pass/warn/fail badges for the foundational signals crawlers look for:
+  - SSL / TLS encryption & transport security
+  - Responsive mobile viewport configuration
+  - Canonical URL references (preventing duplicate content penalties)
+  - `robots.txt` & XML sitemap availability
+  - Semantic `<h1>` hierarchy (flags missing or multiple H1 tags)
+  - OpenGraph social cards (`og:title`, `og:description`, `og:image`)
+
+- **Competitor Compare Mode**  
+  Run your site head-to-head against a competitor. Compares technical health, content volume, internal link equity, and response speeds in a side-by-side scoreboard with gap analysis.
+
+- **Live Viewport Preview**  
+  Generates an interactive desktop screenshot of the audited site wrapped in clean browser chrome with SSL status badges and external visit shortcuts.
+
+- **Deep Analysis Tabs**  
+  - **Category Breakdown**: Dynamic SVG donut chart with point-by-point distribution.
+  - **Quick Stats**: Metadata lengths, word count, image alt coverage, text-to-code density.
+  - **Backlinks Architecture**: Total discovered links, internal vs. external ratios, and `rel="nofollow"` balance.
+  - **Performance & Web Vitals**: Real measured TTFB along with estimated Largest Contentful Paint (LCP), Cumulative Layout Shift (CLS), and First Input Delay (FID).
+  - **Recommendations**: Prioritized, actionable fix cards with copyable code snippets and rationale.
+
+- **Client-Ready PDF Report Export**  
+  One-click browser export that generates a clean, executive-ready PDF audit report complete with scores, vitals, and prioritized action items.
+
+- **Crafted Editorial Aesthetic & Themes**  
+  Handcrafted typography and palette (warm mineral paper, dark mode charcoal, muted forest green, and copper accents). Switches seamlessly between light and dark modes with a single click.
 
 ---
 
-## ✨ Features
+## Under the Hood
 
-- **⚡ Parallel Audits**: Check domain health (via Google DNS) and scrape page contents simultaneously. A strict 8-second fetch timeout guarantees fast responses.
-- **🎨 Interactive Data Visualizations**: Overall score indicator and category rings (On-Page, Technical, Content, and Links) dynamically rendered, highlighting deductions.
-- **📋 Actionable Recommendations**: Issues are grouped into **Critical Issues** (failed high priority), **Improvements Needed** (failed low/medium priority), and **Passed Checks** cards. Includes copies for one-click CSS/HTML code fixes.
-- **🤖 Contextual AI Chatbot Assistant**: Embedded OpenRouter AI chatbot. It is fed with live site statistics (exact word count, missing alt tag counts, meta description status) to avoid generic boilerplate advice.
-- **💾 Offline Caching Layer**: In-memory caching on Vercel Serverless (1-hour TTL for page crawls, 24-hour TTL for previews and AI chats). Cache hits load instantly in under 15ms.
-- **📄 Downloadable PDF Reports**: Compile and download styled, client-ready A4 PDF reports (powered by `jsPDF`) containing audit breakdowns, points deductions, metrics, and chat history.
-- **🕒 Persistent Analysis History**: Browser `localStorage` stores the last 20 analyzed domains complete with favicon/screenshots, scores, timestamps, click-to-load/reload logic, and delete options.
-- **📱 Fully Responsive Layout**: Responsive breakpoints designed to scale card columns, chatbot cards, and radial rings from narrow mobile devices (<640px) to desktops.
-- **🛡️ SSRF & Error Guards**: Robust server-side security checks block private IP ranges (like `192.168.x.x`), parse malformed URLs, and capture connection resets, bot blocks (403), or unreachable domains.
+We deliberately avoided massive modern frontend build pipelines (no webpack, no vite, no massive `node_modules` just to serve client state). The frontend is pure, predictable **Vanilla ES6+ JavaScript, semantic HTML5, and bespoke CSS**.
+
+```
+seo/
+├── api/
+│   ├── _security.js      # SSRF defense, CIDR bitwise filtering, DNS pinning, rate limiter
+│   ├── analyze.js        # Serverless audit engine, DOM parser, scoring math
+│   └── preview.js        # Screenshot proxy with SSRF validation
+├── assets/               # Brand assets & references
+├── tests/
+│   ├── analyze.test.js   # API endpoint regression tests
+│   ├── security.test.js  # SSRF bitwise IPv4/IPv6 tests & rate limiter validation
+│   ├── terrain.test.js   # Fallback & model integrity tests
+│   └── ui_integrity.test.js # DOM structure & security assertion suite
+├── index.html            # Main dashboard markup
+├── styles.css            # Complete design system & responsive layout
+├── app.js                # Client state, audit orchestrator, and UI controllers
+└── server.js             # Local development server
+```
+
+### Security First (SSRF & Rebinding Defense)
+Web crawlers that fetch arbitrary user-supplied URLs are notorious targets for Server-Side Request Forgery (SSRF). Streetcoders SEO implements strict pre-flight protection in `api/_security.js`:
+- Bitwise CIDR blocking for all private IPv4 ranges (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`).
+- Blocks cloud metadata endpoints (`169.254.169.254`, GCP/AWS metadata).
+- Full IPv6 validation (loopback `::1`, link-local `fe80::/10`, IPv4-mapped `::ffff:0:0/96`).
+- Pre-flight DNS resolution with socket-level IP pinning so attackers can't bypass checks via DNS rebinding.
+- Strict 8-second fetch timeouts and response size caps to prevent memory exhaustion.
+- Per-IP sliding window rate limiting.
 
 ---
 
-## 🛠️ Tech Stack & Architecture
-
-- **Frontend**: Vanilla ES6+ JS, HTML5, Tailwind CSS (via CDN)
-- **Backend / Serverless**: Node.js ESM Vercel Serverless APIs (`/api/analyze`, `/api/preview`, `/api/ai-recommend`)
-- **Third-Party APIs**:
-  - **DNS Resolution**: Google DNS API (`https://dns.google/resolve`)
-  - **AI Chatbot**: OpenRouter completions endpoint (`openai/gpt-3.5-turbo`)
-  - **Screenshots**: Proxied `thum.io` image generator (secured server-side)
-- **PDF Generation**: Client-side `jsPDF` integration
-
----
-
-## 💻 Local Setup & Development
-
-Because Vercel CLI locally requires interactive OAuth credentials, the project includes a custom dev server to run and debug Vercel Serverless functions locally.
+## Quick Start
 
 ### Prerequisites
-Make sure you have Node.js (v18+) installed.
+- Node.js 18 or higher
+- npm
 
-### Setup Steps
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/gowdaanup73-pixel/seo.git
-   cd seo
-   ```
+### 1. Clone & install
+```bash
+git clone https://github.com/gowdaanup73-pixel/seo.git
+cd seo
+npm install
+```
 
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+### 2. Run the automated test suite
+The project uses Node's native test runner (`node --test`), so tests run in ~1.5 seconds without needing Jest or Mocha:
+```bash
+npm test
+```
+All 19 tests verify API safety, SSRF bitwise blocking, scoring accuracy, and DOM integrity.
 
-3. **Configure Environment Variables**:
-   Set your OpenRouter API key:
-   - **Windows (PowerShell)**:
-     ```powershell
-     $env:OPENROUTER_API_KEY="your_api_key_here"
-     ```
-   - **Linux / macOS (Bash)**:
-     ```bash
-     export OPENROUTER_API_KEY="your_api_key_here"
-     ```
-
-4. **Launch Local Server**:
-   ```bash
-   node dev-server.js
-   ```
-   Open `http://localhost:3000` in your browser.
-
-   > ⚠️ **You must use `dev-server.js`** — it is the only server that serves
-   > static files **and** proxies `/api/*` requests to the Vercel-style
-   > serverless handlers in `api/`. Alternatives will **not** work:
-   >
-   > | Command | Problem |
-   > |---|---|
-   > | `npx serve` | Static-only file server — all `/api/*` routes return **404**. |
-   > | `vercel dev` | Requires interactive OAuth login to the Vercel dashboard. |
+### 3. Start the dev server
+```bash
+npm start
+```
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
 ---
 
-## 📁 Repository Structure
-```
-├── api/
-│   ├── ai-recommend.js  # OpenRouter proxy, data payload inject, 24h caching
-│   ├── analyze.js       # DNS validation, page content scraper, JSDOM parser
-│   └── preview.js       # SSRF-guarded thum.io screenshot proxying
-├── dev-server.js        # Local dev server — static files + API route proxy
-├── app.js               # Client-side state layer, calculations, PDF export, history
-├── index.html           # Main visual shell & CSS components layout
-├── package.json         # Node metadata & Vercel package imports
-└── README.md            # You are here!
-```
+## Running Scans
+
+1. **Quick Test**: Click any of the chips next to **Quick Run** (`github.com`, `vercel.com`, `stripe.com`, `ycombinator`) to immediately trigger an audit.
+2. **Custom Scan**: Paste any URL (`https://yourdomain.com`) into the input box and hit `Enter` or click `→`.
+3. **Compare**: Select **Competitor Compare**, enter both your website and your rival's URL, and see the head-to-head score differential.
 
 ---
 
-## 📄 License
-This project is licensed under the MIT License.
+## License
+
+MIT © [gowdaanup73-pixel](https://github.com/gowdaanup73-pixel). Feel free to use, modify, and build upon this project.

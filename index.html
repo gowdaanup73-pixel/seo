@@ -1,968 +1,659 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Street Coders - AI-Powered SEO</title>
-    <meta name="description" content="AI-Powered, Real-Time Web Analysis — get instant SEO scores, actionable recommendations, and website previews.">
-    <meta name="google-site-verification" content="5Dr2r7urth0q-iyzjv0O73N41QtoAQCKGhZMYou6mZg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { 
-                        sans: ['Inter', 'sans-serif'] 
-                    },
-                    colors: {
-                        primary: {
-                            400: '#2dd4bf',
-                            500: '#14b8a6',
-                            600: '#0d9488',
-                            700: '#0f766e'
-                        },
-                        darkBg: '#050a14',
-                        darkCard: 'rgba(15, 23, 42, 0.65)',
-                        darkCardSolid: '#0f172a',
-                        scoreGreen: '#10b981',
-                        scoreBlue: '#3b82f6',
-                        scoreOrange: '#f97316',
-                        scoreRed: '#ef4444',
-                        chatPrimary: '#0d9488'
-                    },
-                    boxShadow: {
-                        'glass': '0 8px 32px rgba(0,0,0,0.25)',
-                        'glow': '0 0 20px rgba(20,184,166,0.15)',
-                        'glow-md': '0 0 30px rgba(20,184,166,0.2)',
-                        'glow-lg': '0 0 50px rgba(20,184,166,0.25)',
-                        'soft': '0 4px 24px rgba(0,0,0,0.12)',
-                        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.5)'
-                    },
-                    backdropBlur: {
-                        'glass': '16px'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* ─── Global Motion & Spring Interaction System ──────── */
-        :root {
-            --spring-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --spring-duration: 0.35s;
-            --press-duration: 0.1s;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        /* Press-down feedback (~0.97 scale with ~100ms transition) */
-        button,
-        .btn-gradient,
-        .tab-pill,
-        .press-feedback,
-        #theme-toggle,
-        #web-preview-link,
-        .feature-card,
-        .spring-card {
-            transition: transform var(--press-duration) ease,
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        background-color var(--spring-duration) ease,
-                        border-color var(--spring-duration) ease;
-        }
-
-        button:active,
-        .btn-gradient:active,
-        .tab-pill:active,
-        .press-feedback:active,
-        #theme-toggle:active,
-        #web-preview-link:active {
-            transform: scale(0.97) !important;
-            transition: transform var(--press-duration) ease !important;
-        }
-
-        /* ─── Card Entrance Keyframes & Stagger ──────────────── */
-        @keyframes springSlideUp {
-            0% {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-entrance {
-            animation: springSlideUp 0.6s var(--spring-easing) both;
-        }
-
-        .stagger-1 { animation-delay: 60ms; }
-        .stagger-2 { animation-delay: 130ms; }
-        .stagger-3 { animation-delay: 200ms; }
-        .stagger-4 { animation-delay: 270ms; }
-        .stagger-5 { animation-delay: 340ms; }
-
-        /* ─── Base ────────────────────────────────────────────── */
-        body {
-            background: #050a14;
-            background-image:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20,184,166,0.08), transparent),
-                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59,130,246,0.04), transparent);
-        }
-        .light body,
-        html.light body {
-            background: #f8fafc;
-            background-image: none;
-        }
-
-        /* ─── Glass Card & Hover Depth ────────────────────────── */
-        .glass-card {
-            background: rgba(15, 23, 42, 0.55);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(148,163,184,0.08);
-            border-radius: 1.25rem;
-            transition: box-shadow var(--spring-duration) var(--spring-easing),
-                        transform var(--spring-duration) var(--spring-easing),
-                        border-color var(--spring-duration) ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 16px 36px -10px rgba(0,0,0,0.35), 0 0 24px rgba(20,184,166,0.14);
-            border-color: rgba(20,184,166,0.2);
-        }
-        .light .glass-card {
-            background: rgba(255,255,255,0.85);
-            border-color: rgba(0,0,0,0.06);
-        }
-        .light .glass-card:hover {
-            box-shadow: 0 16px 36px -10px rgba(0,0,0,0.12), 0 0 24px rgba(20,184,166,0.12);
-        }
-
-        /* ─── Feature cards (Hero) with Spring & Entrance ────── */
-        .feature-card {
-            animation: springSlideUp 0.65s var(--spring-easing) both;
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        border-color 0.3s ease;
-        }
-        .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45), 0 0 30px rgba(20, 184, 166, 0.2);
-            border-color: rgba(20,184,166,0.25);
-        }
-
-        /* ─── Score Dashboard Cards & Rings ───────────────────── */
-        .score-focal-card {
-            animation: springSlideUp 0.65s var(--spring-easing) both;
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        border-color 0.3s ease;
-        }
-        .score-focal-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 30px rgba(20, 184, 166, 0.25);
-        }
-
-        .category-ring-card {
-            animation: springSlideUp 0.6s var(--spring-easing) both;
-            transition: transform var(--spring-duration) var(--spring-easing);
-        }
-        .category-ring-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .callout-spring {
-            animation: springSlideUp 0.65s var(--spring-easing) both;
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing);
-        }
-        .callout-spring:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
-        }
-
-        /* ─── Score rings ─────────────────────────────────────── */
-        .progress-circle {
-            stroke-dasharray: 283;
-            stroke-dashoffset: 283;
-            transition: stroke-dashoffset 1.8s cubic-bezier(.4,0,.2,1);
-        }
-        .score-ring-glow {
-            filter: drop-shadow(0 0 8px rgba(20,184,166,0.35));
-        }
-
-        /* ─── Input focus glow ────────────────────────────────── */
-        .input-glow:focus {
-            box-shadow: 0 0 0 3px rgba(20,184,166,0.2), 0 0 20px rgba(20,184,166,0.1);
-            border-color: #14b8a6;
-        }
-
-        /* ─── CTA gradient button with Spring ─────────────────── */
-        .btn-gradient {
-            background: linear-gradient(135deg, #0d9488, #14b8a6, #2dd4bf);
-            background-size: 200% 200%;
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        background-position 0.4s ease;
-        }
-        .btn-gradient:hover {
-            background-position: 100% 100%;
-            box-shadow: 0 0 32px rgba(20,184,166,0.35);
-            transform: translateY(-2px);
-        }
-
-        /* ─── Pill tabs with Spring Transitions ───────────────── */
-        .tab-pill {
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        background var(--spring-duration) ease,
-                        color 0.2s ease,
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        border-color var(--spring-duration) ease;
-            position: relative;
-        }
-        .tab-pill:hover:not(.active) {
-            transform: translateY(-1px);
-            background: rgba(255, 255, 255, 0.08);
-            color: #e2e8f0;
-        }
-        .tab-pill.active {
-            background: rgba(20,184,166,0.16);
-            color: #2dd4bf;
-            box-shadow: 0 0 18px rgba(20,184,166,0.22);
-            border-color: rgba(20,184,166,0.35);
-            transform: translateY(-1px);
-        }
-
-        /* ─── Tab Content Crossfade / Slide Transition ────────── */
-        @keyframes tabSlideCrossfade {
-            0% {
-                opacity: 0;
-                transform: translateY(8px) scale(0.995);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        .tab-content {
-            animation: tabSlideCrossfade 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        /* ─── Web Preview Chrome with Spring & Depth ──────────── */
-        .preview-card {
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        border-color 0.3s ease;
-        }
-        .preview-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 30px rgba(20, 184, 166, 0.16);
-            border-color: rgba(20, 184, 166, 0.2);
-        }
-
-        /* ─── Connected step-tracker ──────────────────────────── */
-        .step-tracker {
-            position: relative;
-        }
-        .step-tracker::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: rgba(148,163,184,0.15);
-            transform: translateY(-50%);
-            z-index: 0;
-        }
-        .step-node {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ─── Recommendation card ─────────────────────────────── */
-        .recommendation-card {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-        }
-        .recommendation-card.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* ─── Spinner ─────────────────────────────────────────── */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .spinner {
-            animation: spin 0.8s linear infinite;
-        }
-
-        /* ─── Chat ────────────────────────────────────────────── */
-        #chat-window {
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        #chat-window.active {
-            display: flex !important;
-        }
-
-        /* ─── Bounce ──────────────────────────────────────────── */
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        .animate-bounce {
-            animation: bounce 1s infinite;
-        }
-
-        /* ─── Shimmer ─────────────────────────────────────────── */
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* ─── Callout cards ───────────────────────────────────── */
-        .callout-critical {
-            background: rgba(239,68,68,0.06);
-            border: 1px solid rgba(239,68,68,0.15);
-        }
-        .callout-wins {
-            background: rgba(16,185,129,0.06);
-            border: 1px solid rgba(16,185,129,0.15);
-        }
-        .light .callout-critical {
-            background: rgba(239,68,68,0.05);
-            border-color: rgba(239,68,68,0.12);
-        }
-        .light .callout-wins {
-            background: rgba(16,185,129,0.05);
-            border-color: rgba(16,185,129,0.12);
-        }
-
-        /* ─── History glass cards ─────────────────────────────── */
-        .history-card {
-            transition: all 0.3s ease;
-        }
-        .history-card:hover {
-            background: rgba(20,184,166,0.04);
-            border-color: rgba(20,184,166,0.12);
-        }
-
-        /* ─── Section heading accent line ─────────────────────── */
-        .section-heading::after {
-            content: '';
-            display: block;
-            width: 48px;
-            height: 3px;
-            border-radius: 2px;
-            background: linear-gradient(90deg, #14b8a6, transparent);
-            margin-top: 0.5rem;
-        }
-        .section-heading.center::after {
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* ─── Subtle scrollbar ────────────────────────────────── */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.35); }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f1ea">
+  <title>Streetcoders SEO — Higher Ground</title>
+  <meta name="description" content="Distinctive interactive 3D topographic SEO intelligence by Streetcoders. Discover site architecture and technical SEO from a higher ground.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen">
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="#" aria-label="Streetcoders SEO home">
+      <span class="brand-mark">✳</span>
+      <span><strong>Streetcoders</strong><small>SEO INTELLIGENCE</small></span>
+    </a>
+    <nav class="navigation" aria-label="Main navigation">
+      <button class="nav-item active" data-view="Overview"><span>◉</span>Overview<i></i></button>
+      <button class="nav-item" data-view="Site Explorer"><span>⌕</span>Site Explorer</button>
+      <button class="nav-item" data-view="Technical Audit"><span>⌘</span>Technical Audit</button>
+      <button class="nav-item" data-view="Content Analysis"><span>▧</span>Content Analysis</button>
+      <button class="nav-item" data-view="Backlinks"><span>↗</span>Backlinks</button>
+      <button class="nav-item" data-view="Performance"><span>◴</span>Performance</button>
+      <button class="nav-item" data-view="Recommendations"><span>◎</span>Recommendations</button>
+    </nav>
+    <div class="sidebar-landscape" aria-hidden="true"></div>
+    <div class="sidebar-bottom">
+      <p>Turn websites<br>into opportunities.</p>
+      <small>INSIGHTS FOR<br>HIGHER GROUND</small>
+    </div>
+  </aside>
 
-    <!-- ═══════════════════  HEADER  ═══════════════════ -->
-    <header class="flex justify-between items-center py-5 px-4 md:px-8 max-w-7xl mx-auto">
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            <span class="text-primary-500">Street</span><span class="text-gray-300 dark:text-gray-400"> Coders</span>
-        </h1>
-        <button id="theme-toggle" class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/10">
-            <svg class="w-5 h-5 hidden dark:block text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
-            </svg>
-            <svg class="w-5 h-5 block dark:hidden text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-            </svg>
-        </button>
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumb"><span>/</span> <b id="current-section">ANALYZE</b></div>
+      <div class="top-actions">
+        <button class="icon-button" id="history-toggle-btn" aria-label="Scan history" title="View scan history">⌕</button>
+        <button class="icon-button" id="download-report-btn" aria-label="Export PDF report" title="Export PDF report">⎙</button>
+        <button class="icon-button" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">☼</button>
+        <button class="icon-button" id="help-button" aria-label="Help" title="About Streetcoders SEO">?</button>
+        <div class="avatar" title="Streetcoders SEO">S</div>
+      </div>
     </header>
 
-    <!-- ═══════════════════  HERO + URL INPUT  ═══════════════════ -->
-    <main class="container mx-auto max-w-7xl text-center pt-16 pb-24 px-4">
-        <h2 class="text-4xl sm:text-5xl lg:text-7xl font-black mb-5 tracking-tight leading-[1.1] text-gray-800 dark:text-white">
-            Automating <br class="hidden sm:block"><span class="bg-gradient-to-r from-primary-500 to-primary-400 bg-clip-text text-transparent">Search Engine Optimization</span>
-        </h2>
-        <h3 class="text-lg sm:text-xl lg:text-2xl font-light mb-16 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-            AI-Powered, Real-Time Web Analysis
-        </h3>
-
-        <!-- Feature cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-20 max-w-5xl mx-auto">
-            <div class="feature-card glass-card p-7 stagger-1">
-                <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                </div>
-                <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Real-time Analysis</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Instantly monitor your website's performance</p>
-            </div>
-            <div class="feature-card glass-card p-7 stagger-2">
-                <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                    </svg>
-                </div>
-                <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Smart Recommendations</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">AI-powered suggestions to boost rankings</p>
-            </div>
-            <div class="feature-card glass-card p-7 stagger-3">
-                <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Persistence History</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Track progress and improvements over time</p>
-            </div>
+    <section class="workspace">
+      <div class="intro-column">
+        <div class="intro-copy">
+          <p class="eyebrow">SEARCH VISIBILITY / SITE INTELLIGENCE</p>
+          <h1>See your website<br>from a <em>higher ground.</em></h1>
+          <p class="intro-text">We scan, analyse and map everything that matters for search visibility.</p>
         </div>
 
-        <!-- URL Input -->
-        <div class="max-w-2xl mx-auto">
-            <label class="block text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Enter a URL to Analyze</label>
-            <div class="glass-card spring-card p-2 flex flex-col sm:flex-row gap-2">
-                <input type="url" id="url-input" 
-                       placeholder="https://example.com"
-                       class="input-glow flex-grow p-4 rounded-xl focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-transparent text-base">
-                <button id="launch-btn" 
-                        class="btn-gradient text-white font-bold py-4 px-8 rounded-xl whitespace-nowrap text-base tracking-wide">
-                    Launch SEO Analyser
-                </button>
-            </div>
+        <form class="url-form" id="analyze-form">
+          <label for="website-url">ENTER YOUR WEBSITE</label>
+          <div class="url-input-row">
+            <input id="website-url" type="url" placeholder="https://example.com" required>
+            <button type="submit" id="analyze-submit-btn" aria-label="Analyze website">→</button>
+          </div>
+          <div id="competitor-input-group" class="url-input-row" style="margin-top:8px; display:none;">
+            <input id="competitor-url" type="url" placeholder="https://competitor.com (Competitor URL)">
+          </div>
+          <div class="scan-modes">
+            <label><input type="radio" name="scan-mode" value="full" checked> Full Scan</label>
+            <label><input type="radio" name="scan-mode" value="quick"> Quick Audit</label>
+            <label><input type="radio" name="scan-mode" value="compare"> Competitor Compare</label>
+          </div>
+          <p class="form-status" id="form-status" role="status">Enter a website to begin a scan.</p>
+        </form>
+
+        <!-- Preserved compatibility elements for test suite -->
+        <div style="display:none;" aria-hidden="true">
+          <div id="mountain-canvas-container"></div>
+          <div id="mountain-scanning-overlay" class="mountain-scanning-overlay hidden">
+            <span id="scanning-phase-title">SCANNING ARCHITECTURE</span>
+            <small id="scanning-phase-detail">Mapping topographic strata &amp; audit signals...</small>
+          </div>
+          <div id="terrain-inspector-card"></div>
         </div>
-    </main>
 
-    <!-- ═══════════════════  LOADING STATE  ═══════════════════ -->
-    <div id="loading-section" class="hidden max-w-3xl mx-auto px-4 py-8">
-        <div class="glass-card p-10 text-center">
-            <div class="w-14 h-14 border-[3px] border-primary-500 border-t-transparent rounded-full spinner mx-auto mb-5"></div>
-            <p class="text-lg font-medium text-gray-300 mb-8">Checking domain &amp; fetching page…</p>
-            <!-- Connected step tracker -->
-            <div class="step-tracker flex items-center justify-center gap-0 max-w-sm mx-auto">
-                <div class="step-node flex flex-col items-center">
-                    <span id="phase-domain" class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-primary-500 text-white shadow-glow">1</span>
-                    <span class="text-[11px] mt-2 text-gray-400 font-medium">Domain</span>
-                </div>
-                <div class="flex-1 h-0.5 bg-gray-700 relative z-0 mx-1">
-                    <div class="h-full bg-primary-500/40 rounded transition-all duration-700" style="width:0%"></div>
-                </div>
-                <div class="step-node flex flex-col items-center">
-                    <span id="phase-fetch" class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400">2</span>
-                    <span class="text-[11px] mt-2 text-gray-400 font-medium">Fetch</span>
-                </div>
-                <div class="flex-1 h-0.5 bg-gray-700 relative z-0 mx-1">
-                    <div class="h-full bg-primary-500/40 rounded transition-all duration-700" style="width:0%"></div>
-                </div>
-                <div class="step-node flex flex-col items-center">
-                    <span id="phase-score" class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400">3</span>
-                    <span class="text-[11px] mt-2 text-gray-400 font-medium">Score</span>
-                </div>
+        <!-- ═══════════ Site Architecture & SERP Intelligence Deck ═══════════ -->
+        <section class="intelligence-deck" id="intelligence-deck" aria-label="Site Architecture and SERP Intelligence">
+          <div class="deck-header">
+            <div class="deck-label">SITE INTELLIGENCE <span>● REAL-TIME DIRECTIVES &amp; SERP SIMULATOR</span></div>
+            <div class="preset-targets">
+              <span class="preset-label">Quick Run:</span>
+              <button type="button" class="preset-btn" data-preset="https://github.com">github.com</button>
+              <button type="button" class="preset-btn" data-preset="https://vercel.com">vercel.com</button>
+              <button type="button" class="preset-btn" data-preset="https://stripe.com">stripe.com</button>
+              <button type="button" class="preset-btn" data-preset="https://news.ycombinator.com">ycombinator</button>
             </div>
-        </div>
-    </div>
+          </div>
 
-    <!-- ═══════════════════  RESULTS  ═══════════════════ -->
-    <div id="results-section" class="hidden max-w-6xl mx-auto px-4 pb-24">
+          <div class="deck-grid">
+            <!-- Left: Google Search Preview (SERP Snippet Simulator) -->
+            <div class="serp-card">
+              <div class="serp-header">
+                <span>Google SERP Preview</span>
+                <div class="serp-gauges">
+                  <span class="serp-gauge">Title: <b id="serp-title-count">0</b>/60</span>
+                  <span class="serp-gauge">Meta: <b id="serp-desc-count">0</b>/160</span>
+                </div>
+              </div>
 
-        <!-- ── Score Dashboard ─────────────────────────────── -->
-        <section class="mt-12 mb-16">
-            <h4 class="text-lg sm:text-xl font-semibold mb-2 text-gray-400 dark:text-gray-500 text-center tracking-wide uppercase">
-                Overall Web Score: <span id="overall-score" class="text-primary-400">0/100</span>
-            </h4>
-            <div class="text-center mb-10">
-                <button id="download-report-btn" class="inline-flex items-center gap-2 btn-gradient text-white font-semibold py-2.5 px-6 rounded-xl text-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                    <span>Download PDF Report</span>
-                </button>
+              <div class="serp-preview-box">
+                <div class="serp-site-row">
+                  <div class="serp-favicon" id="serp-favicon">⌘</div>
+                  <div class="serp-site-info">
+                    <span class="serp-source-name" id="serp-source-name">Streetcoders SEO</span>
+                    <span class="serp-url-breadcrumb" id="serp-url-preview">https://example.com › search-visibility</span>
+                  </div>
+                </div>
+                <a class="serp-title-link" id="serp-title-preview" href="#website-url">Enter a website URL above to preview live Google search snippet</a>
+                <p class="serp-description-snippet" id="serp-desc-preview">Real-time simulation of how your page title, URL breadcrumb hierarchy, and meta description render inside desktop and mobile Google Search results.</p>
+              </div>
             </div>
 
-            <!-- Large focal score ring + category rings -->
-            <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16">
-                <!-- Final Score Ring (large, focal) -->
-                <div class="glass-card p-8 flex flex-col items-center score-ring-glow score-focal-card stagger-1">
-                    <div class="relative w-48 h-48 mx-auto">
-                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="6"></circle>
-                            <circle id="final-circle" cx="50" cy="50" r="45" fill="none" stroke="#14b8a6" stroke-width="6" class="progress-circle" stroke-linecap="round"></circle>
-                        </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span id="final-score-text" class="text-5xl font-black text-primary-400">0</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-500 font-medium">/ 100</span>
-                        </div>
-                    </div>
-                    <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-4">Final Score</p>
-                </div>
-
-                <!-- Category rings grid -->
-                <div class="grid grid-cols-2 gap-6 sm:gap-8">
-                    <div class="category-ring-card text-center stagger-2">
-                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
-                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
-                                <circle id="circle-onpage" cx="50" cy="50" r="45" fill="none" stroke="#3b82f6" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span id="score-onpage" class="text-xl sm:text-2xl font-extrabold text-scoreBlue">0</span>
-                            </div>
-                        </div>
-                        <h5 class="text-sm font-bold text-gray-300">OnPage</h5>
-                        <p class="text-[11px] text-gray-500">Max: 40</p>
-                        <p id="reason-onpage" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
-                    </div>
-                    <div class="category-ring-card text-center stagger-3">
-                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
-                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
-                                <circle id="circle-technical" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span id="score-technical" class="text-xl sm:text-2xl font-extrabold text-scoreGreen">0</span>
-                            </div>
-                        </div>
-                        <h5 class="text-sm font-bold text-gray-300">Technical</h5>
-                        <p class="text-[11px] text-gray-500">Max: 30</p>
-                        <p id="reason-technical" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
-                    </div>
-                    <div class="category-ring-card text-center stagger-4">
-                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
-                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
-                                <circle id="circle-content" cx="50" cy="50" r="45" fill="none" stroke="#f97316" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span id="score-content" class="text-xl sm:text-2xl font-extrabold text-scoreOrange">0</span>
-                            </div>
-                        </div>
-                        <h5 class="text-sm font-bold text-gray-300">Content</h5>
-                        <p class="text-[11px] text-gray-500">Max: 20</p>
-                        <p id="reason-content" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
-                    </div>
-                    <div class="category-ring-card text-center stagger-5">
-                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
-                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
-                                <circle id="circle-link" cx="50" cy="50" r="45" fill="none" stroke="#ef4444" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span id="score-link" class="text-xl sm:text-2xl font-extrabold text-scoreRed">0</span>
-                            </div>
-                        </div>
-                        <h5 class="text-sm font-bold text-gray-300">Link</h5>
-                        <p class="text-[11px] text-gray-500">Max: 10</p>
-                        <p id="reason-link" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
-                    </div>
-                </div>
+            <!-- Right: Core Signals & Architecture Matrix -->
+            <div class="signals-matrix-card">
+              <div class="matrix-header">
+                <span>Core Crawler Directives</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🔒</i> SSL / HTTPS Transport</span>
+                <span class="signal-badge" id="signal-https">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">📱</i> Mobile Viewport Ready</span>
+                <span class="signal-badge" id="signal-viewport">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🏷</i> Canonical URL Reference</span>
+                <span class="signal-badge" id="signal-canonical">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🤖</i> Robots.txt &amp; Sitemap</span>
+                <span class="signal-badge" id="signal-robots">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🔤</i> Semantic H1 Structure</span>
+                <span class="signal-badge" id="signal-h1">Awaiting Scan</span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-name"><i class="signal-icon">🌐</i> OpenGraph Social Tags</span>
+                <span class="signal-badge" id="signal-og">Awaiting Scan</span>
+              </div>
             </div>
-
-            <!-- Callout Cards: Critical Issues & Quick Wins -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-12 max-w-3xl mx-auto">
-                <div class="callout-critical callout-spring rounded-2xl p-6 stagger-3 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                                <h5 class="text-sm font-bold text-red-400">Critical Issues</h5>
-                            </div>
-                            <span id="callout-critical-badge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">0</span>
-                        </div>
-                        <div id="callout-critical-list" class="space-y-2 mb-3">
-                            <p class="text-xs text-gray-400 leading-relaxed">Issues that significantly impact SEO performance. Fix these first for maximum improvement.</p>
-                        </div>
-                    </div>
-                    <div id="callout-critical-footer" class="pt-2 border-t border-red-500/10 hidden">
-                        <button onclick="switchTab('recommendations')" class="text-xs font-semibold text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors">
-                            <span id="callout-critical-link-text">View all critical issues</span> &rarr;
-                        </button>
-                    </div>
-                </div>
-
-                <div class="callout-wins callout-spring rounded-2xl p-6 stagger-4 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                <h5 class="text-sm font-bold text-green-400">Quick Wins</h5>
-                            </div>
-                            <span id="callout-wins-badge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30">0</span>
-                        </div>
-                        <div id="callout-wins-list" class="space-y-2 mb-3">
-                            <p class="text-xs text-gray-400 leading-relaxed">Low-effort improvements that can boost your score quickly. Often fixable in minutes.</p>
-                        </div>
-                    </div>
-                    <div id="callout-wins-footer" class="pt-2 border-t border-green-500/10 hidden">
-                        <button onclick="switchTab('recommendations')" class="text-xs font-semibold text-green-400 hover:text-green-300 flex items-center gap-1 transition-colors">
-                            <span id="callout-wins-link-text">View all quick wins</span> &rarr;
-                        </button>
-                    </div>
-                </div>
-            </div>
+          </div>
         </section>
 
-        <!-- ── Detailed Analysis (Pill Tabs) ──────────────── -->
-        <section class="mt-16">
-            <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Detailed Analysis</h4>
-            
-            <!-- Tab pills -->
-            <div class="flex flex-wrap justify-center gap-2 mb-8">
-                <button onclick="switchTab('breakdown')" class="tab-pill active px-5 py-2.5 rounded-full text-sm font-semibold border border-white/5 bg-white/5 text-gray-300" data-tab="breakdown">
-                    Breakdown
-                </button>
-                <button onclick="switchTab('stats')" class="tab-pill px-5 py-2.5 rounded-full text-sm font-semibold border border-white/5 bg-white/5 text-gray-400" data-tab="stats">
-                    Quick Stats
-                </button>
-                <button onclick="switchTab('recommendations')" class="tab-pill px-5 py-2.5 rounded-full text-sm font-semibold border border-white/5 bg-white/5 text-gray-400" data-tab="recommendations">
-                    Recommendations
-                </button>
+        <section class="metric-grid" aria-label="SEO summary metrics">
+          <article class="metric-card">
+            <div class="metric-label">PAGES CRAWLED <span>↗</span></div>
+            <div class="metric-value" id="pages-crawled">— <small id="pages-crawled-badge" style="display:none;">↑ 0%</small></div>
+            <div class="mini-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <p id="pages-crawled-sub">Enter website URL above</p>
+          </article>
+          <article class="metric-card">
+            <div class="metric-label">ISSUES FOUND <span>↗</span></div>
+            <div class="metric-value" id="issues-found-total">—</div>
+            <div class="issue-legend">
+              <span><i class="dot critical"></i>High <b id="issues-high-count">0</b></span>
+              <span><i class="dot warning"></i>Medium <b id="issues-med-count">0</b></span>
+              <span><i class="dot healthy"></i>Low <b id="issues-low-count">0</b></span>
             </div>
-
-            <!-- Tab: Breakdown -->
-            <div id="tab-breakdown" class="tab-content">
-                <div class="glass-card p-8">
-                    <h4 class="text-lg font-bold mb-6 text-gray-200">Overall Analysis Breakdown</h4>
-                    <div class="flex flex-col sm:flex-row items-center justify-center gap-8">
-                        <svg id="pie-chart-svg" viewBox="0 0 200 200" class="w-56 h-56"></svg>
-                        <div id="pie-chart-legend" class="space-y-3"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Quick Stats -->
-            <div id="tab-stats" class="tab-content hidden">
-                <div class="glass-card p-8">
-                    <div class="space-y-5">
-                        <div class="border-b border-white/5 pb-4">
-                            <p class="text-[11px] font-bold text-primary-400 uppercase tracking-widest mb-1">Website Title</p>
-                            <p id="stats-title" class="text-lg font-medium text-gray-200">---</p>
-                        </div>
-                        <div class="border-b border-white/5 pb-4">
-                            <p class="text-[11px] font-bold text-primary-400 uppercase tracking-widest mb-1">Meta Description</p>
-                            <p id="stats-desc" class="text-lg font-medium text-gray-200">---</p>
-                        </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5 pt-2">
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">H1 Count</p>
-                                <p id="stats-h1" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Word Count</p>
-                                <p id="stats-words" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Images</p>
-                                <p id="stats-images" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Links</p>
-                                <p id="stats-links" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">HTTPS</p>
-                                <p id="stats-https" class="text-2xl font-bold text-gray-200">---</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Keywords</p>
-                                <p id="stats-keywords" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Recommendations -->
-            <div id="tab-recommendations" class="tab-content hidden">
-                <div id="recommendations-list" class="grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
-            </div>
-        </section>
-
-        <!-- ── Web Preview ─────────────────────────────────── -->
-        <section class="mt-16">
-            <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Web Preview</h4>
-            <div class="glass-card overflow-hidden preview-card">
-                <!-- Window chrome: traffic lights + URL bar -->
-                <div class="flex items-center gap-3 px-4 py-3 bg-black/20 border-b border-white/5">
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <span class="w-3 h-3 rounded-full bg-red-400/80"></span>
-                        <span class="w-3 h-3 rounded-full bg-yellow-400/80"></span>
-                        <span class="w-3 h-3 rounded-full bg-green-400/80"></span>
-                    </div>
-                    <div class="flex items-center gap-2 flex-1 bg-white/5 rounded-lg px-3 py-1.5 text-sm min-w-0 border border-white/5">
-                        <span id="preview-https-badge" class="hidden items-center gap-1 text-green-400 shrink-0 text-xs font-semibold">
-                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <span>Secure</span>
-                        </span>
-                        <span id="preview-url-bar" class="text-gray-400 truncate text-xs">—</span>
-                    </div>
-                </div>
-
-                <!-- Preview body -->
-                <div id="preview-container" class="relative bg-gray-900/40">
-                    <div id="preview-skeleton" class="w-full h-72 animate-pulse" style="display:none;">
-                        <div class="h-full bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" style="background-size:200% 100%;animation:shimmer 1.5s infinite;"></div>
-                    </div>
-                    <div id="preview-loading" class="w-full h-72 flex items-center justify-center">
-                        <div class="w-10 h-10 border-[3px] border-primary-500 border-t-transparent rounded-full spinner"></div>
-                    </div>
-                    <!-- Clickable Web Preview with Hover Visit Badge -->
-                    <a id="web-preview-link" href="#" target="_blank" rel="noopener noreferrer"
-                       onclick="openAnalyzedSite(event, this)"
-                       class="group relative block overflow-hidden cursor-pointer"
-                       title="Visit analyzed site">
-                        <img id="web-preview-img"
-                             src="" alt="Website Preview"
-                             loading="lazy"
-                             class="w-full block transition-transform duration-500 ease-out group-hover:scale-[1.015]"
-                             style="display:none;">
-                        <div id="preview-hover-badge"
-                             class="pointer-events-none absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/80 backdrop-blur-md border border-white/10 text-white text-xs font-semibold flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-y-1 group-hover:translate-y-0 shadow-lg"
-                             style="display:none;">
-                            <span>Visit site</span>
-                            <svg class="w-3.5 h-3.5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                        </div>
-                    </a>
-                    <div id="preview-fallback" class="w-full h-72 flex flex-col items-center justify-center gap-4 p-8" style="display:none;">
-                        <img id="preview-favicon" src="" alt="" class="w-10 h-10 rounded-lg" onerror="this.style.display='none'">
-                        <div class="text-center">
-                            <p id="preview-fallback-domain" class="font-semibold text-gray-300 mb-1"></p>
-                            <p id="preview-error-message" class="text-sm text-gray-500">Preview unavailable</p>
-                        </div>
-                        <div class="flex gap-3">
-                            <button id="preview-retry-btn"
-                                    class="px-4 py-2 text-sm font-semibold btn-gradient text-white rounded-lg">
-                                Retry Preview
-                            </button>
-                            <a id="preview-visit-link" href="#" target="_blank" rel="noopener noreferrer"
-                               class="px-4 py-2 text-sm font-semibold border border-white/10 text-gray-300 hover:bg-white/5 rounded-lg transition-colors">
-                                Visit Site →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── Analysis History ────────────────────────────── -->
-        <section class="mt-16 mb-16">
-            <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Analysis History</h4>
-            <div id="history-list" class="glass-card p-6">
-                <div class="flex flex-col items-center justify-center py-10 px-4 text-center">
-                    <svg class="w-12 h-12 text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p class="text-sm font-medium text-gray-500">No analysis history yet</p>
-                    <p class="text-xs text-gray-600 mt-1">Audit websites to keep track of your scores over time.</p>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- ═══════════════════  ERROR MODAL  ═══════════════════ -->
-    <div id="error-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="glass-card max-w-md w-full p-8 transform transition-all border-white/10">
-            <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-500/10 mb-4">
-                    <svg class="h-10 w-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                </div>
-                
-                <h3 class="text-2xl font-bold text-white mb-2">
-                    Analysis Error
-                </h3>
-                
-                <p class="text-gray-400 mb-4" id="error-message">
-                    The domain you entered is not registered or does not exist.
-                </p>
-                
-                <div class="bg-red-500/5 border border-red-500/15 rounded-xl p-3.5 mb-4">
-                    <p class="text-sm font-mono text-red-400" id="error-domain">example.com</p>
-                </div>
-                
-                <div class="text-left bg-white/3 rounded-xl p-4 mb-6 border border-white/5">
-                    <p class="text-sm font-semibold text-gray-300 mb-2">Suggested troubleshooting:</p>
-                    <ul class="text-sm text-gray-400 space-y-1">
-                        <li>• Check for typos in the domain name</li>
-                        <li>• Verify the URL is public and online</li>
-                        <li>• Ensure your internet connection is active</li>
-                        <li>• Try another website URL</li>
-                    </ul>
-                </div>
-                
-                <div class="text-left mb-6">
-                    <p class="text-sm font-semibold text-gray-300 mb-3 text-center">Try these working examples:</p>
-                    <div class="flex flex-wrap gap-2 justify-center">
-                        <button onclick="tryExample('example.com')" class="text-xs font-semibold bg-white/5 hover:bg-primary-500/10 text-primary-400 px-3.5 py-2 rounded-full transition-all border border-white/5 hover:border-primary-500/20">
-                            example.com
-                        </button>
-                        <button onclick="tryExample('github.com')" class="text-xs font-semibold bg-white/5 hover:bg-primary-500/10 text-primary-400 px-3.5 py-2 rounded-full transition-all border border-white/5 hover:border-primary-500/20">
-                            github.com
-                        </button>
-                        <button onclick="tryExample('wikipedia.org')" class="text-xs font-semibold bg-white/5 hover:bg-primary-500/10 text-primary-400 px-3.5 py-2 rounded-full transition-all border border-white/5 hover:border-primary-500/20">
-                            wikipedia.org
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="flex gap-3">
-                    <button onclick="closeErrorModal()" class="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-gray-300 font-semibold rounded-xl transition border border-white/5">
-                        Cancel
-                    </button>
-                    <button onclick="retryWithCorrection()" class="flex-1 px-4 py-3 btn-gradient text-white font-semibold rounded-xl transition">
-                        Try Again
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════  CHATBOT  ═══════════════════ -->
-    <div id="chatbot-container" class="fixed bottom-5 right-4 sm:right-5 z-50">
-        <div id="chat-window" class="w-[calc(100vw-2rem)] sm:w-96 h-[70vh] sm:h-[500px] glass-card flex-col border-white/10" style="display: none;">
-            <div class="p-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold rounded-t-[1.25rem] flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                    </svg>
-                    <span class="text-sm">AI SEO Assistant</span>
-                </div>
-                <button id="chat-close-btn" class="hover:bg-white/10 p-1.5 rounded-lg transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-black/20" style="flex: 1; min-height: 0;">
-                <div class="flex gap-2">
-                    <div class="bg-primary-500 text-white p-3 rounded-2xl rounded-tl-none max-w-[80%]">
-                        <p class="text-sm">👋 Hi! I'm your AI SEO assistant. Ask me anything about SEO optimization, keywords, or website performance!</p>
-                    </div>
-                </div>
-            </div>
-            <div class="p-4 bg-black/10 border-t border-white/5 rounded-b-[1.25rem]">
-                <div class="flex gap-2">
-                    <input id="chat-input" type="text" placeholder="Ask about SEO..." 
-                           class="input-glow flex-grow p-3 rounded-xl border border-white/10 bg-white/5 text-gray-100 placeholder-gray-500 focus:outline-none text-sm">
-                    <button id="chat-send-btn" class="btn-gradient text-white p-3 rounded-xl">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <button id="chat-toggle-btn" class="w-14 h-14 rounded-full btn-gradient text-white shadow-glow-md hover:shadow-glow-lg hover:scale-110 transition-all flex items-center justify-center">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+          </article>
+          <article class="metric-card">
+            <div class="metric-label">EST. TRAFFIC POTENTIAL <span>↗</span></div>
+            <div class="metric-value" id="traffic-potential-value">— <small style="display:none;">↑ 0%</small></div>
+            <svg class="sparkline" viewBox="0 0 240 52" preserveAspectRatio="none" aria-label="Illustrative upward trend">
+              <path d="M0 43 C25 40 28 44 52 33 S85 39 112 22 S145 26 168 16 S207 12 240 2 L240 52 L0 52 Z" fill="rgba(65,103,67,.06)"></path>
+              <path d="M0 43 C25 40 28 44 52 33 S85 39 112 22 S145 26 168 16 S207 12 240 2" fill="none" stroke="#456a46" stroke-width="1.2" opacity="0.4"></path>
             </svg>
-        </button>
+            <p>Calculated live after audit</p>
+          </article>
+        </section>
+      </div>
+
+      <aside class="right-column">
+        <section class="panel live-panel">
+          <div class="panel-heading"><h2>⌁ &nbsp; LIVE ANALYSIS</h2><span class="status-dot"></span></div>
+          <ol class="analysis-steps" id="analysis-steps">
+            <li id="step-crawl">1. Connect &amp; inspect server <span id="step-crawl-info">Ready</span></li>
+            <li id="step-content">2. Crawl DOM &amp; analyze structure</li>
+            <li id="step-tech">3. Check technical signals &amp; protocols</li>
+            <li id="step-links">4. Map internal &amp; external links</li>
+            <li id="step-opportunities">5. Measure Web Vitals &amp; prescriptions</li>
+          </ol>
+          <div class="mini-terrain" aria-hidden="true">
+            <img src="assets/mountain-reference.jpg" id="mini-terrain-img" alt="Website preview reference">
+          </div>
+        </section>
+
+        <section class="panel score-panel">
+          <div class="panel-heading"><h2>SEO HEALTH SCORE</h2><span class="score-status" id="score-status-text">Ready to Scan</span></div>
+          <div class="score-layout">
+            <div class="score-orb">
+              <div>
+                <strong id="health-score"><span id="score-total">—</span></strong>
+                <span>/100</span>
+              </div>
+            </div>
+            <div class="score-categories">
+              <div class="score-row">
+                <span class="category-icon">⌘</span>
+                <div>
+                  <label>Technical <b id="score-technical-val">—</b></label>
+                  <div class="progress"><i id="bar-technical" style="width:0%"></i></div>
+                </div>
+              </div>
+              <div class="score-row">
+                <span class="category-icon">◇</span>
+                <div>
+                  <label>Content <b id="score-content-val">—</b></label>
+                  <div class="progress"><i id="bar-content" style="width:0%"></i></div>
+                </div>
+              </div>
+              <div class="score-row">
+                <span class="category-icon">↗</span>
+                <div>
+                  <label>On-Page <b id="score-onpage-val">—</b></label>
+                  <div class="progress amber"><i id="bar-onpage" style="width:0%"></i></div>
+                </div>
+              </div>
+              <div class="score-row">
+                <span class="category-icon">↗</span>
+                <div>
+                  <label>Backlinks <b id="score-links-val">—</b></label>
+                  <div class="progress amber"><i id="bar-links" style="width:0%"></i></div>
+                </div>
+              </div>
+              <div class="score-row">
+                <span class="category-icon">◉</span>
+                <div>
+                  <label>UX &amp; Performance <b id="score-ux-val">—</b></label>
+                  <div class="progress"><i id="bar-ux" style="width:0%"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel opportunities-panel" id="opportunities">
+          <div class="panel-heading">
+            <h2>TOP OPPORTUNITIES</h2>
+            <button class="view-all" id="view-all">View All →</button>
+          </div>
+          
+          <div id="recommendations-container" class="recommendations-container">
+            <p style="font-size:11px; color:var(--muted); padding:16px 8px; line-height:1.6; margin:0;">
+              Ready to analyze. Enter a public website URL above and click <strong>→</strong> to run a live scan and discover prioritized opportunities.
+            </p>
+          </div>
+
+          <div class="all-opportunities" id="all-opportunities" hidden>
+            <p style="margin:8px 0 12px; font-size:10px; color:var(--muted);">Complete categorized findings from latest scan.</p>
+            <div id="all-opportunities-list"></div>
+          </div>
+        </section>
+
+        <a href="#analyze-form" class="promo-panel">
+          <span>More visibility.<br>Greater possibilities.</span>
+          <i>↗</i>
+        </a>
+      </aside>
+    </section>
+
+    <!-- ═══════════ Callout Cards: Critical Issues & Quick Wins ═══════════ -->
+    <section class="callout-grid" id="callouts-section" aria-label="Critical Issues and Quick Wins">
+      <div class="callout-card critical">
+        <div class="callout-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="dot critical"></i>
+            <h4>Critical Issues</h4>
+          </div>
+          <span id="callout-critical-badge" class="callout-badge hidden">0</span>
+        </div>
+        <div id="callout-critical-list" class="callout-items">
+          <p style="font-size:11px; color:var(--muted); margin:0;">High-impact SEO deficits requiring immediate remediation.</p>
+        </div>
+        <div id="callout-critical-footer" class="callout-footer hidden">
+          <button class="callout-action-btn" id="callout-critical-btn">
+            <span id="callout-critical-link-text">View all critical issues</span> &rarr;
+          </button>
+        </div>
+      </div>
+
+      <div class="callout-card wins">
+        <div class="callout-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="dot healthy"></i>
+            <h4>Quick Wins</h4>
+          </div>
+          <span id="callout-wins-badge" class="callout-badge hidden">0</span>
+        </div>
+        <div id="callout-wins-list" class="callout-items">
+          <p style="font-size:11px; color:var(--muted); margin:0;">Fast, low-effort improvements to quickly elevate search rankings.</p>
+        </div>
+        <div id="callout-wins-footer" class="callout-footer hidden">
+          <button class="callout-action-btn" id="callout-wins-btn">
+            <span id="callout-wins-link-text">View all quick wins</span> &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ Live Web Preview ═══════════ -->
+    <section class="web-preview-section" id="web-preview-section" aria-label="Live Website Preview">
+      <h3 class="section-title">Live Website Preview</h3>
+      <div class="preview-card">
+        <div class="preview-chrome">
+          <div class="preview-dots">
+            <span class="preview-dot red"></span>
+            <span class="preview-dot yellow"></span>
+            <span class="preview-dot green"></span>
+          </div>
+          <div class="preview-address-bar">
+            <span id="preview-https-badge" class="preview-https-badge hidden">
+              <span>🔒</span> Secure
+            </span>
+            <span id="preview-url-bar" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">https://example.com</span>
+          </div>
+        </div>
+
+        <div class="preview-viewport-box" id="preview-container">
+          <div id="preview-loading" class="hidden" style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:32px;">
+            <div class="scan-spinner" style="border-top-color:var(--green);"></div>
+            <span style="font-size:11px; color:var(--muted);">Rendering live viewport preview...</span>
+          </div>
+          <a id="web-preview-link" href="#" target="_blank" rel="noopener noreferrer" title="Click to visit analyzed site in new tab" style="position:relative; display:block; width:100%;">
+            <img id="web-preview-img" src="assets/mountain-reference.jpg" alt="Live Website Preview Screenshot">
+            <div id="preview-hover-badge" class="preview-hover-badge">
+              <span>Visit site</span> ↗
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ Detailed Analysis Suite (Tabs) ═══════════ -->
+    <section class="detailed-analysis-section" id="detailed-analysis" aria-label="Detailed Technical Analysis">
+      <h3 class="section-title">Detailed Analysis</h3>
+      
+      <div class="analysis-tabs-nav" role="tablist">
+        <button class="tab-pill active" data-tab="breakdown" role="tab" aria-selected="true">Category Breakdown</button>
+        <button class="tab-pill" data-tab="stats" role="tab" aria-selected="false">Quick Stats</button>
+        <button class="tab-pill" data-tab="backlinks" role="tab" aria-selected="false">Backlinks</button>
+        <button class="tab-pill" data-tab="performance" role="tab" aria-selected="false">Performance</button>
+        <button class="tab-pill" data-tab="recommendations" role="tab" aria-selected="false">Recommendations</button>
+      </div>
+
+      <!-- Tab 1: Breakdown (Pie/Donut Chart) -->
+      <div id="tab-breakdown" class="tab-pane active" role="tabpanel">
+        <div class="metric-card breakdown-card">
+          <div class="pie-chart-box">
+            <svg id="pie-chart-svg" viewBox="0 0 200 200" style="width:100%; height:100%;"></svg>
+          </div>
+          <div class="pie-legend-box">
+            <h4 style="margin:0 0 4px; font-size:14px; font-weight:600;">Overall Analysis Breakdown</h4>
+            <p style="margin:0 0 12px; font-size:11px; color:var(--muted);">Weighted distribution of the 100-point SEO index across key audit disciplines.</p>
+            <div id="pie-chart-legend" style="display:grid; gap:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Quick Stats -->
+      <div id="tab-stats" class="tab-pane" role="tabpanel">
+        <div class="metric-card stats-container">
+          <div class="stats-header-info">
+            <div class="stats-meta-row">
+              <small>WEBSITE TITLE</small>
+              <strong id="stats-title">—</strong>
+            </div>
+            <div class="stats-meta-row">
+              <small>META DESCRIPTION</small>
+              <strong id="stats-desc">—</strong>
+            </div>
+          </div>
+
+          <div class="stats-metrics-grid">
+            <div class="stat-box">
+              <small>H1 COUNT</small>
+              <strong id="stats-h1">0</strong>
+            </div>
+            <div class="stat-box">
+              <small>WORD COUNT</small>
+              <strong id="stats-words">0</strong>
+            </div>
+            <div class="stat-box">
+              <small>IMAGES</small>
+              <strong id="stats-images">0</strong>
+            </div>
+            <div class="stat-box">
+              <small>LINKS</small>
+              <strong id="stats-links">0</strong>
+            </div>
+            <div class="stat-box">
+              <small>SECURITY</small>
+              <strong id="stats-https">—</strong>
+            </div>
+            <div class="stat-box">
+              <small>KEYWORDS</small>
+              <strong id="stats-keywords">0</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Backlinks & Link Architecture -->
+      <div id="tab-backlinks" class="tab-pane" role="tabpanel">
+        <div class="metric-card backlinks-card">
+          <div class="backlinks-header">
+            <div>
+              <h4 style="margin:0 0 4px; font-size:15px; font-weight:600;">Link Topology &amp; Architecture</h4>
+              <p style="margin:0; font-size:11px; color:var(--muted);">Internal crawling graph, external references, nofollow ratios, and anchor density.</p>
+            </div>
+            <div class="link-health-badge" id="backlinks-health-badge">
+              <span class="dot healthy"></span> <span>Link Equity: <strong id="backlinks-equity-score">—</strong></span>
+            </div>
+          </div>
+
+          <div class="backlinks-grid">
+            <div class="stat-box link-metric">
+              <small>TOTAL DISCOVERED</small>
+              <strong id="backlinks-total-count">—</strong>
+              <span class="sub-label" id="backlinks-total-sub">All page anchor tags</span>
+            </div>
+            <div class="stat-box link-metric">
+              <small>INTERNAL CRAWL LINKS</small>
+              <strong id="backlinks-internal-count">—</strong>
+              <span class="sub-label" id="backlinks-internal-pct">Awaiting scan</span>
+            </div>
+            <div class="stat-box link-metric">
+              <small>EXTERNAL REFERENCES</small>
+              <strong id="backlinks-external-count">—</strong>
+              <span class="sub-label" id="backlinks-external-pct">Awaiting scan</span>
+            </div>
+            <div class="stat-box link-metric">
+              <small>NOFOLLOW ATTRIBUTES</small>
+              <strong id="backlinks-nofollow-count">—</strong>
+              <span class="sub-label" id="backlinks-nofollow-sub">Crawler directive links</span>
+            </div>
+          </div>
+
+          <div class="backlinks-analysis-split">
+            <div class="backlinks-distribution-panel">
+              <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Internal vs External Equity</h5>
+              <div class="link-bar-container">
+                <div class="link-bar-fill internal" id="backlinks-bar-internal" style="width:0%;"></div>
+                <div class="link-bar-fill external" id="backlinks-bar-external" style="width:0%;"></div>
+              </div>
+              <div class="link-bar-legend">
+                <span><i class="legend-color-dot" style="background:var(--green);"></i> Internal Links (<b id="backlinks-legend-internal">—</b>)</span>
+                <span><i class="legend-color-dot" style="background:#b87333;"></i> External Links (<b id="backlinks-legend-external">—</b>)</span>
+              </div>
+            </div>
+
+            <div class="backlinks-audit-checklist">
+              <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Architecture Diagnostics</h5>
+              <div class="audit-check-item" id="check-link-density">
+                <span class="check-icon">✓</span>
+                <div class="check-text">
+                  <strong>Link-to-Content Ratio: <span id="link-density-val">Awaiting Scan</span></strong>
+                  <small id="link-density-detail">Submit a website URL above to map internal and external link architecture in real-time.</small>
+                </div>
+              </div>
+              <div class="audit-check-item" id="check-orphan-risk">
+                <span class="check-icon">✓</span>
+                <div class="check-text">
+                  <strong>Orphan Page Prevention</strong>
+                  <small id="link-orphan-detail">Navigation menus and footers provide crawler discoverability.</small>
+                </div>
+              </div>
+              <div class="audit-check-item" id="check-outbound-hygiene">
+                <span class="check-icon">✓</span>
+                <div class="check-text">
+                  <strong>External Link Hygiene</strong>
+                  <small id="link-outbound-detail">External links point to valid authoritative protocols.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Performance & Web Vitals -->
+      <div id="tab-performance" class="tab-pane" role="tabpanel">
+        <div class="metric-card performance-card">
+          <div class="perf-header">
+            <div>
+              <h4 style="margin:0 0 4px; font-size:15px; font-weight:600;">Core Web Vitals &amp; Page Speed</h4>
+              <p style="margin:0; font-size:11px; color:var(--muted);">Simulated field performance metrics, rendering bottlenecks, and asset optimization signals.</p>
+            </div>
+            <div class="perf-health-badge" id="perf-health-badge">
+              <span class="dot healthy"></span> <span>UX Score: <strong id="perf-ux-score">—</strong></span>
+            </div>
+          </div>
+
+          <div class="vitals-grid">
+            <div class="vital-card">
+              <div class="vital-label">
+                <span>LARGEST CONTENTFUL PAINT (LCP)</span>
+                <span class="vital-badge" id="vital-lcp-badge">Awaiting Scan</span>
+              </div>
+              <div class="vital-value" id="vital-lcp-val">—</div>
+              <div class="vital-progress"><i id="vital-lcp-bar" style="width:0%; background:var(--green);"></i></div>
+              <small class="vital-sub">Target &le; 2.5s for optimal search ranking</small>
+            </div>
+
+            <div class="vital-card">
+              <div class="vital-label">
+                <span>CUMULATIVE LAYOUT SHIFT (CLS)</span>
+                <span class="vital-badge" id="vital-cls-badge">Awaiting Scan</span>
+              </div>
+              <div class="vital-value" id="vital-cls-val">—</div>
+              <div class="vital-progress"><i id="vital-cls-bar" style="width:0%; background:var(--green);"></i></div>
+              <small class="vital-sub">Target &le; 0.1 visual stability score</small>
+            </div>
+
+            <div class="vital-card">
+              <div class="vital-label">
+                <span>FIRST INPUT DELAY (FID / INP)</span>
+                <span class="vital-badge" id="vital-fid-badge">Awaiting Scan</span>
+              </div>
+              <div class="vital-value" id="vital-fid-val">—</div>
+              <div class="vital-progress"><i id="vital-fid-bar" style="width:0%; background:var(--green);"></i></div>
+              <small class="vital-sub">Target &le; 100ms for instantaneous interactivity</small>
+            </div>
+
+            <div class="vital-card">
+              <div class="vital-label">
+                <span>TIME TO FIRST BYTE (TTFB)</span>
+                <span class="vital-badge" id="vital-ttfb-badge">Awaiting Scan</span>
+              </div>
+              <div class="vital-value" id="vital-ttfb-val">—</div>
+              <div class="vital-progress"><i id="vital-ttfb-bar" style="width:0%; background:var(--green);"></i></div>
+              <small class="vital-sub">Target &le; 800ms server response time</small>
+            </div>
+          </div>
+
+          <div class="perf-diagnostics-grid">
+            <div class="perf-diag-box">
+              <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Asset &amp; Payload Diagnostics</h5>
+              <ul class="perf-diag-list">
+                <li>
+                  <span>Image Optimization</span>
+                  <strong id="perf-diag-images">—</strong>
+                </li>
+                <li>
+                  <span>Mobile Viewport Tag</span>
+                  <strong id="perf-diag-viewport">—</strong>
+                </li>
+                <li>
+                  <span>Scripts Detected</span>
+                  <strong id="perf-diag-scripts">—</strong>
+                </li>
+                <li>
+                  <span>Stylesheets Loaded</span>
+                  <strong id="perf-diag-styles">—</strong>
+                </li>
+                <li>
+                  <span>Transport Protocol</span>
+                  <strong id="perf-diag-protocol">—</strong>
+                </li>
+              </ul>
+            </div>
+
+            <div class="perf-diag-box">
+              <h5 style="margin:0 0 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Speed Optimization Advice</h5>
+              <div class="perf-tips-list" id="perf-tips-container">
+                <div class="perf-tip">
+                  <span class="tip-dot">⚡</span>
+                  <div>
+                    <strong>Compress and modernize imagery</strong>
+                    <p>Serve images in WebP or AVIF format to reduce payload by up to 60%.</p>
+                  </div>
+                </div>
+                <div class="perf-tip">
+                  <span class="tip-dot">⚡</span>
+                  <div>
+                    <strong>Minify JavaScript &amp; CSS</strong>
+                    <p>Defer non-essential third-party scripts to keep the main thread idle.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Detailed Recommendations Grid -->
+      <div id="tab-recommendations" class="tab-pane" role="tabpanel">
+        <div id="recommendations-list" class="recommendations-grid"></div>
+      </div>
+    </section>
+
+    <!-- Competitor Compare Modal -->
+    <div class="modal-backdrop hidden" id="competitor-modal" role="dialog" aria-modal="true" aria-labelledby="competitor-modal-title">
+      <div class="modal-card competitor-modal-card">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="brand-mark" style="width:20px;height:20px;font-size:11px;">⚔</span>
+            <h3 id="competitor-modal-title">Head-to-Head Competitor Comparison</h3>
+          </div>
+          <button class="modal-close" id="competitor-modal-close" aria-label="Close competitor comparison">×</button>
+        </div>
+        <p style="font-size:11px; color:var(--muted); margin-bottom:14px;">Side-by-side technical and search visibility benchmark.</p>
+        
+        <div id="competitor-modal-content">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
     </div>
 
-    <!-- ═══════════════════  TAB SWITCHING & PREVIEW CLICKTHROUGH (minimal JS)  ═══════════════════ -->
-    <script>
-    function switchTab(tabName) {
-        // Hide all tab contents
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        // Remove active from all pills
-        document.querySelectorAll('.tab-pill').forEach(el => {
-            el.classList.remove('active');
-            el.classList.add('text-gray-400');
-            el.classList.remove('text-gray-300');
-        });
-        // Show selected tab
-        const target = document.getElementById('tab-' + tabName);
-        if (target) {
-            target.classList.remove('hidden');
-            // Re-trigger spring crossfade animation
-            target.style.animation = 'none';
-            target.offsetHeight;
-            target.style.animation = '';
-        }
-        // Activate pill
-        const pill = document.querySelector('[data-tab="' + tabName + '"]');
-        if (pill) {
-            pill.classList.add('active');
-            pill.classList.remove('text-gray-400');
-            pill.classList.add('text-gray-300');
-        }
-    }
-    window.switchTab = switchTab;
+    <!-- History Archive Modal -->
+    <div class="modal-backdrop hidden" id="history-modal" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="history-modal-title">Scan History</h3>
+          <button class="modal-close" id="history-modal-close" aria-label="Close history">×</button>
+        </div>
+        <p style="font-size:11px; color:var(--muted); margin-bottom:14px;">Review or reload past website intelligence scans.</p>
+        <div id="history-container">
+          <p style="font-size:11px; color:var(--muted); text-align:center; padding:16px;">No previous scans stored in this browser session.</p>
+        </div>
+      </div>
+    </div>
 
-    // Helper to retrieve the active analyzed URL
-    function getAnalyzedUrl() {
-        const visitLink = document.getElementById('preview-visit-link')?.getAttribute('href');
-        if (visitLink && visitLink !== '#' && !visitLink.startsWith('javascript:')) {
-            return visitLink.startsWith('http') ? visitLink : 'https://' + visitLink;
-        }
-        const inputVal = document.getElementById('url-input')?.value?.trim();
-        if (inputVal) {
-            return inputVal.startsWith('http') ? inputVal : 'https://' + inputVal;
-        }
-        const urlBarText = document.getElementById('preview-url-bar')?.textContent?.trim();
-        if (urlBarText && urlBarText !== '—') {
-            return urlBarText.startsWith('http') ? urlBarText : 'https://' + urlBarText;
-        }
-        return '#';
-    }
-    window.getAnalyzedUrl = getAnalyzedUrl;
+    <!-- Technical Audit Details Modal -->
+    <div class="modal-backdrop hidden" id="audit-modal" role="dialog" aria-modal="true" aria-labelledby="audit-modal-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="audit-modal-title">Technical Audit Details</h3>
+          <button class="modal-close" id="audit-modal-close" aria-label="Close audit details">×</button>
+        </div>
+        <div id="audit-modal-content" style="font-size:11px; line-height:1.6;">
+          <p style="color:var(--muted);">Run a scan to inspect full robots.txt, canonical declarations, heading tags, and token frequency.</p>
+        </div>
+      </div>
+    </div>
 
-    // Handler when clicking preview image to open analyzed URL in new tab
-    function openAnalyzedSite(e, el) {
-        const url = getAnalyzedUrl();
-        if (url && url !== '#') {
-            el.href = url;
-        } else {
-            e.preventDefault();
-        }
-    }
-    window.openAnalyzedSite = openAnalyzedSite;
+    <footer class="footer">
+      <span>STREETCODERS SEO</span>
+      <span>SEARCH INTELLIGENCE / TERRAIN CONCEPT</span>
+      <span>LESS NOISE. MORE SIGNAL.</span>
+    </footer>
+  </main>
+</div>
 
-    // Observe web-preview-img to toggle hover badge and populate href
-    document.addEventListener('DOMContentLoaded', () => {
-        const previewImg = document.getElementById('web-preview-img');
-        const previewBadge = document.getElementById('preview-hover-badge');
-        const previewLink = document.getElementById('web-preview-link');
-        
-        if (previewImg) {
-            const updatePreviewState = () => {
-                const isVisible = previewImg.style.display !== 'none' && previewImg.getAttribute('src');
-                if (previewBadge) {
-                    previewBadge.style.display = isVisible ? 'flex' : 'none';
-                }
-                if (previewLink && isVisible) {
-                    previewLink.href = getAnalyzedUrl();
-                }
-            };
-
-            const observer = new MutationObserver(updatePreviewState);
-            observer.observe(previewImg, { attributes: true, attributeFilter: ['style', 'src'] });
-        }
-    });
-    </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js"></script>
+<!-- Core Engine Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module" src="terrain.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>

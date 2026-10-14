@@ -13,8 +13,8 @@ A comprehensive audit of the SEO analyzer codebase reveals the following structu
 
 ## 2. Structure & Architecture
 The project files present two concurrent implementations:
-1. **Monolithic (`app.js`)**: A single-file implementation containing all crawler, validator, UI, chatbot, and analysis logic. This is the **active** file imported by `index.html` (`<script src="app.js"></script>`).
-2. **Modular (Unused/Under Construction)**: Individual files containing class-based definitions (`config.js`, `domainValidator.js`, `utils.js`, `webCrawler.js`, `seoAnalyzer.js`, `recommendations.js`, `ui.js`, `aiChatbot.js`). These are not currently referenced in `index.html`.
+1. **Monolithic (`app.js`)**: A single-file implementation containing all crawler, validator, UI, and analysis logic. This is the **active** file imported by `index.html` (`<script src="app.js"></script>`).
+2. **Modular (Unused/Under Construction)**: Individual files containing class-based definitions (`config.js`, `domainValidator.js`, `utils.js`, `webCrawler.js`, `seoAnalyzer.js`, `recommendations.js`, `ui.js`). These are not currently referenced in `index.html`.
 3. **Styles**: `style.css` contains an unused "Perplexity Design System" (CSS variables, custom layouts) but is not linked in `index.html` (which uses Tailwind CDN and inline `<style>`).
 
 ---
@@ -29,16 +29,14 @@ The project files present two concurrent implementations:
   - Actionable recommendations card list with priority tags (High/Medium/Low), impact, copyable fix instructions, and a "Mark as Completed" button.
   - Web Preview container using thum.io screenshots.
   - In-memory analysis history list.
-  - Custom floating AI chatbot window (bottom-right).
 
 ---
 
 ## 4. Backend / API Integrations
-Since there is no backend server, the application relies on the following public/external APIs:
+The application utilizes the following APIs and serverless endpoints:
 - **DNS Domain Validation**: Google DNS resolve API (`https://dns.google/resolve?name=${hostname}&type=A`) to check domain existence.
-- **Web Crawling**: fetches real HTML content of target URLs using the Allorigins CORS proxy (`https://api.allorigins.win/raw?url=...`).
-- **SEO AI Chatbot**: OpenRouter API (`https://openrouter.ai/api/v1/chat/completions`) using the `openai/gpt-3.5-turbo` model and a hardcoded token.
-- **Preview System**: thum.io URL-to-image API (`https://image.thum.io/get/width/800/crop/600/noanimate/...`).
+- **Web Crawling**: Server-side crawler endpoint (`/api/analyze`) with SSRF guards and JSDOM parsing.
+- **Preview System**: thum.io URL-to-image API (`/api/preview`).
 
 ---
 
