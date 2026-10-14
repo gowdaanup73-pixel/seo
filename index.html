@@ -256,6 +256,151 @@
       </aside>
     </section>
 
+    <!-- ═══════════ Callout Cards: Critical Issues & Quick Wins ═══════════ -->
+    <section class="callout-grid" id="callouts-section" aria-label="Critical Issues and Quick Wins">
+      <div class="callout-card critical">
+        <div class="callout-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="dot critical"></i>
+            <h4>Critical Issues</h4>
+          </div>
+          <span id="callout-critical-badge" class="callout-badge hidden">0</span>
+        </div>
+        <div id="callout-critical-list" class="callout-items">
+          <p style="font-size:11px; color:var(--muted); margin:0;">High-impact SEO deficits requiring immediate remediation.</p>
+        </div>
+        <div id="callout-critical-footer" class="callout-footer hidden">
+          <button class="callout-action-btn" id="callout-critical-btn">
+            <span id="callout-critical-link-text">View all critical issues</span> &rarr;
+          </button>
+        </div>
+      </div>
+
+      <div class="callout-card wins">
+        <div class="callout-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i class="dot healthy"></i>
+            <h4>Quick Wins</h4>
+          </div>
+          <span id="callout-wins-badge" class="callout-badge hidden">0</span>
+        </div>
+        <div id="callout-wins-list" class="callout-items">
+          <p style="font-size:11px; color:var(--muted); margin:0;">Fast, low-effort improvements to quickly elevate search rankings.</p>
+        </div>
+        <div id="callout-wins-footer" class="callout-footer hidden">
+          <button class="callout-action-btn" id="callout-wins-btn">
+            <span id="callout-wins-link-text">View all quick wins</span> &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ Live Web Preview ═══════════ -->
+    <section class="web-preview-section" id="web-preview-section" aria-label="Live Website Preview">
+      <h3 class="section-title">Live Website Preview</h3>
+      <div class="preview-card">
+        <div class="preview-chrome">
+          <div class="preview-dots">
+            <span class="preview-dot red"></span>
+            <span class="preview-dot yellow"></span>
+            <span class="preview-dot green"></span>
+          </div>
+          <div class="preview-address-bar">
+            <span id="preview-https-badge" class="preview-https-badge hidden">
+              <span>🔒</span> Secure
+            </span>
+            <span id="preview-url-bar" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">https://example.com</span>
+          </div>
+        </div>
+
+        <div class="preview-viewport-box" id="preview-container">
+          <div id="preview-loading" class="hidden" style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:32px;">
+            <div class="scan-spinner" style="border-top-color:var(--green);"></div>
+            <span style="font-size:11px; color:var(--muted);">Rendering live viewport preview...</span>
+          </div>
+          <a id="web-preview-link" href="#" target="_blank" rel="noopener noreferrer" title="Click to visit analyzed site in new tab" style="position:relative; display:block; width:100%;">
+            <img id="web-preview-img" src="assets/mountain-reference.jpg" alt="Live Website Preview Screenshot">
+            <div id="preview-hover-badge" class="preview-hover-badge">
+              <span>Visit site</span> ↗
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ Detailed Analysis Suite (Tabs) ═══════════ -->
+    <section class="detailed-analysis-section" id="detailed-analysis" aria-label="Detailed Technical Analysis">
+      <h3 class="section-title">Detailed Analysis</h3>
+      
+      <div class="analysis-tabs-nav" role="tablist">
+        <button class="tab-pill active" data-tab="breakdown" role="tab" aria-selected="true">Category Breakdown</button>
+        <button class="tab-pill" data-tab="stats" role="tab" aria-selected="false">Quick Stats</button>
+        <button class="tab-pill" data-tab="recommendations" role="tab" aria-selected="false">Recommendations</button>
+      </div>
+
+      <!-- Tab 1: Breakdown (Pie/Donut Chart) -->
+      <div id="tab-breakdown" class="tab-pane active" role="tabpanel">
+        <div class="metric-card breakdown-card">
+          <div class="pie-chart-box">
+            <svg id="pie-chart-svg" viewBox="0 0 200 200" style="width:100%; height:100%;"></svg>
+          </div>
+          <div class="pie-legend-box">
+            <h4 style="margin:0 0 4px; font-size:14px; font-weight:600;">Overall Analysis Breakdown</h4>
+            <p style="margin:0 0 12px; font-size:11px; color:var(--muted);">Weighted distribution of the 100-point SEO index across key audit disciplines.</p>
+            <div id="pie-chart-legend" style="display:grid; gap:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Quick Stats -->
+      <div id="tab-stats" class="tab-pane" role="tabpanel">
+        <div class="metric-card stats-container">
+          <div class="stats-header-info">
+            <div class="stats-meta-row">
+              <small>WEBSITE TITLE</small>
+              <strong id="stats-title">—</strong>
+            </div>
+            <div class="stats-meta-row">
+              <small>META DESCRIPTION</small>
+              <strong id="stats-desc">—</strong>
+            </div>
+          </div>
+
+          <div class="stats-metrics-grid">
+            <div class="stat-box">
+              <small>H1 COUNT</small>
+              <strong id="stats-h1">0</strong>
+            </div>
+            <div class="stat-box">
+              <small>WORD COUNT</small>
+              <strong id="stats-words">0</strong>
+            </div>
+            <div class="stat-box">
+              <small>IMAGES</small>
+              <strong id="stats-images">0</strong>
+            </div>
+            <div class="stat-box">
+              <small>LINKS</small>
+              <strong id="stats-links">0</strong>
+            </div>
+            <div class="stat-box">
+              <small>SECURITY</small>
+              <strong id="stats-https">—</strong>
+            </div>
+            <div class="stat-box">
+              <small>KEYWORDS</small>
+              <strong id="stats-keywords">0</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Detailed Recommendations Grid -->
+      <div id="tab-recommendations" class="tab-pane" role="tabpanel">
+        <div id="recommendations-list" class="recommendations-grid"></div>
+      </div>
+    </section>
+
     <!-- History Archive Modal -->
     <div class="modal-backdrop hidden" id="history-modal" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
       <div class="modal-card">

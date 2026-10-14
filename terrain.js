@@ -201,6 +201,7 @@ export class MountainViewer {
     });
 
     this.terrainMesh = new THREE.Mesh(geom, terrainMaterial);
+    this.terrainMesh.visible = false;
     this.scene.add(this.terrainMesh);
 
     // Topographic wireframe contours
@@ -211,10 +212,11 @@ export class MountainViewer {
       opacity: 0.14
     });
     this.contourMesh = new THREE.Mesh(geom.clone(), wireMat);
-    this.contourMesh.position.y += 0.08;
+    this.contourMesh.visible = false;
     this.scene.add(this.contourMesh);
 
     this.populateMarkers(data);
+    if (this.markersGroup) this.markersGroup.visible = false;
   }
 
   getElevationAt(x, z) {
@@ -567,9 +569,7 @@ export class MountainViewer {
     this.currentRotation.y += (this.targetRotation.y - this.currentRotation.y) * 0.08;
     this.currentZoom += (this.targetZoom - this.currentZoom) * 0.08;
 
-    if (!this.isDragging && !this.options.reducedMotion) {
-      this.targetRotation.y += 0.0008;
-    }
+    // No automatic spinning; camera rotation only on user interaction
 
     this.updateCameraPosition();
 

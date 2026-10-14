@@ -1,5 +1,6 @@
 // app.js — Streetcoders SEO Controller
-// Integrates 3D Mountain Terrain with real backend SEO audit findings, metrics, history, and PDF export.
+// Integrates Live Web Preview, Pie Chart Breakdown, Quick Stats, Detailed Recommendations,
+// Callout Cards, 3D Mountain Terrain (clean & non-rotating), History Archive, and PDF Export.
 
 import TerraMountain from './terrain.js';
 
@@ -63,6 +64,22 @@ function toggleTheme() {
 }
 
 // ---------------------------------------------------------------------------
+// Tab Switching
+// ---------------------------------------------------------------------------
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-pill').forEach(btn => {
+    const isActive = btn.dataset.tab === tabName;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', String(isActive));
+  });
+
+  document.querySelectorAll('.tab-pane').forEach(pane => {
+    pane.classList.toggle('active', pane.id === `tab-${tabName}`);
+  });
+}
+window.switchTab = switchTab;
+
+// ---------------------------------------------------------------------------
 // Hotspot & Inspector Interactions
 // ---------------------------------------------------------------------------
 function selectIssue(button) {
@@ -96,24 +113,15 @@ function setZoom(val) {
   const zoomEl = document.getElementById('zoom-level');
   if (zoomEl) zoomEl.textContent = zoomText;
 
-  // Zoom 2D fallback image
+  // Zoom mountain image smoothly
   const mountainImg = document.getElementById('mountain-image');
   if (mountainImg) {
     mountainImg.style.transform = `scale(${appState.zoom})`;
-  }
-
-  // Zoom 3D Three.js camera
-  if (appState.mountainViewer) {
-    // Normal base zoom is 70; inversely adjust distance
-    appState.mountainViewer.targetZoom = 70 / appState.zoom;
   }
 }
 
 function resetMountainView() {
   setZoom(1);
-  if (appState.mountainViewer) {
-    appState.mountainViewer.resetView();
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -141,7 +149,6 @@ async function analyzeDomain(targetUrl, scanMode = 'full') {
     updatePhase('RESOLVING DOMAIN', 'Verifying security controls, DNS pinning & transport certificates');
     if (statusEl) statusEl.textContent = `Analyzing ${new URL(targetUrl).hostname} (${scanMode.toUpperCase()})...`;
 
-    // Reset step checkmarks
     updateAnalysisSteps(1);
 
     // Parallel analysis and preview request
@@ -167,7 +174,7 @@ async function analyzeDomain(targetUrl, scanMode = 'full') {
     }
 
     updateAnalysisSteps(4);
-    updatePhase('SCULPTING 3D TERRAIN', 'Generating geological elevations and placing audit markers');
+    updatePhase('RENDERING TELEMETRY', 'Generating health scores, breakdown charts and live preview');
 
     let previewUrl = null;
     if (previewRes && previewRes.ok) {
@@ -182,22 +189,14 @@ async function analyzeDomain(targetUrl, scanMode = 'full') {
 
     appState.currentResult = fullResult;
 
-    // Update 3D Mountain
-    if (appState.mountainViewer) {
-      appState.mountainViewer.updateData(fullResult);
-    }
-
-    // Render Dashboard Panels
+    // Render Dashboard Panels and All Detailed Features
     renderDashboard(fullResult);
 
-    // Complete all analysis step checkmarks
     updateAnalysisSteps(5);
-
-    // Add to history
     addToHistory(fullResult);
 
     if (statusEl) {
-      statusEl.textContent = `Analysis completed for ${new URL(targetUrl).hostname}. Review the findings below.`;
+      statusEl.textContent = `Analysis completed for ${new URL(targetUrl).hostname}. Review the live preview and detailed findings below.`;
     }
 
   } catch (err) {
@@ -239,7 +238,7 @@ function updateAnalysisSteps(completedCount) {
 }
 
 // ---------------------------------------------------------------------------
-// Render Dashboard Panels
+// Render Dashboard Panels & Detailed Sections
 // ---------------------------------------------------------------------------
 function renderDashboard(data) {
   const scores = data.scores || { total: 78, onPage: 71, technical: 82, content: 76, links: 68 };
@@ -277,7 +276,6 @@ function renderDashboard(data) {
   // Pages Crawled Metric Card
   const pagesCrawledEl = document.getElementById('pages-crawled');
   const pagesCrawledSub = document.getElementById('pages-crawled-sub');
-  const pagesCrawledBadge = document.getElementById('pages-crawled-badge');
   const crawlInfo = document.getElementById('step-crawl-info');
 
   const crawledCount = data.pagesCrawled || data.linkCount || 124;
@@ -314,30 +312,217 @@ function renderDashboard(data) {
     trafficEl.innerHTML = `${est} <small>↑ 35%</small>`;
   }
 
-  // Web Preview
-  const previewImg = document.getElementById('web-preview-img');
-  if (previewImg && data.previewUrl) {
-    previewImg.src = data.previewUrl;
-  }
+  // Live Web Preview Section
+  renderWebPreview(data);
 
-  // Dynamic Opportunities Panel
+  // Pie Chart Breakdown Tab
+  renderPieChart(scores);
+
+  // Quick Stats Tab
+  renderQuickStats(data);
+
+  // Callout Cards: Critical Issues & Quick Wins
+  renderCallouts(issues);
+
+  // Detailed Recommendations Tab
+  renderDetailedRecommendations(issues);
+
+  // Dynamic Opportunities Panel on Top
   renderOpportunities(issues);
 
-  // Populate Hotspots based on actual findings
+  // Map Hotspots to Real Findings
   mapHotspotsToAudit(issues);
 }
 
 // ---------------------------------------------------------------------------
-// Opportunities Rendering
+// Live Web Preview Rendering
+// ---------------------------------------------------------------------------
+function renderWebPreview(data) {
+  const previewImg = document.getElementById('web-preview-img');
+  const previewLink = document.getElementById('web-preview-link');
+  const urlBar = document.getElementById('preview-url-bar');
+  const httpsBadge = document.getElementById('preview-https-badge');
+
+  if (urlBar) urlBar.textContent = data.url || 'https://example.com';
+  if (previewLink) previewLink.href = data.url || '#';
+
+  const isHttps = data.url && data.url.startsWith('https://');
+  if (httpsBadge) httpsBadge.classList.toggle('hidden', !isHttps);
+
+  if (previewImg && data.previewUrl) {
+    previewImg.src = data.previewUrl;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SVG Pie/Donut Chart & Legend
+// ---------------------------------------------------------------------------
+function renderPieChart(scores) {
+  const svg = document.getElementById('pie-chart-svg');
+  const legend = document.getElementById('pie-chart-legend');
+  if (!svg || !legend) return;
+
+  const data = [
+    { label: 'Technical SEO', value: scores.technical || 25, max: 30, color: '#2e5b42' },
+    { label: 'On-Page Content', value: scores.onPage || 30, max: 40, color: '#3d7871' },
+    { label: 'Content Depth', value: scores.content || 15, max: 20, color: '#b87333' },
+    { label: 'Link Architecture', value: scores.links || 8, max: 10, color: '#7a8264' }
+  ];
+
+  const total = data.reduce((sum, d) => sum + d.value, 0) || 1;
+  let currentAngle = 0;
+
+  svg.innerHTML = '';
+  legend.innerHTML = '';
+
+  data.forEach(item => {
+    const percentage = (item.value / total) * 100;
+    const angle = (percentage / 100) * 360;
+
+    const x1 = 100 + 76 * Math.cos((currentAngle - 90) * Math.PI / 180);
+    const y1 = 100 + 76 * Math.sin((currentAngle - 90) * Math.PI / 180);
+    const x2 = 100 + 76 * Math.cos((currentAngle + angle - 90) * Math.PI / 180);
+    const y2 = 100 + 76 * Math.sin((currentAngle + angle - 90) * Math.PI / 180);
+
+    const largeArc = angle > 180 ? 1 : 0;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M 100 100 L ${x1.toFixed(2)} ${y1.toFixed(2)} A 76 76 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`);
+    path.setAttribute('fill', item.color);
+    path.setAttribute('stroke', '#f4f1ea');
+    path.setAttribute('stroke-width', '2');
+    svg.appendChild(path);
+
+    currentAngle += angle;
+
+    const row = document.createElement('div');
+    row.className = 'pie-legend-row';
+    row.innerHTML = `
+      <div class="pie-color-dot" style="background:${item.color};"></div>
+      <span style="font-weight:600;">${item.label}:</span>
+      <span style="color:var(--muted);">${item.value}/${item.max} (${percentage.toFixed(0)}%)</span>
+    `;
+    legend.appendChild(row);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Quick Stats Rendering
+// ---------------------------------------------------------------------------
+function renderQuickStats(data) {
+  const titleEl = document.getElementById('stats-title');
+  const descEl = document.getElementById('stats-desc');
+  const h1El = document.getElementById('stats-h1');
+  const wordsEl = document.getElementById('stats-words');
+  const imagesEl = document.getElementById('stats-images');
+  const linksEl = document.getElementById('stats-links');
+  const httpsEl = document.getElementById('stats-https');
+  const keywordsEl = document.getElementById('stats-keywords');
+
+  if (titleEl) titleEl.textContent = data.title || 'No title tag found';
+  if (descEl) descEl.textContent = data.metaDesc || 'No meta description tag found';
+  if (h1El) h1El.textContent = data.h1Count != null ? data.h1Count : '0';
+  if (wordsEl) wordsEl.textContent = data.wordCount != null ? data.wordCount.toLocaleString() : '0';
+  if (imagesEl) imagesEl.textContent = `${data.imageCount || 0} (${data.imagesWithoutAlt || 0} missing alt)`;
+  if (linksEl) linksEl.textContent = data.linkCount != null ? data.linkCount.toLocaleString() : '0';
+  if (httpsEl) httpsEl.textContent = data.url && data.url.startsWith('https://') ? 'Secure (HTTPS)' : 'Insecure (HTTP)';
+  if (keywordsEl) keywordsEl.textContent = Array.isArray(data.topKeywords) ? `${data.topKeywords.length} terms` : '0 terms';
+}
+
+// ---------------------------------------------------------------------------
+// Callout Cards (Critical Issues & Quick Wins)
+// ---------------------------------------------------------------------------
+function renderCallouts(issues) {
+  const criticalList = issues.filter(i => !i.passed && (i.severity === 'Critical' || i.impact === 'High'));
+  const winsList = issues.filter(i => !i.passed && (i.severity === 'Improvement' || i.impact === 'Medium'));
+
+  const critContainer = document.getElementById('callout-critical-list');
+  const critBadge = document.getElementById('callout-critical-badge');
+  const critFooter = document.getElementById('callout-critical-footer');
+
+  if (critContainer) {
+    if (criticalList.length === 0) {
+      if (critBadge) critBadge.classList.add('hidden');
+      if (critFooter) critFooter.classList.add('hidden');
+      critContainer.innerHTML = '<p style="color:var(--green); font-size:11px; margin:0;">✓ No critical SEO deficits detected.</p>';
+    } else {
+      if (critBadge) {
+        critBadge.textContent = criticalList.length;
+        critBadge.classList.remove('hidden');
+      }
+      if (critFooter) critFooter.classList.remove('hidden');
+      critContainer.innerHTML = criticalList.slice(0, 3).map(item => `
+        <div class="callout-item">
+          <strong style="display:block; color:#c84c36;">${escapeHtml(item.name)}</strong>
+          <small style="color:var(--muted);">${escapeHtml(item.status || item.fix)}</small>
+        </div>
+      `).join('');
+    }
+  }
+
+  const winsContainer = document.getElementById('callout-wins-list');
+  const winsBadge = document.getElementById('callout-wins-badge');
+  const winsFooter = document.getElementById('callout-wins-footer');
+
+  if (winsContainer) {
+    if (winsList.length === 0) {
+      if (winsBadge) winsBadge.classList.add('hidden');
+      if (winsFooter) winsFooter.classList.add('hidden');
+      winsContainer.innerHTML = '<p style="color:var(--green); font-size:11px; margin:0;">✓ Optimization wins in progress.</p>';
+    } else {
+      if (winsBadge) {
+        winsBadge.textContent = winsList.length;
+        winsBadge.classList.remove('hidden');
+      }
+      if (winsFooter) winsFooter.classList.remove('hidden');
+      winsContainer.innerHTML = winsList.slice(0, 3).map(item => `
+        <div class="callout-item">
+          <strong style="display:block; color:var(--green);">${escapeHtml(item.name)}</strong>
+          <small style="color:var(--muted);">${escapeHtml(item.status || item.fix)}</small>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Detailed Recommendations Tab
+// ---------------------------------------------------------------------------
+function renderDetailedRecommendations(issues) {
+  const container = document.getElementById('recommendations-list');
+  if (!container) return;
+
+  container.innerHTML = '';
+  issues.forEach(issue => {
+    const card = document.createElement('div');
+    card.className = 'recommendation-card';
+    const badgeClass = issue.passed ? 'healthy' : issue.severity === 'Critical' ? 'critical' : 'warning';
+
+    card.innerHTML = `
+      <div>
+        <div class="rec-header">
+          <h5>${escapeHtml(issue.name)}</h5>
+          <span class="dot ${badgeClass}"></span>
+        </div>
+        <p class="rec-desc">${escapeHtml(issue.status || issue.passedStatus || '')}</p>
+      </div>
+      <div class="rec-fix-box">
+        <strong>Prescription:</strong> ${escapeHtml(issue.fix || 'No corrective action needed.')}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Opportunities Rendering (Top Summary List)
 // ---------------------------------------------------------------------------
 function renderOpportunities(issues) {
   const container = document.getElementById('recommendations-container');
   const allList = document.getElementById('all-opportunities-list');
   if (!container) return;
 
-  if (!issues || issues.length === 0) {
-    return; // Keep default illustrative previews if empty
-  }
+  if (!issues || issues.length === 0) return;
 
   container.innerHTML = '';
   if (allList) allList.innerHTML = '';
@@ -363,21 +548,13 @@ function renderOpportunities(issues) {
     `;
 
     btn.addEventListener('click', () => {
-      // Find matching hotspot
-      const hotspot = [...document.querySelectorAll('.hotspot')].find(x => x.dataset.issue.toLowerCase() === issue.name.toLowerCase());
-      if (hotspot) {
-        selectIssue(hotspot);
-        document.getElementById('mountain-stage')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        const status = document.getElementById('form-status');
-        if (status) status.textContent = `${issue.name}: ${issue.fix}`;
-      }
+      switchTab('recommendations');
+      document.getElementById('detailed-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     container.appendChild(btn);
   });
 
-  // Populate extended all-opportunities list
   if (allList) {
     displayItems.forEach((issue, idx) => {
       const row = document.createElement('div');
@@ -401,13 +578,6 @@ function mapHotspotsToAudit(issues) {
   if (!issues || issues.length === 0) return;
 
   const hotspots = document.querySelectorAll('.hotspot');
-  const defs = [
-    { title: 'Orphan pages', count: 12, detail: 'Pages with no meaningful internal links pointing to them.' },
-    { title: 'Broken links', count: 8, detail: 'Internal links that lead to unavailable or invalid destinations.' },
-    { title: 'Slow pages', count: 24, detail: 'Pages that may benefit from Core Web Vitals and asset optimization.' },
-    { title: 'Missing metadata', count: 36, detail: 'Pages missing useful title tags or meta descriptions.' }
-  ];
-
   hotspots.forEach((hs, idx) => {
     const issueMatch = issues[idx];
     if (issueMatch) {
@@ -491,48 +661,6 @@ function toggleModal(modalId, show) {
 
 function closeModals() {
   document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.add('hidden'));
-}
-
-// ---------------------------------------------------------------------------
-// Technical Audit Details Modal
-// ---------------------------------------------------------------------------
-function openAuditDetailsModal() {
-  const content = document.getElementById('audit-modal-content');
-  const res = appState.currentResult;
-  if (!content) return;
-
-  if (!res) {
-    content.innerHTML = '<p style="color:var(--muted);">Run a scan to inspect full robots.txt, canonical declarations, heading tags, and token frequency.</p>';
-  } else {
-    const keywords = (res.topKeywords || []).slice(0, 15);
-    content.innerHTML = `
-      <div style="display:grid; gap:12px;">
-        <div style="padding:10px; border-radius:8px; background:#f0eee7; border:1px solid var(--line);">
-          <strong>Target:</strong> ${escapeHtml(res.url)}<br>
-          <strong>Title:</strong> ${escapeHtml(res.title || 'None')} (${res.title ? res.title.length : 0} chars)<br>
-          <strong>Meta Description:</strong> ${escapeHtml(res.metaDesc || 'None')} (${res.metaDesc ? res.metaDesc.length : 0} chars)
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <div style="padding:8px; border:1px solid var(--line); border-radius:6px;">
-            <strong>Headings:</strong> H1: ${res.h1Count || 0} / H2: ${res.h2Count || 0}<br>
-            <strong>Images:</strong> ${res.imageCount || 0} (${res.imagesWithoutAlt || 0} missing alt)
-          </div>
-          <div style="padding:8px; border:1px solid var(--line); border-radius:6px;">
-            <strong>Canonical:</strong> ${res.canonical ? 'Declared' : 'Missing'}<br>
-            <strong>Robots.txt:</strong> ${res.robots?.found ? 'Found' : 'Default'}
-          </div>
-        </div>
-        <div>
-          <strong style="display:block; margin-bottom:6px;">Prominent Keyword Tokens:</strong>
-          <div style="display:flex; flex-wrap:wrap; gap:4px;">
-            ${keywords.map(([w, c]) => `<span style="padding:2px 6px; border-radius:4px; background:#e2ded4; font-size:9px;">${escapeHtml(w)} (${c}×)</span>`).join('') || '<span style="color:var(--muted);">None</span>'}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  toggleModal('audit-modal', true);
 }
 
 // ---------------------------------------------------------------------------
@@ -651,27 +779,30 @@ document.addEventListener('DOMContentLoaded', () => {
   loadStoredHistory();
   renderHistory();
 
-  // Initialize 3D Mountain Terrain
-  const container = document.getElementById('mountain-canvas-container');
-  if (container && TerraMountain && TerraMountain.MountainViewer) {
-    try {
-      appState.mountainViewer = new TerraMountain.MountainViewer('mountain-canvas-container', {
-        interactive: true,
-        onMarkerSelect: (issue) => {
-          // Sync with Inspector card
-          const inspector = document.getElementById('issue-inspector');
-          const title = document.getElementById('inspector-title');
-          const count = document.getElementById('inspector-count');
-          const detail = document.getElementById('inspector-detail');
-          if (title) title.textContent = issue.name;
-          if (count) count.textContent = issue.passed ? 'Optimal' : `Severity: ${issue.severity || 'Attention'}`;
-          if (detail) detail.textContent = issue.fix || issue.status;
-          if (inspector) inspector.hidden = false;
-        }
-      });
-    } catch (e) {
-      console.warn('3D Terrain WebGL initialization fallback:', e);
-    }
+  // Initialize Pie chart with default scores
+  renderPieChart({ total: 78, technical: 82, onPage: 71, content: 76, links: 68 });
+
+  // Tab navigation listeners
+  document.querySelectorAll('.tab-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.tab);
+    });
+  });
+
+  // Callout action buttons jump to recommendations
+  const calloutCritBtn = document.getElementById('callout-critical-btn');
+  if (calloutCritBtn) {
+    calloutCritBtn.addEventListener('click', () => {
+      switchTab('recommendations');
+      document.getElementById('detailed-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+  const calloutWinsBtn = document.getElementById('callout-wins-btn');
+  if (calloutWinsBtn) {
+    calloutWinsBtn.addEventListener('click', () => {
+      switchTab('recommendations');
+      document.getElementById('detailed-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   // Hotspot click handlers
@@ -686,14 +817,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const inspectAction = document.getElementById('inspect-action');
   if (inspectAction) {
     inspectAction.addEventListener('click', () => {
-      const target = [...document.querySelectorAll('.opportunity')].find(x => x.dataset.issue === appState.selectedIssue);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        target.focus();
-      } else {
-        const status = document.getElementById('form-status');
-        if (status) status.textContent = `Selected finding: ${appState.selectedIssue}. Expand opportunities below for details.`;
-      }
+      switchTab('recommendations');
+      document.getElementById('detailed-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 
@@ -711,25 +836,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewAllBtn = document.getElementById('view-all');
   if (viewAllBtn) {
     viewAllBtn.addEventListener('click', () => {
-      const panel = document.getElementById('all-opportunities');
-      if (panel) {
-        panel.hidden = !panel.hidden;
-        viewAllBtn.textContent = panel.hidden ? 'View All →' : 'Show Less ↑';
-      }
+      switchTab('recommendations');
+      document.getElementById('detailed-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 
   // Opportunity click handlers
   document.querySelectorAll('.opportunity').forEach(button => {
     button.addEventListener('click', () => {
-      const hotspot = [...document.querySelectorAll('.hotspot')].find(x => x.dataset.issue === button.dataset.issue);
-      if (hotspot) {
-        selectIssue(hotspot);
-        document.getElementById('mountain-stage')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        const status = document.getElementById('form-status');
-        if (status) status.textContent = `${button.dataset.issue}: review actionable prescription below.`;
-      }
+      switchTab('recommendations');
+      document.getElementById('detailed-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 
@@ -741,15 +857,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentSec = document.getElementById('current-section');
       if (currentSec) currentSec.textContent = section.toUpperCase();
 
-      if (section === 'Site Explorer') {
-        toggleModal('history-modal', true);
-      } else if (section === 'Technical Audit' || section === 'Content Analysis') {
-        openAuditDetailsModal();
+      if (section === 'Overview') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (section === 'Site Explorer') {
+        document.getElementById('web-preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (section === 'Technical Audit') {
+        switchTab('stats');
+        document.getElementById('detailed-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (section === 'Content Analysis') {
+        switchTab('breakdown');
+        document.getElementById('detailed-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else if (section === 'Recommendations') {
-        document.getElementById('opportunities')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        switchTab('recommendations');
+        document.getElementById('detailed-analysis')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
         const status = document.getElementById('form-status');
-        if (status) status.textContent = section === 'Overview' ? 'Enter a website to begin a scan.' : `${section} view active.`;
+        if (status) status.textContent = `${section} view active.`;
       }
     });
   });
@@ -764,7 +887,7 @@ document.addEventListener('DOMContentLoaded', () => {
     helpBtn.addEventListener('click', () => {
       const status = document.getElementById('form-status');
       if (status) {
-        status.textContent = 'Enter a public website URL (e.g. https://example.com) to generate an interactive 3D terrain audit.';
+        status.textContent = 'Enter a public website URL (e.g. https://example.com) to generate a comprehensive SEO audit with live preview and category breakdown.';
       }
     });
   }
@@ -777,12 +900,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const histModalClose = document.getElementById('history-modal-close');
   if (histModalClose) {
     histModalClose.addEventListener('click', () => toggleModal('history-modal', false));
-  }
-
-  // Audit modal close
-  const auditModalClose = document.getElementById('audit-modal-close');
-  if (auditModalClose) {
-    auditModalClose.addEventListener('click', () => toggleModal('audit-modal', false));
   }
 
   // PDF report export button
