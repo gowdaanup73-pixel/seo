@@ -1,921 +1,589 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Street Coders - AI-Powered SEO</title>
-    <meta name="description" content="AI-Powered, Real-Time Web Analysis — get instant SEO scores, actionable recommendations, and website previews.">
-    <meta name="google-site-verification" content="5Dr2r7urth0q-iyzjv0O73N41QtoAQCKGhZMYou6mZg" />
+    <title>Terra Incognita — Topographic SEO Intelligence</title>
+    <meta name="description" content="Distinctive 3D terrain intelligence and precision technical SEO audits. Explore website architecture as a living sculptural landscape.">
+    
+    <!-- Google Fonts: Newsreader (Editorial Serif), Plus Jakarta Sans, JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { 
-                        sans: ['Inter', 'sans-serif'] 
+                    fontFamily: {
+                        serif: ['Newsreader', 'Georgia', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
                     },
                     colors: {
-                        primary: {
-                            400: '#2dd4bf',
-                            500: '#14b8a6',
-                            600: '#0d9488',
-                            700: '#0f766e'
+                        canvas: {
+                            light: '#f4f1ea',
+                            dark: '#161614',
+                            cardLight: '#faf8f4',
+                            cardDark: '#1f1f1c'
                         },
-                        darkBg: '#050a14',
-                        darkCard: 'rgba(15, 23, 42, 0.65)',
-                        darkCardSolid: '#0f172a',
-                        scoreGreen: '#10b981',
-                        scoreBlue: '#3b82f6',
-                        scoreOrange: '#f97316',
-                        scoreRed: '#ef4444'
+                        stone: {
+                            50: '#fbfaf8',
+                            100: '#f4f1ea',
+                            200: '#eae6dc',
+                            300: '#d8d3c7',
+                            400: '#b2ada1',
+                            500: '#8e887b',
+                            600: '#6e695d',
+                            700: '#524e44',
+                            800: '#35322c',
+                            900: '#1c1b18'
+                        },
+                        copper: {
+                            50: '#f0f6f5',
+                            100: '#dbe8e6',
+                            200: '#b8d3d0',
+                            300: '#8bb5b1',
+                            400: '#5f948f',
+                            500: '#3a7872',
+                            600: '#2d635e',
+                            700: '#24504c',
+                            800: '#1e403d',
+                            900: '#183331'
+                        },
+                        forest: {
+                            50: '#f2f7f4',
+                            100: '#dfede4',
+                            200: '#bfdcce',
+                            300: '#94c4af',
+                            400: '#5ea285',
+                            500: '#3b8366',
+                            600: '#2c6950',
+                            700: '#245340',
+                            800: '#1e4234',
+                            900: '#18362b'
+                        },
+                        amber: {
+                            50: '#fbf7ee',
+                            100: '#f6ecda',
+                            200: '#ecdbb4',
+                            300: '#dfc287',
+                            400: '#cfa257',
+                            500: '#b87333',
+                            600: '#a26224',
+                            700: '#814b1c',
+                            800: '#663b19',
+                            900: '#502e15'
+                        }
                     },
                     boxShadow: {
-                        'glass': '0 8px 32px rgba(0,0,0,0.25)',
-                        'glow': '0 0 20px rgba(20,184,166,0.15)',
-                        'glow-md': '0 0 30px rgba(20,184,166,0.2)',
-                        'glow-lg': '0 0 50px rgba(20,184,166,0.25)',
-                        'soft': '0 4px 24px rgba(0,0,0,0.12)',
-                        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.5)'
-                    },
-                    backdropBlur: {
-                        'glass': '16px'
+                        'mineral': '0 4px 20px -2px rgba(28, 27, 24, 0.06), 0 2px 6px -1px rgba(28, 27, 24, 0.04)',
+                        'mineral-lg': '0 12px 32px -4px rgba(28, 27, 24, 0.1), 0 4px 12px -2px rgba(28, 27, 24, 0.05)',
+                        'inner-stone': 'inset 0 1px 3px rgba(0,0,0,0.06)'
                     }
                 }
             }
         }
     </script>
     <style>
-        /* ─── Global Motion & Spring Interaction System ──────── */
         :root {
-            --spring-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --spring-duration: 0.35s;
-            --press-duration: 0.1s;
+            --canvas-bg: #f4f1ea;
+            --card-bg: #faf8f4;
+            --border-stone: #d8d3c7;
+            --text-main: #1c1b18;
+            --copper-accent: #2d635e;
         }
 
-        html {
-            scroll-behavior: smooth;
+        .dark {
+            --canvas-bg: #161614;
+            --card-bg: #1f1f1c;
+            --border-stone: #2e2d28;
+            --text-main: #f4f1ea;
+            --copper-accent: #5f948f;
         }
 
-        /* Press-down feedback (~0.97 scale with ~100ms transition) */
-        button,
-        .btn-gradient,
-        .tab-pill,
-        .press-feedback,
-        #theme-toggle,
-        #web-preview-link,
-        .feature-card,
-        .spring-card {
-            transition: transform var(--press-duration) ease,
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        background-color var(--spring-duration) ease,
-                        border-color var(--spring-duration) ease;
-        }
-
-        button:active,
-        .btn-gradient:active,
-        .tab-pill:active,
-        .press-feedback:active,
-        #theme-toggle:active,
-        #web-preview-link:active {
-            transform: scale(0.97) !important;
-            transition: transform var(--press-duration) ease !important;
-        }
-
-        /* ─── Card Entrance Keyframes & Stagger ──────────────── */
-        @keyframes springSlideUp {
-            0% {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-entrance {
-            animation: springSlideUp 0.6s var(--spring-easing) both;
-        }
-
-        .stagger-1 { animation-delay: 60ms; }
-        .stagger-2 { animation-delay: 130ms; }
-        .stagger-3 { animation-delay: 200ms; }
-        .stagger-4 { animation-delay: 270ms; }
-        .stagger-5 { animation-delay: 340ms; }
-
-        /* ─── Base ────────────────────────────────────────────── */
         body {
-            background: #050a14;
-            background-image:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20,184,166,0.08), transparent),
-                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(59,130,246,0.04), transparent);
-        }
-        .light body,
-        html.light body {
-            background: #f8fafc;
-            background-image: none;
-        }
-
-        /* ─── Glass Card & Hover Depth ────────────────────────── */
-        .glass-card {
-            background: rgba(15, 23, 42, 0.55);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(148,163,184,0.08);
-            border-radius: 1.25rem;
-            transition: box-shadow var(--spring-duration) var(--spring-easing),
-                        transform var(--spring-duration) var(--spring-easing),
-                        border-color var(--spring-duration) ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 16px 36px -10px rgba(0,0,0,0.35), 0 0 24px rgba(20,184,166,0.14);
-            border-color: rgba(20,184,166,0.2);
-        }
-        .light .glass-card {
-            background: rgba(255,255,255,0.85);
-            border-color: rgba(0,0,0,0.06);
-        }
-        .light .glass-card:hover {
-            box-shadow: 0 16px 36px -10px rgba(0,0,0,0.12), 0 0 24px rgba(20,184,166,0.12);
+            background-color: var(--canvas-bg);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(61, 120, 113, 0.04) 0%, transparent 65%),
+                linear-gradient(to right, rgba(142, 136, 123, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(142, 136, 123, 0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
         }
 
-        /* ─── Feature cards (Hero) with Spring & Entrance ────── */
-        .feature-card {
-            animation: springSlideUp 0.65s var(--spring-easing) both;
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        border-color 0.3s ease;
-        }
-        .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.45), 0 0 30px rgba(20, 184, 166, 0.2);
-            border-color: rgba(20,184,166,0.25);
+        .contour-border {
+            border: 1px solid var(--border-stone);
         }
 
-        /* ─── Score Dashboard Cards & Rings ───────────────────── */
-        .score-focal-card {
-            animation: springSlideUp 0.65s var(--spring-easing) both;
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        border-color 0.3s ease;
-        }
-        .score-focal-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 30px rgba(20, 184, 166, 0.25);
+        .stone-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-stone);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         }
 
-        .category-ring-card {
-            animation: springSlideUp 0.6s var(--spring-easing) both;
-            transition: transform var(--spring-duration) var(--spring-easing);
-        }
-        .category-ring-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .callout-spring {
-            animation: springSlideUp 0.65s var(--spring-easing) both;
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing);
-        }
-        .callout-spring:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
-        }
-
-        /* ─── Score rings ─────────────────────────────────────── */
-        .progress-circle {
-            stroke-dasharray: 283;
-            stroke-dashoffset: 283;
-            transition: stroke-dashoffset 1.8s cubic-bezier(.4,0,.2,1);
-        }
-        .score-ring-glow {
-            filter: drop-shadow(0 0 8px rgba(20,184,166,0.35));
-        }
-
-        /* ─── Input focus glow ────────────────────────────────── */
-        .input-glow:focus {
-            box-shadow: 0 0 0 3px rgba(20,184,166,0.2), 0 0 20px rgba(20,184,166,0.1);
-            border-color: #14b8a6;
-        }
-
-        /* ─── CTA gradient button with Spring ─────────────────── */
-        .btn-gradient {
-            background: linear-gradient(135deg, #0d9488, #14b8a6, #2dd4bf);
-            background-size: 200% 200%;
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        background-position 0.4s ease;
-        }
-        .btn-gradient:hover {
-            background-position: 100% 100%;
-            box-shadow: 0 0 32px rgba(20,184,166,0.35);
-            transform: translateY(-2px);
-        }
-
-        /* ─── Pill tabs with Spring Transitions ───────────────── */
-        .tab-pill {
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        background var(--spring-duration) ease,
-                        color 0.2s ease,
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        border-color var(--spring-duration) ease;
-            position: relative;
-        }
-        .tab-pill:hover:not(.active) {
-            transform: translateY(-1px);
-            background: rgba(255, 255, 255, 0.08);
-            color: #e2e8f0;
-        }
         .tab-pill.active {
-            background: rgba(20,184,166,0.16);
-            color: #2dd4bf;
-            box-shadow: 0 0 18px rgba(20,184,166,0.22);
-            border-color: rgba(20,184,166,0.35);
-            transform: translateY(-1px);
+            background-color: var(--copper-accent);
+            color: #ffffff;
+            border-color: var(--copper-accent);
         }
 
-        /* ─── Tab Content Crossfade / Slide Transition ────────── */
-        @keyframes tabSlideCrossfade {
-            0% {
-                opacity: 0;
-                transform: translateY(8px) scale(0.995);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        .tab-content {
-            animation: tabSlideCrossfade 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+        /* Contour scan animation */
+        @keyframes scanWave {
+            0% { transform: translateY(-100%); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(100%); opacity: 0; }
         }
 
-        /* ─── Web Preview Chrome with Spring & Depth ──────────── */
-        .preview-card {
-            transition: transform var(--spring-duration) var(--spring-easing),
-                        box-shadow var(--spring-duration) var(--spring-easing),
-                        border-color 0.3s ease;
+        .scan-line {
+            animation: scanWave 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
-        .preview-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 30px rgba(20, 184, 166, 0.16);
-            border-color: rgba(20, 184, 166, 0.2);
-        }
-
-        /* ─── Connected step-tracker ──────────────────────────── */
-        .step-tracker {
-            position: relative;
-        }
-        .step-tracker::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: rgba(148,163,184,0.15);
-            transform: translateY(-50%);
-            z-index: 0;
-        }
-        .step-node {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ─── Recommendation card ─────────────────────────────── */
-        .recommendation-card {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-        }
-        .recommendation-card.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* ─── Spinner ─────────────────────────────────────────── */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .spinner {
-            animation: spin 0.8s linear infinite;
-        }
-
-
-
-        /* ─── Bounce ──────────────────────────────────────────── */
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        .animate-bounce {
-            animation: bounce 1s infinite;
-        }
-
-        /* ─── Shimmer ─────────────────────────────────────────── */
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* ─── Callout cards ───────────────────────────────────── */
-        .callout-critical {
-            background: rgba(239,68,68,0.06);
-            border: 1px solid rgba(239,68,68,0.15);
-        }
-        .callout-wins {
-            background: rgba(16,185,129,0.06);
-            border: 1px solid rgba(16,185,129,0.15);
-        }
-        .light .callout-critical {
-            background: rgba(239,68,68,0.05);
-            border-color: rgba(239,68,68,0.12);
-        }
-        .light .callout-wins {
-            background: rgba(16,185,129,0.05);
-            border-color: rgba(16,185,129,0.12);
-        }
-
-        /* ─── History glass cards ─────────────────────────────── */
-        .history-card {
-            transition: all 0.3s ease;
-        }
-        .history-card:hover {
-            background: rgba(20,184,166,0.04);
-            border-color: rgba(20,184,166,0.12);
-        }
-
-        /* ─── Section heading accent line ─────────────────────── */
-        .section-heading::after {
-            content: '';
-            display: block;
-            width: 48px;
-            height: 3px;
-            border-radius: 2px;
-            background: linear-gradient(90deg, #14b8a6, transparent);
-            margin-top: 0.5rem;
-        }
-        .section-heading.center::after {
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* ─── Subtle scrollbar ────────────────────────────────── */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.35); }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen">
+<body class="min-h-screen antialiased flex flex-col transition-colors duration-200">
 
-    <!-- ═══════════════════  HEADER  ═══════════════════ -->
-    <header class="flex justify-between items-center py-5 px-4 md:px-8 max-w-7xl mx-auto">
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            <span class="text-primary-500">Street</span><span class="text-gray-300 dark:text-gray-400"> Coders</span>
-        </h1>
-        <button id="theme-toggle" class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/10">
-            <svg class="w-5 h-5 hidden dark:block text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
-            </svg>
-            <svg class="w-5 h-5 block dark:hidden text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-            </svg>
-        </button>
+    <!-- ═══════════════════  MASTHEAD & TELEMETRY BAR  ═══════════════════ -->
+    <header class="border-b border-stone-300/80 dark:border-stone-800 bg-canvas-cardLight/90 dark:bg-canvas-cardDark/90 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-copper-600 text-white flex items-center justify-center font-serif font-bold text-lg shadow-sm">
+                    ▲
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-serif font-bold text-lg tracking-tight text-stone-900 dark:text-stone-100">TERRA INCOGNITA</span>
+                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-copper-100 dark:bg-copper-950/60 text-copper-800 dark:text-copper-300 border border-copper-300 dark:border-copper-800">SEO 2.0</span>
+                    </div>
+                    <p class="text-[11px] font-mono tracking-wider text-stone-500 uppercase">Topographic Intelligence & Elevation Deck</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2.5 sm:gap-4">
+                <div class="hidden md:flex items-center gap-2 font-mono text-[11px] text-stone-500">
+                    <span class="w-2 h-2 rounded-full bg-forest-500 animate-pulse"></span>
+                    <span>ENGINE READY</span>
+                    <span class="text-stone-300 dark:text-stone-700">|</span>
+                    <span id="coordinate-readout">SURVEY GRD // 45°N 12°E</span>
+                </div>
+
+                <!-- PDF Report Button -->
+                <button id="download-report-btn" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-xs font-mono font-medium hover:border-copper-500 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>EXPORT REPORT</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="p-2 rounded-lg border border-stone-300 dark:border-stone-700 hover:bg-stone-200/60 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-300 transition-colors" title="Toggle Mineral Theme">
+                    <svg id="theme-icon-light" class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <svg id="theme-icon-dark" class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
     </header>
 
-    <!-- ═══════════════════  HERO + URL INPUT  ═══════════════════ -->
-    <main class="container mx-auto max-w-7xl text-center pt-16 pb-24 px-4">
-        <h2 class="text-4xl sm:text-5xl lg:text-7xl font-black mb-5 tracking-tight leading-[1.1] text-gray-800 dark:text-white">
-            Automating <br class="hidden sm:block"><span class="bg-gradient-to-r from-primary-500 to-primary-400 bg-clip-text text-transparent">Search Engine Optimization</span>
-        </h2>
-        <h3 class="text-lg sm:text-xl lg:text-2xl font-light mb-16 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-            AI-Powered, Real-Time Web Analysis
-        </h3>
+    <!-- ═══════════════════  MAIN CONTAINER  ═══════════════════ -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
 
-        <!-- Feature cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-20 max-w-5xl mx-auto">
-            <div class="feature-card glass-card p-7 stagger-1">
-                <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
+        <!-- ─── CONSOLE / DOMAIN INPUT DECK ────────────────────────────── -->
+        <section class="stone-card rounded-2xl p-5 sm:p-7 relative overflow-hidden">
+            <div class="max-w-3xl">
+                <div class="flex items-center gap-2 mb-2 font-mono text-[11px] text-stone-500 uppercase tracking-widest">
+                    <span>TOPOGRAPHIC SCANNER</span>
+                    <span>//</span>
+                    <span class="text-copper-600 dark:text-copper-400">TARGET DOMAIN SURVEY</span>
                 </div>
-                <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Real-time Analysis</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Instantly monitor your website's performance</p>
+                <h1 class="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-2">
+                    Survey Digital Terrain & SEO Architecture
+                </h1>
+                <p class="text-xs sm:text-sm text-stone-600 dark:text-stone-400 mb-5">
+                    Generate an interactive 3D elevation landscape representing on-page integrity, mobile crawlability, and link architecture with zero simulated data.
+                </p>
+
+                <!-- Input Field -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-grow">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+                            <span class="font-mono text-xs">🌐</span>
+                        </div>
+                        <input id="url-input" type="text" placeholder="e.g. stripe.com or https://example.com"
+                               class="w-full pl-10 pr-4 py-3 bg-stone-50 dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-xl font-mono text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-copper-500/50 focus:border-copper-500 transition-all">
+                    </div>
+                    <button id="launch-btn" class="px-6 py-3 rounded-xl bg-copper-600 hover:bg-copper-700 text-white font-mono text-xs font-semibold tracking-wider uppercase transition-all shadow-sm hover:shadow flex items-center justify-center gap-2 cursor-pointer">
+                        <span>INITIATE SURVEY</span>
+                        <span class="text-sm">▲</span>
+                    </button>
+                </div>
+
+                <!-- Quick Examples -->
+                <div class="flex flex-wrap items-center gap-2 mt-3.5 text-xs">
+                    <span class="text-stone-500 font-mono text-[11px]">SAMPLE SURVEYS:</span>
+                    <button onclick="tryExample('stripe.com')" class="px-2 py-0.5 rounded border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-400 font-mono text-[11px] hover:border-copper-500 transition-colors">stripe.com</button>
+                    <button onclick="tryExample('github.com')" class="px-2 py-0.5 rounded border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-400 font-mono text-[11px] hover:border-copper-500 transition-colors">github.com</button>
+                    <button onclick="tryExample('wikipedia.org')" class="px-2 py-0.5 rounded border border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-400 font-mono text-[11px] hover:border-copper-500 transition-colors">wikipedia.org</button>
+                </div>
             </div>
-            <div class="feature-card glass-card p-7 stagger-2">
-                <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                    </svg>
+        </section>
+
+        <!-- ─── 3D MOUNTAIN CENTERPIECE ─────────────────────────────────── -->
+        <section class="stone-card rounded-2xl p-4 sm:p-6 relative overflow-hidden">
+            <!-- Header bar of mountain -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-stone-200 dark:border-stone-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-forest-500 shadow-sm"></div>
+                    <div>
+                        <h2 class="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                            <span>Topographic Strata & Geological Ridges</span>
+                            <span id="active-domain-display" class="font-mono text-xs font-normal text-stone-500">— Awaiting Survey</span>
+                        </h2>
+                        <p class="text-[11px] font-mono text-stone-500">Interactive 3D Terrain // Rotate via drag • Zoom via wheel/pinch • Select monoliths to inspect findings</p>
+                    </div>
                 </div>
-                <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Smart Recommendations</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">AI-powered suggestions to boost rankings</p>
+
+                <!-- Camera Controls & Presets -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <button id="camera-preset-summit" class="px-2.5 py-1 rounded bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 font-mono text-[11px] text-stone-700 dark:text-stone-300 hover:border-copper-500 transition-colors">
+                        Summit Vantage
+                    </button>
+                    <button id="camera-preset-ridge" class="px-2.5 py-1 rounded bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 font-mono text-[11px] text-stone-700 dark:text-stone-300 hover:border-copper-500 transition-colors">
+                        Ridge Profile
+                    </button>
+                    <button id="camera-preset-ortho" class="px-2.5 py-1 rounded bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 font-mono text-[11px] text-stone-700 dark:text-stone-300 hover:border-copper-500 transition-colors">
+                        Orthographic
+                    </button>
+                    <button id="terrain-reset-btn" class="px-2.5 py-1 rounded bg-copper-50 dark:bg-copper-950/40 border border-copper-300 dark:border-copper-800 font-mono text-[11px] text-copper-700 dark:text-copper-300 hover:bg-copper-100 transition-colors flex items-center gap-1">
+                        <span>↺</span> Reset View
+                    </button>
+                </div>
             </div>
-            <div class="feature-card glass-card p-7 stagger-3">
-                <div class="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+
+            <!-- 3D Canvas Box -->
+            <div class="relative w-full h-[400px] sm:h-[480px] lg:h-[520px] rounded-xl bg-gradient-to-b from-stone-100 to-stone-200/50 dark:from-stone-900/60 dark:to-stone-900/20 border border-stone-300/80 dark:border-stone-800 overflow-hidden">
+                <!-- Three.js Canvas Container -->
+                <div id="mountain-canvas-container" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+                <!-- Scanning HUD Overlay (active during analysis) -->
+                <div id="mountain-scanning-overlay" class="absolute inset-0 bg-stone-900/40 backdrop-blur-sm hidden flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
+                    <div class="w-full h-1 bg-copper-400 absolute top-0 scan-line shadow-lg"></div>
+                    <div class="bg-stone-900/90 border border-stone-700 rounded-xl p-5 text-center shadow-xl max-w-sm mx-4">
+                        <div class="w-10 h-10 border-2 border-copper-400 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                        <div class="font-serif font-bold text-stone-100 text-base mb-1" id="scanning-phase-title">Traversing Website Strata…</div>
+                        <div class="font-mono text-xs text-copper-400" id="scanning-phase-detail">Evaluating domain DNS & security handshake</div>
+                    </div>
                 </div>
-                <h4 class="text-lg font-bold mb-1.5 text-gray-800 dark:text-gray-100">Persistence History</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Track progress and improvements over time</p>
+
+                <!-- Contextual Beacon Inspector Card (floating over canvas) -->
+                <div id="terrain-inspector-card" class="absolute top-4 right-4 z-20 w-80 max-w-[calc(100%-2rem)] stone-card rounded-xl p-4 shadow-mineral-lg border-stone-300 dark:border-stone-700 hidden">
+                    <!-- Populated dynamically via terrain.js -->
+                </div>
+
+                <!-- Legend Deck -->
+                <div class="absolute bottom-3 left-3 z-10 p-2.5 rounded-lg bg-stone-900/80 dark:bg-stone-950/80 backdrop-blur border border-stone-700 text-stone-300 text-[11px] font-mono flex items-center gap-3">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-sm bg-forest-500"></span>
+                        <span>Optimal</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>
+                        <span>Attention</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-sm bg-red-700"></span>
+                        <span>Critical Deficit</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── TELEMETRY SUMMARY DECK ──────────────────────────────────── -->
+        <section id="telemetry-deck" class="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
+            <!-- Overall Summit Card -->
+            <div class="col-span-2 sm:col-span-1 stone-card rounded-xl p-4 flex flex-col justify-between">
+                <div class="text-[11px] font-mono text-stone-500 uppercase tracking-wider">Summit Elevation</div>
+                <div class="my-2 flex items-baseline gap-2">
+                    <span id="score-total" class="font-serif text-4xl sm:text-5xl font-bold text-stone-900 dark:text-stone-100">—</span>
+                    <span class="font-mono text-xs text-stone-500">/ 100</span>
+                </div>
+                <div id="score-grade" class="font-mono text-xs text-stone-600 dark:text-stone-400">Awaiting Survey</div>
+            </div>
+
+            <!-- OnPage Score -->
+            <div class="stone-card rounded-xl p-4 flex flex-col justify-between">
+                <div class="text-[11px] font-mono text-stone-500 uppercase tracking-wider">On-Page Ridge</div>
+                <div class="my-2 flex items-baseline gap-1.5">
+                    <span id="score-onpage" class="font-serif text-3xl font-bold text-stone-900 dark:text-stone-100">—</span>
+                    <span class="font-mono text-xs text-stone-500">/ 40</span>
+                </div>
+                <div class="w-full bg-stone-200 dark:bg-stone-800 rounded-full h-1.5 overflow-hidden">
+                    <div id="bar-onpage" class="bg-copper-600 h-full w-0 transition-all duration-700"></div>
+                </div>
+            </div>
+
+            <!-- Technical Score -->
+            <div class="stone-card rounded-xl p-4 flex flex-col justify-between">
+                <div class="text-[11px] font-mono text-stone-500 uppercase tracking-wider">Technical Strata</div>
+                <div class="my-2 flex items-baseline gap-1.5">
+                    <span id="score-technical" class="font-serif text-3xl font-bold text-stone-900 dark:text-stone-100">—</span>
+                    <span class="font-mono text-xs text-stone-500">/ 30</span>
+                </div>
+                <div class="w-full bg-stone-200 dark:bg-stone-800 rounded-full h-1.5 overflow-hidden">
+                    <div id="bar-technical" class="bg-forest-600 h-full w-0 transition-all duration-700"></div>
+                </div>
+            </div>
+
+            <!-- Content Score -->
+            <div class="stone-card rounded-xl p-4 flex flex-col justify-between">
+                <div class="text-[11px] font-mono text-stone-500 uppercase tracking-wider">Content Plateau</div>
+                <div class="my-2 flex items-baseline gap-1.5">
+                    <span id="score-content" class="font-serif text-3xl font-bold text-stone-900 dark:text-stone-100">—</span>
+                    <span class="font-mono text-xs text-stone-500">/ 20</span>
+                </div>
+                <div class="w-full bg-stone-200 dark:bg-stone-800 rounded-full h-1.5 overflow-hidden">
+                    <div id="bar-content" class="bg-amber-600 h-full w-0 transition-all duration-700"></div>
+                </div>
+            </div>
+
+            <!-- Links Score -->
+            <div class="stone-card rounded-xl p-4 flex flex-col justify-between">
+                <div class="text-[11px] font-mono text-stone-500 uppercase tracking-wider">Link Watershed</div>
+                <div class="my-2 flex items-baseline gap-1.5">
+                    <span id="score-links" class="font-serif text-3xl font-bold text-stone-900 dark:text-stone-100">—</span>
+                    <span class="font-mono text-xs text-stone-500">/ 10</span>
+                </div>
+                <div class="w-full bg-stone-200 dark:bg-stone-800 rounded-full h-1.5 overflow-hidden">
+                    <div id="bar-links" class="bg-stone-500 h-full w-0 transition-all duration-700"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── REFINED NAVIGATION TABS ─────────────────────────────────── -->
+        <nav class="flex items-center gap-1.5 border-b border-stone-300 dark:border-stone-800 overflow-x-auto pb-2 scrollbar-none">
+            <button class="tab-pill active px-3.5 py-2 rounded-lg font-mono text-xs font-medium border border-transparent transition-all whitespace-nowrap" data-tab="overview" onclick="switchTab('overview')">
+                01 // Survey Overview
+            </button>
+            <button class="tab-pill px-3.5 py-2 rounded-lg font-mono text-xs font-medium border border-transparent text-stone-600 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800 transition-all whitespace-nowrap" data-tab="technical" onclick="switchTab('technical')">
+                02 // Technical Strata
+            </button>
+            <button class="tab-pill px-3.5 py-2 rounded-lg font-mono text-xs font-medium border border-transparent text-stone-600 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800 transition-all whitespace-nowrap" data-tab="content" onclick="switchTab('content')">
+                03 // Content Topography
+            </button>
+            <button class="tab-pill px-3.5 py-2 rounded-lg font-mono text-xs font-medium border border-transparent text-stone-600 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800 transition-all whitespace-nowrap" data-tab="recommendations" onclick="switchTab('recommendations')">
+                04 // Actionable Plan & Fixes
+            </button>
+            <button class="tab-pill px-3.5 py-2 rounded-lg font-mono text-xs font-medium border border-transparent text-stone-600 dark:text-stone-400 hover:bg-stone-200/50 dark:hover:bg-stone-800 transition-all whitespace-nowrap" data-tab="history" onclick="switchTab('history')">
+                05 // Survey Archive
+            </button>
+        </nav>
+
+        <!-- ─── TAB 1: OVERVIEW & LIVE PREVIEW ──────────────────────────── -->
+        <div id="tab-overview" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Live Website Preview Deck -->
+                <div class="lg:col-span-2 stone-card rounded-xl p-5">
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-stone-200 dark:border-stone-800 font-mono text-xs text-stone-500">
+                        <span>OPTICAL SATELLITE PREVIEW</span>
+                        <a id="preview-visit-link" href="#" target="_blank" rel="noopener noreferrer" class="text-copper-600 dark:text-copper-400 hover:underline flex items-center gap-1">
+                            <span>Open URL</span> ↗
+                        </a>
+                    </div>
+                    <div class="w-full h-72 sm:h-80 rounded-lg bg-stone-200/60 dark:bg-stone-900 border border-stone-300 dark:border-stone-800 overflow-hidden relative flex items-center justify-center">
+                        <img id="web-preview-img" src="" alt="Target website preview" class="w-full h-full object-cover object-top hidden">
+                        <div id="web-preview-placeholder" class="text-center p-6 text-stone-500 font-mono text-xs">
+                            <span class="block text-2xl mb-2">🔭</span>
+                            <span>Awaiting target domain analysis to capture screenshot preview</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Topographic Keyword Density -->
+                <div class="stone-card rounded-xl p-5 flex flex-col justify-between">
+                    <div>
+                        <div class="font-mono text-xs text-stone-500 pb-3 mb-3 border-b border-stone-200 dark:border-stone-800 uppercase">
+                            Primary Keyword Strata
+                        </div>
+                        <div id="keywords-list" class="space-y-2 text-xs font-mono">
+                            <div class="text-stone-400 text-center py-8">Scan a domain to extract keyword frequency</div>
+                        </div>
+                    </div>
+                    <div class="pt-4 mt-4 border-t border-stone-200 dark:border-stone-800 text-[11px] font-mono text-stone-500 flex justify-between">
+                        <span>STOPWORDS FILTERED</span>
+                        <span id="keyword-count-display">0 TOKENS</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- URL Input -->
-        <div class="max-w-2xl mx-auto">
-            <label class="block text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Enter a URL to Analyze</label>
-            <div class="glass-card spring-card p-2 flex flex-col sm:flex-row gap-2">
-                <input type="url" id="url-input" 
-                       placeholder="https://example.com"
-                       class="input-glow flex-grow p-4 rounded-xl focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-transparent text-base">
-                <button id="launch-btn" 
-                        class="btn-gradient text-white font-bold py-4 px-8 rounded-xl whitespace-nowrap text-base tracking-wide">
-                    Launch SEO Analyser
-                </button>
+        <!-- ─── TAB 2: TECHNICAL STRATA ─────────────────────────────────── -->
+        <div id="tab-technical" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- HTTPS SSL Check -->
+                <div class="stone-card rounded-xl p-4">
+                    <div class="font-mono text-[11px] text-stone-500 uppercase">Protocol Transport</div>
+                    <div id="tech-https" class="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 my-1">—</div>
+                    <p class="text-xs text-stone-600 dark:text-stone-400">Enforces encrypted HTTPS connections across all public web traffic.</p>
+                </div>
+
+                <!-- Mobile Viewport -->
+                <div class="stone-card rounded-xl p-4">
+                    <div class="font-mono text-[11px] text-stone-500 uppercase">Mobile Viewport</div>
+                    <div id="tech-viewport" class="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 my-1">—</div>
+                    <p class="text-xs text-stone-600 dark:text-stone-400">Verifies meta viewport tag presence for responsive mobile rendering.</p>
+                </div>
+
+                <!-- Robots.txt & Sitemap -->
+                <div class="stone-card rounded-xl p-4">
+                    <div class="font-mono text-[11px] text-stone-500 uppercase">Crawler Directives</div>
+                    <div id="tech-robots" class="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 my-1">—</div>
+                    <p class="text-xs text-stone-600 dark:text-stone-400">Checks for robots.txt rules and search engine crawl accessibility.</p>
+                </div>
+
+                <!-- Canonical Tag -->
+                <div class="stone-card rounded-xl p-4">
+                    <div class="font-mono text-[11px] text-stone-500 uppercase">Canonical Identity</div>
+                    <div id="tech-canonical" class="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 my-1">—</div>
+                    <p class="text-xs text-stone-600 dark:text-stone-400">Prevents duplicate content fragmentation in search indexes.</p>
+                </div>
+
+                <!-- Heading Hierarchy -->
+                <div class="stone-card rounded-xl p-4">
+                    <div class="font-mono text-[11px] text-stone-500 uppercase">Heading Hierarchy</div>
+                    <div id="tech-headings" class="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 my-1">—</div>
+                    <p class="text-xs text-stone-600 dark:text-stone-400">Ensures single primary H1 heading and structured H2 section subheadings.</p>
+                </div>
+
+                <!-- Media Accessibility -->
+                <div class="stone-card rounded-xl p-4">
+                    <div class="font-mono text-[11px] text-stone-500 uppercase">Image Alt Attributes</div>
+                    <div id="tech-images" class="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 my-1">—</div>
+                    <p class="text-xs text-stone-600 dark:text-stone-400">Descriptive alt attributes on image tags for screen accessibility and image search.</p>
+                </div>
             </div>
         </div>
+
+        <!-- ─── TAB 3: CONTENT TOPOGRAPHY ───────────────────────────────── -->
+        <div id="tab-content" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Metadata Deck -->
+                <div class="stone-card rounded-xl p-5 space-y-4">
+                    <div class="font-mono text-xs text-stone-500 pb-2 border-b border-stone-200 dark:border-stone-800 uppercase">
+                        Document Metadata & Search Snippet
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-mono text-stone-400 uppercase">Title Tag:</span>
+                        <p id="meta-title-text" class="font-serif text-base text-stone-900 dark:text-stone-100 mt-0.5">—</p>
+                        <span id="meta-title-length" class="text-[11px] font-mono text-stone-500">0 characters</span>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-mono text-stone-400 uppercase">Meta Description:</span>
+                        <p id="meta-desc-text" class="text-xs text-stone-700 dark:text-stone-300 mt-0.5 leading-relaxed">—</p>
+                        <span id="meta-desc-length" class="text-[11px] font-mono text-stone-500">0 characters</span>
+                    </div>
+                </div>
+
+                <!-- Volume & Proportions -->
+                <div class="stone-card rounded-xl p-5 space-y-4">
+                    <div class="font-mono text-xs text-stone-500 pb-2 border-b border-stone-200 dark:border-stone-800 uppercase">
+                        Reading Volume & Link Structure
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3.5 rounded bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
+                            <span class="text-[11px] font-mono text-stone-400 uppercase">Total Word Count</span>
+                            <div id="content-word-count" class="font-serif text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">—</div>
+                        </div>
+                        <div class="p-3.5 rounded bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
+                            <span class="text-[11px] font-mono text-stone-400 uppercase">Total Links Found</span>
+                            <div id="content-link-count" class="font-serif text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">—</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-mono text-stone-400 uppercase">Open Graph Card Preview</span>
+                        <div id="og-preview-box" class="p-3 rounded bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs font-mono text-stone-600 dark:text-stone-400 mt-1">
+                            No Open Graph tags detected.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── TAB 4: ACTIONABLE PLAN & CODE FIXES ───────────────────────── -->
+        <div id="tab-recommendations" class="tab-content hidden space-y-6">
+            <div class="stone-card rounded-xl p-5">
+                <div class="flex items-center justify-between pb-3 mb-4 border-b border-stone-200 dark:border-stone-800">
+                    <div>
+                        <h3 class="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">Actionable Architectural Plan</h3>
+                        <p class="text-xs text-stone-500 font-mono">Prioritized deficits with diagnostic context and drop-in code fixes</p>
+                    </div>
+                    <span id="findings-count-badge" class="px-2.5 py-1 rounded bg-stone-200 dark:bg-stone-800 font-mono text-xs">0 findings</span>
+                </div>
+
+                <div id="recommendations-container" class="space-y-4">
+                    <div class="text-center py-10 font-mono text-xs text-stone-500">
+                        Run a website analysis to generate prioritized architectural recommendations.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── TAB 5: SURVEY ARCHIVE (HISTORY) ─────────────────────────── -->
+        <div id="tab-history" class="tab-content hidden space-y-6">
+            <div class="stone-card rounded-xl p-5">
+                <div class="flex items-center justify-between pb-3 mb-4 border-b border-stone-200 dark:border-stone-800">
+                    <div>
+                        <h3 class="font-serif font-bold text-lg text-stone-900 dark:text-stone-100">Survey Archive</h3>
+                        <p class="text-xs text-stone-500 font-mono">Persistent local record of evaluated web terrains</p>
+                    </div>
+                    <button id="clear-history-btn" class="px-2.5 py-1 rounded border border-stone-300 dark:border-stone-700 font-mono text-xs text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
+                        Clear Archive
+                    </button>
+                </div>
+
+                <div id="history-container" class="space-y-2.5">
+                    <div class="text-center py-8 font-mono text-xs text-stone-500">
+                        No prior surveys recorded in this workspace.
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <!-- ═══════════════════  LOADING STATE  ═══════════════════ -->
-    <div id="loading-section" class="hidden max-w-3xl mx-auto px-4 py-8">
-        <div class="glass-card p-10 text-center">
-            <div class="w-14 h-14 border-[3px] border-primary-500 border-t-transparent rounded-full spinner mx-auto mb-5"></div>
-            <p class="text-lg font-medium text-gray-300 mb-8">Checking domain &amp; fetching page…</p>
-            <!-- Connected step tracker -->
-            <div class="step-tracker flex items-center justify-center gap-0 max-w-sm mx-auto">
-                <div class="step-node flex flex-col items-center">
-                    <span id="phase-domain" class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-primary-500 text-white shadow-glow">1</span>
-                    <span class="text-[11px] mt-2 text-gray-400 font-medium">Domain</span>
-                </div>
-                <div class="flex-1 h-0.5 bg-gray-700 relative z-0 mx-1">
-                    <div class="h-full bg-primary-500/40 rounded transition-all duration-700" style="width:0%"></div>
-                </div>
-                <div class="step-node flex flex-col items-center">
-                    <span id="phase-fetch" class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400">2</span>
-                    <span class="text-[11px] mt-2 text-gray-400 font-medium">Fetch</span>
-                </div>
-                <div class="flex-1 h-0.5 bg-gray-700 relative z-0 mx-1">
-                    <div class="h-full bg-primary-500/40 rounded transition-all duration-700" style="width:0%"></div>
-                </div>
-                <div class="step-node flex flex-col items-center">
-                    <span id="phase-score" class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400">3</span>
-                    <span class="text-[11px] mt-2 text-gray-400 font-medium">Score</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════  RESULTS  ═══════════════════ -->
-    <div id="results-section" class="hidden max-w-6xl mx-auto px-4 pb-24">
-
-        <!-- ── Score Dashboard ─────────────────────────────── -->
-        <section class="mt-12 mb-16">
-            <h4 class="text-lg sm:text-xl font-semibold mb-2 text-gray-400 dark:text-gray-500 text-center tracking-wide uppercase">
-                Overall Web Score: <span id="overall-score" class="text-primary-400">0/100</span>
-            </h4>
-            <div class="text-center mb-10">
-                <button id="download-report-btn" class="inline-flex items-center gap-2 btn-gradient text-white font-semibold py-2.5 px-6 rounded-xl text-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                    <span>Download PDF Report</span>
-                </button>
-            </div>
-
-            <!-- Large focal score ring + category rings -->
-            <div class="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16">
-                <!-- Final Score Ring (large, focal) -->
-                <div class="glass-card p-8 flex flex-col items-center score-ring-glow score-focal-card stagger-1">
-                    <div class="relative w-48 h-48 mx-auto">
-                        <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="6"></circle>
-                            <circle id="final-circle" cx="50" cy="50" r="45" fill="none" stroke="#14b8a6" stroke-width="6" class="progress-circle" stroke-linecap="round"></circle>
-                        </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span id="final-score-text" class="text-5xl font-black text-primary-400">0</span>
-                            <span class="text-sm text-gray-500 dark:text-gray-500 font-medium">/ 100</span>
-                        </div>
-                    </div>
-                    <p class="text-xs font-semibold uppercase tracking-widest text-gray-500 mt-4">Final Score</p>
-                </div>
-
-                <!-- Category rings grid -->
-                <div class="grid grid-cols-2 gap-6 sm:gap-8">
-                    <div class="category-ring-card text-center stagger-2">
-                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
-                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
-                                <circle id="circle-onpage" cx="50" cy="50" r="45" fill="none" stroke="#3b82f6" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span id="score-onpage" class="text-xl sm:text-2xl font-extrabold text-scoreBlue">0</span>
-                            </div>
-                        </div>
-                        <h5 class="text-sm font-bold text-gray-300">OnPage</h5>
-                        <p class="text-[11px] text-gray-500">Max: 40</p>
-                        <p id="reason-onpage" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
-                    </div>
-                    <div class="category-ring-card text-center stagger-3">
-                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
-                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
-                                <circle id="circle-technical" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span id="score-technical" class="text-xl sm:text-2xl font-extrabold text-scoreGreen">0</span>
-                            </div>
-                        </div>
-                        <h5 class="text-sm font-bold text-gray-300">Technical</h5>
-                        <p class="text-[11px] text-gray-500">Max: 30</p>
-                        <p id="reason-technical" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
-                    </div>
-                    <div class="category-ring-card text-center stagger-4">
-                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
-                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
-                                <circle id="circle-content" cx="50" cy="50" r="45" fill="none" stroke="#f97316" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span id="score-content" class="text-xl sm:text-2xl font-extrabold text-scoreOrange">0</span>
-                            </div>
-                        </div>
-                        <h5 class="text-sm font-bold text-gray-300">Content</h5>
-                        <p class="text-[11px] text-gray-500">Max: 20</p>
-                        <p id="reason-content" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
-                    </div>
-                    <div class="category-ring-card text-center stagger-5">
-                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-2">
-                            <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="7"></circle>
-                                <circle id="circle-link" cx="50" cy="50" r="45" fill="none" stroke="#ef4444" stroke-width="7" class="progress-circle" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span id="score-link" class="text-xl sm:text-2xl font-extrabold text-scoreRed">0</span>
-                            </div>
-                        </div>
-                        <h5 class="text-sm font-bold text-gray-300">Link</h5>
-                        <p class="text-[11px] text-gray-500">Max: 10</p>
-                        <p id="reason-link" class="text-[10px] text-red-400 mt-1 font-medium leading-tight px-1 max-w-[140px] mx-auto hidden"></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Callout Cards: Critical Issues & Quick Wins -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-12 max-w-3xl mx-auto">
-                <div class="callout-critical callout-spring rounded-2xl p-6 stagger-3 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                                <h5 class="text-sm font-bold text-red-400">Critical Issues</h5>
-                            </div>
-                            <span id="callout-critical-badge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">0</span>
-                        </div>
-                        <div id="callout-critical-list" class="space-y-2 mb-3">
-                            <p class="text-xs text-gray-400 leading-relaxed">Issues that significantly impact SEO performance. Fix these first for maximum improvement.</p>
-                        </div>
-                    </div>
-                    <div id="callout-critical-footer" class="pt-2 border-t border-red-500/10 hidden">
-                        <button onclick="switchTab('recommendations')" class="text-xs font-semibold text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors">
-                            <span id="callout-critical-link-text">View all critical issues</span> &rarr;
-                        </button>
-                    </div>
-                </div>
-
-                <div class="callout-wins callout-spring rounded-2xl p-6 stagger-4 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                <h5 class="text-sm font-bold text-green-400">Quick Wins</h5>
-                            </div>
-                            <span id="callout-wins-badge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30">0</span>
-                        </div>
-                        <div id="callout-wins-list" class="space-y-2 mb-3">
-                            <p class="text-xs text-gray-400 leading-relaxed">Low-effort improvements that can boost your score quickly. Often fixable in minutes.</p>
-                        </div>
-                    </div>
-                    <div id="callout-wins-footer" class="pt-2 border-t border-green-500/10 hidden">
-                        <button onclick="switchTab('recommendations')" class="text-xs font-semibold text-green-400 hover:text-green-300 flex items-center gap-1 transition-colors">
-                            <span id="callout-wins-link-text">View all quick wins</span> &rarr;
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── Detailed Analysis (Pill Tabs) ──────────────── -->
-        <section class="mt-16">
-            <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Detailed Analysis</h4>
-            
-            <!-- Tab pills -->
-            <div class="flex flex-wrap justify-center gap-2 mb-8">
-                <button onclick="switchTab('breakdown')" class="tab-pill active px-5 py-2.5 rounded-full text-sm font-semibold border border-white/5 bg-white/5 text-gray-300" data-tab="breakdown">
-                    Breakdown
-                </button>
-                <button onclick="switchTab('stats')" class="tab-pill px-5 py-2.5 rounded-full text-sm font-semibold border border-white/5 bg-white/5 text-gray-400" data-tab="stats">
-                    Quick Stats
-                </button>
-                <button onclick="switchTab('recommendations')" class="tab-pill px-5 py-2.5 rounded-full text-sm font-semibold border border-white/5 bg-white/5 text-gray-400" data-tab="recommendations">
-                    Recommendations
-                </button>
-            </div>
-
-            <!-- Tab: Breakdown -->
-            <div id="tab-breakdown" class="tab-content">
-                <div class="glass-card p-8">
-                    <h4 class="text-lg font-bold mb-6 text-gray-200">Overall Analysis Breakdown</h4>
-                    <div class="flex flex-col sm:flex-row items-center justify-center gap-8">
-                        <svg id="pie-chart-svg" viewBox="0 0 200 200" class="w-56 h-56"></svg>
-                        <div id="pie-chart-legend" class="space-y-3"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Quick Stats -->
-            <div id="tab-stats" class="tab-content hidden">
-                <div class="glass-card p-8">
-                    <div class="space-y-5">
-                        <div class="border-b border-white/5 pb-4">
-                            <p class="text-[11px] font-bold text-primary-400 uppercase tracking-widest mb-1">Website Title</p>
-                            <p id="stats-title" class="text-lg font-medium text-gray-200">---</p>
-                        </div>
-                        <div class="border-b border-white/5 pb-4">
-                            <p class="text-[11px] font-bold text-primary-400 uppercase tracking-widest mb-1">Meta Description</p>
-                            <p id="stats-desc" class="text-lg font-medium text-gray-200">---</p>
-                        </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5 pt-2">
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">H1 Count</p>
-                                <p id="stats-h1" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Word Count</p>
-                                <p id="stats-words" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Images</p>
-                                <p id="stats-images" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Links</p>
-                                <p id="stats-links" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">HTTPS</p>
-                                <p id="stats-https" class="text-2xl font-bold text-gray-200">---</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[11px] font-semibold text-gray-500 uppercase mb-1">Keywords</p>
-                                <p id="stats-keywords" class="text-2xl font-bold text-gray-200">0</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Recommendations -->
-            <div id="tab-recommendations" class="tab-content hidden">
-                <div id="recommendations-list" class="grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
-            </div>
-        </section>
-
-        <!-- ── Web Preview ─────────────────────────────────── -->
-        <section class="mt-16">
-            <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Web Preview</h4>
-            <div class="glass-card overflow-hidden preview-card">
-                <!-- Window chrome: traffic lights + URL bar -->
-                <div class="flex items-center gap-3 px-4 py-3 bg-black/20 border-b border-white/5">
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <span class="w-3 h-3 rounded-full bg-red-400/80"></span>
-                        <span class="w-3 h-3 rounded-full bg-yellow-400/80"></span>
-                        <span class="w-3 h-3 rounded-full bg-green-400/80"></span>
-                    </div>
-                    <div class="flex items-center gap-2 flex-1 bg-white/5 rounded-lg px-3 py-1.5 text-sm min-w-0 border border-white/5">
-                        <span id="preview-https-badge" class="hidden items-center gap-1 text-green-400 shrink-0 text-xs font-semibold">
-                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <span>Secure</span>
-                        </span>
-                        <span id="preview-url-bar" class="text-gray-400 truncate text-xs">—</span>
-                    </div>
-                </div>
-
-                <!-- Preview body -->
-                <div id="preview-container" class="relative bg-gray-900/40">
-                    <div id="preview-skeleton" class="w-full h-72 animate-pulse" style="display:none;">
-                        <div class="h-full bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800" style="background-size:200% 100%;animation:shimmer 1.5s infinite;"></div>
-                    </div>
-                    <div id="preview-loading" class="w-full h-72 flex items-center justify-center">
-                        <div class="w-10 h-10 border-[3px] border-primary-500 border-t-transparent rounded-full spinner"></div>
-                    </div>
-                    <!-- Clickable Web Preview with Hover Visit Badge -->
-                    <a id="web-preview-link" href="#" target="_blank" rel="noopener noreferrer"
-                       onclick="openAnalyzedSite(event, this)"
-                       class="group relative block overflow-hidden cursor-pointer"
-                       title="Visit analyzed site">
-                        <img id="web-preview-img"
-                             src="" alt="Website Preview"
-                             loading="lazy"
-                             class="w-full block transition-transform duration-500 ease-out group-hover:scale-[1.015]"
-                             style="display:none;">
-                        <div id="preview-hover-badge"
-                             class="pointer-events-none absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/80 backdrop-blur-md border border-white/10 text-white text-xs font-semibold flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-y-1 group-hover:translate-y-0 shadow-lg"
-                             style="display:none;">
-                            <span>Visit site</span>
-                            <svg class="w-3.5 h-3.5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                            </svg>
-                        </div>
-                    </a>
-                    <div id="preview-fallback" class="w-full h-72 flex flex-col items-center justify-center gap-4 p-8" style="display:none;">
-                        <img id="preview-favicon" src="" alt="" class="w-10 h-10 rounded-lg" onerror="this.style.display='none'">
-                        <div class="text-center">
-                            <p id="preview-fallback-domain" class="font-semibold text-gray-300 mb-1"></p>
-                            <p id="preview-error-message" class="text-sm text-gray-500">Preview unavailable</p>
-                        </div>
-                        <div class="flex gap-3">
-                            <button id="preview-retry-btn"
-                                    class="px-4 py-2 text-sm font-semibold btn-gradient text-white rounded-lg">
-                                Retry Preview
-                            </button>
-                            <a id="preview-visit-link" href="#" target="_blank" rel="noopener noreferrer"
-                               class="px-4 py-2 text-sm font-semibold border border-white/10 text-gray-300 hover:bg-white/5 rounded-lg transition-colors">
-                                Visit Site →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── Analysis History ────────────────────────────── -->
-        <section class="mt-16 mb-16">
-            <h4 class="section-heading center text-xl sm:text-2xl font-bold mb-8 text-gray-800 dark:text-gray-100 text-center">Analysis History</h4>
-            <div id="history-list" class="glass-card p-6">
-                <div class="flex flex-col items-center justify-center py-10 px-4 text-center">
-                    <svg class="w-12 h-12 text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p class="text-sm font-medium text-gray-500">No analysis history yet</p>
-                    <p class="text-xs text-gray-600 mt-1">Audit websites to keep track of your scores over time.</p>
-                </div>
-            </div>
-        </section>
-    </div>
-
     <!-- ═══════════════════  ERROR MODAL  ═══════════════════ -->
-    <div id="error-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="glass-card max-w-md w-full p-8 transform transition-all border-white/10">
-            <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-500/10 mb-4">
-                    <svg class="h-10 w-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                </div>
-                
-                <h3 class="text-2xl font-bold text-white mb-2">
-                    Analysis Error
-                </h3>
-                
-                <p class="text-gray-400 mb-4" id="error-message">
-                    The domain you entered is not registered or does not exist.
-                </p>
-                
-                <div class="bg-red-500/5 border border-red-500/15 rounded-xl p-3.5 mb-4">
-                    <p class="text-sm font-mono text-red-400" id="error-domain">example.com</p>
-                </div>
-                
-                <div class="text-left bg-white/3 rounded-xl p-4 mb-6 border border-white/5">
-                    <p class="text-sm font-semibold text-gray-300 mb-2">Suggested troubleshooting:</p>
-                    <ul class="text-sm text-gray-400 space-y-1">
-                        <li>• Check for typos in the domain name</li>
-                        <li>• Verify the URL is public and online</li>
-                        <li>• Ensure your internet connection is active</li>
-                        <li>• Try another website URL</li>
-                    </ul>
-                </div>
-                
-                <div class="text-left mb-6">
-                    <p class="text-sm font-semibold text-gray-300 mb-3 text-center">Try these working examples:</p>
-                    <div class="flex flex-wrap gap-2 justify-center">
-                        <button onclick="tryExample('example.com')" class="text-xs font-semibold bg-white/5 hover:bg-primary-500/10 text-primary-400 px-3.5 py-2 rounded-full transition-all border border-white/5 hover:border-primary-500/20">
-                            example.com
-                        </button>
-                        <button onclick="tryExample('github.com')" class="text-xs font-semibold bg-white/5 hover:bg-primary-500/10 text-primary-400 px-3.5 py-2 rounded-full transition-all border border-white/5 hover:border-primary-500/20">
-                            github.com
-                        </button>
-                        <button onclick="tryExample('wikipedia.org')" class="text-xs font-semibold bg-white/5 hover:bg-primary-500/10 text-primary-400 px-3.5 py-2 rounded-full transition-all border border-white/5 hover:border-primary-500/20">
-                            wikipedia.org
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="flex gap-3">
-                    <button onclick="closeErrorModal()" class="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-gray-300 font-semibold rounded-xl transition border border-white/5">
-                        Cancel
-                    </button>
-                    <button onclick="retryWithCorrection()" class="flex-1 px-4 py-3 btn-gradient text-white font-semibold rounded-xl transition">
-                        Try Again
-                    </button>
-                </div>
+    <div id="error-modal" class="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="stone-card rounded-2xl max-w-md w-full p-6 shadow-mineral-lg border-stone-300 dark:border-stone-700">
+            <div class="flex items-center gap-3 mb-3 text-red-600 dark:text-red-400">
+                <span class="text-2xl">⚠</span>
+                <h4 class="font-serif font-bold text-lg">Survey Interrupted</h4>
+            </div>
+            <p id="error-message" class="text-xs text-stone-600 dark:text-stone-300 mb-4 leading-relaxed"></p>
+            <div class="p-3 rounded bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 font-mono text-xs text-stone-500 mb-4 truncate" id="error-domain"></div>
+            <div class="flex justify-end gap-2 text-xs font-mono">
+                <button onclick="closeErrorModal()" class="px-4 py-2 rounded-lg bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-300 transition-colors">
+                    Dismiss
+                </button>
+                <button onclick="retryWithCorrection()" class="px-4 py-2 rounded-lg bg-copper-600 text-white hover:bg-copper-700 transition-colors">
+                    Revise URL
+                </button>
             </div>
         </div>
     </div>
 
-
-
-    <!-- ═══════════════════  TAB SWITCHING & PREVIEW CLICKTHROUGH (minimal JS)  ═══════════════════ -->
-    <script>
-    function switchTab(tabName) {
-        // Hide all tab contents
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        // Remove active from all pills
-        document.querySelectorAll('.tab-pill').forEach(el => {
-            el.classList.remove('active');
-            el.classList.add('text-gray-400');
-            el.classList.remove('text-gray-300');
-        });
-        // Show selected tab
-        const target = document.getElementById('tab-' + tabName);
-        if (target) {
-            target.classList.remove('hidden');
-            // Re-trigger spring crossfade animation
-            target.style.animation = 'none';
-            target.offsetHeight;
-            target.style.animation = '';
-        }
-        // Activate pill
-        const pill = document.querySelector('[data-tab="' + tabName + '"]');
-        if (pill) {
-            pill.classList.add('active');
-            pill.classList.remove('text-gray-400');
-            pill.classList.add('text-gray-300');
-        }
-    }
-    window.switchTab = switchTab;
-
-    // Helper to retrieve the active analyzed URL
-    function getAnalyzedUrl() {
-        const visitLink = document.getElementById('preview-visit-link')?.getAttribute('href');
-        if (visitLink && visitLink !== '#' && !visitLink.startsWith('javascript:')) {
-            return visitLink.startsWith('http') ? visitLink : 'https://' + visitLink;
-        }
-        const inputVal = document.getElementById('url-input')?.value?.trim();
-        if (inputVal) {
-            return inputVal.startsWith('http') ? inputVal : 'https://' + inputVal;
-        }
-        const urlBarText = document.getElementById('preview-url-bar')?.textContent?.trim();
-        if (urlBarText && urlBarText !== '—') {
-            return urlBarText.startsWith('http') ? urlBarText : 'https://' + urlBarText;
-        }
-        return '#';
-    }
-    window.getAnalyzedUrl = getAnalyzedUrl;
-
-    // Handler when clicking preview image to open analyzed URL in new tab
-    function openAnalyzedSite(e, el) {
-        const url = getAnalyzedUrl();
-        if (url && url !== '#') {
-            el.href = url;
-        } else {
-            e.preventDefault();
-        }
-    }
-    window.openAnalyzedSite = openAnalyzedSite;
-
-    // Observe web-preview-img to toggle hover badge and populate href
-    document.addEventListener('DOMContentLoaded', () => {
-        const previewImg = document.getElementById('web-preview-img');
-        const previewBadge = document.getElementById('preview-hover-badge');
-        const previewLink = document.getElementById('web-preview-link');
-        
-        if (previewImg) {
-            const updatePreviewState = () => {
-                const isVisible = previewImg.style.display !== 'none' && previewImg.getAttribute('src');
-                if (previewBadge) {
-                    previewBadge.style.display = isVisible ? 'flex' : 'none';
-                }
-                if (previewLink && isVisible) {
-                    previewLink.href = getAnalyzedUrl();
-                }
-            };
-
-            const observer = new MutationObserver(updatePreviewState);
-            observer.observe(previewImg, { attributes: true, attributeFilter: ['style', 'src'] });
-        }
-    });
-    </script>
-
+    <!-- ═══════════════════  SCRIPTS  ═══════════════════ -->
+    <!-- Three.js (Lightweight 3D WebGL Library) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- jsPDF for report export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- 3D Mountain Terrain Controller -->
+    <script src="terrain.js"></script>
+    <!-- Main Application Logic -->
     <script src="app.js"></script>
 </body>
 </html>

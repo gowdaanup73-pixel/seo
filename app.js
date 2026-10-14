@@ -1,1309 +1,678 @@
-// In-memory storage (localStorage blocked in sandbox)
+// app.js — Terra Incognita SEO Intelligence Platform Controller
+// Manages application state, API communication, 3D terrain binding, and editorial report generation.
+
+const STORAGE_KEY = 'terra_incognita_history_v2';
 
 const appState = {
   history: [],
   currentResult: null,
-  darkMode: false
+  darkMode: false,
+  mountainViewer: null
 };
 
-// Domain validation function
-async function validateDomain(url) {
+// ---------------------------------------------------------------------------
+// Persistence (localStorage with memory fallback)
+// ---------------------------------------------------------------------------
+function loadStoredHistory() {
   try {
-    // Extract hostname from URL
-    let hostname;
-    try {
-      const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
-      hostname = urlObj.hostname;
-    } catch {
-      return { valid: false, error: 'Invalid URL format' };
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      appState.history = JSON.parse(raw);
     }
-    
-    // Use Google DNS API to check if domain exists
-    const dnsUrl = `https://dns.google/resolve?name=${hostname}&type=A`;
-    const response = await fetch(dnsUrl);
-    const data = await response.json();
-    
-    // Check DNS status
-    if (data.Status === 0 && data.Answer && data.Answer.length > 0) {
-      // Domain exists and is registered
-      return { valid: true, domain: hostname };
-    } else if (data.Status === 3) {
-      // NXDOMAIN - Domain does not exist
-      return { 
-        valid: false, 
-        error: 'Domain not registered',
-        domain: hostname 
-      };
-    } else {
-      // Other DNS errors
-      return { 
-        valid: false, 
-        error: 'Could not validate domain',
-        domain: hostname 
-      };
-    }
-  } catch (error) {
-    return { 
-      valid: false, 
-      error: 'Validation failed: ' + error.message 
-    };
+  } catch {
+    appState.history = [];
   }
 }
 
-// Show error modal
-function showErrorModal(errorMessage, domain) {
-  const modal = document.getElementById('error-modal');
-  const errorMsg = document.getElementById('error-message');
-  const errorDomain = document.getElementById('error-domain');
-  
-  errorMsg.textContent = errorMessage;
-  errorDomain.textContent = domain || 'Unknown domain';
-  
-  modal.classList.remove('hidden');
+function saveHistory() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.history.slice(0, 20)));
+  } catch {
+    // quota exceeded or sandbox blocked
+  }
 }
 
-// Close error modal
-function closeErrorModal() {
-  const modal = document.getElementById('error-modal');
-  modal.classList.add('hidden');
+// ---------------------------------------------------------------------------
+// Tab Switching
+// ---------------------------------------------------------------------------
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.tab-pill').forEach(el => el.classList.remove('active'));
+
+  const target = document.getElementById('tab-' + tabName);
+  if (target) {
+    target.classList.remove('hidden');
+  }
+
+  const pill = document.querySelector(`[data-tab="${tabName}"]`);
+  if (pill) {
+    pill.classList.add('active');
+  }
+}
+window.switchTab = switchTab;
+
+// ---------------------------------------------------------------------------
+// Theme Toggle
+// ---------------------------------------------------------------------------
+function initTheme() {
+  try {
+    const saved = localStorage.getItem('terra_theme');
+    if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      appState.darkMode = true;
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+      appState.darkMode = false;
+    }
+  } catch {
+    // fallback
+  }
 }
 
-// Try example domain
-function tryExample(domain) {
-  document.getElementById('url-input').value = domain;
-  closeErrorModal();
-  document.getElementById('launch-btn').click();
-}
-window.tryExample = tryExample;
-window.closeErrorModal = closeErrorModal;
-
-// Retry with correction
-function retryWithCorrection() {
-  closeErrorModal();
-  document.getElementById('url-input').focus();
-}
-window.retryWithCorrection = retryWithCorrection;
-
-
-
-
-// Stop words to filter
-const stopWords = ['the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'should', 'could', 'can', 'may', 'might', 'of', 'in', 'on', 'at', 'to', 'for', 'from', 'by', 'with', 'about', 'as', 'or', 'and'];
-
-// Theme toggle
 function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.classList.contains('dark');
-  
+
   if (isDark) {
     html.classList.remove('dark');
     html.classList.add('light');
     appState.darkMode = false;
+    try { localStorage.setItem('terra_theme', 'light'); } catch {}
   } else {
     html.classList.remove('light');
     html.classList.add('dark');
     appState.darkMode = true;
+    try { localStorage.setItem('terra_theme', 'dark'); } catch {}
   }
 }
 
-// Analyze website — DNS check and server crawl run in parallel
-async function analyzeWebsite(url) {
-  // Normalise before either call
-  const normalisedUrl = url.startsWith('http') ? url : 'https://' + url;
+// ---------------------------------------------------------------------------
+// Error Modal Handlers
+// ---------------------------------------------------------------------------
+function showErrorModal(message, domain) {
+  const modal = document.getElementById('error-modal');
+  const msgEl = document.getElementById('error-message');
+  const domainEl = document.getElementById('error-domain');
 
-  // Shared abort controller — if DNS fails we cancel the analyze fetch
-  const abortController = new AbortController();
+  if (msgEl) msgEl.textContent = message || 'An unexpected survey disruption occurred.';
+  if (domainEl) domainEl.textContent = domain ? `Target: ${domain}` : '';
+  if (modal) modal.classList.remove('hidden');
+}
 
-  updateLoadingStatus('Checking domain & fetching page…');
+function closeErrorModal() {
+  const modal = document.getElementById('error-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function retryWithCorrection() {
+  closeErrorModal();
+  const input = document.getElementById('url-input');
+  if (input) input.focus();
+}
+
+function tryExample(domain) {
+  const input = document.getElementById('url-input');
+  if (input) input.value = domain;
+  closeErrorModal();
+  const launchBtn = document.getElementById('launch-btn');
+  if (launchBtn) launchBtn.click();
+}
+window.showErrorModal = showErrorModal;
+window.closeErrorModal = closeErrorModal;
+window.retryWithCorrection = retryWithCorrection;
+window.tryExample = tryExample;
+
+// ---------------------------------------------------------------------------
+// Analysis Execution & Telemetry Binding
+// ---------------------------------------------------------------------------
+async function analyzeDomain(targetUrl) {
+  const overlay = document.getElementById('mountain-scanning-overlay');
+  const phaseTitle = document.getElementById('scanning-phase-title');
+  const phaseDetail = document.getElementById('scanning-phase-detail');
+
+  if (overlay) overlay.classList.remove('hidden');
+
+  const updateScanPhase = (title, detail) => {
+    if (phaseTitle) phaseTitle.textContent = title;
+    if (phaseDetail) phaseDetail.textContent = detail;
+  };
 
   try {
-    // ─── PARALLEL: DNS validation + server-side crawl ────────────────────────
-    // DNS check is client-side (Google DNS API) and used only for the friendly
-    // error modal. The /api/analyze server also validates the URL, so we don't
-    // gate the server request on DNS completing first — both fire at once.
-    const [validation, analyzeResponse] = await Promise.all([
-      validateDomain(normalisedUrl),
+    updateScanPhase('Resolving Coordinates…', 'Verifying DNS resolution & transport security');
+
+    // Run parallel analysis and preview fetch
+    const [analyzeRes, previewRes] = await Promise.all([
       fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: normalisedUrl }),
-        signal: abortController.signal
-      }).catch(err => {
-        // If aborted (DNS failed fast and we bailed), return null
-        if (err.name === 'AbortError') return null;
-        throw err;
-      })
+        body: JSON.stringify({ url: targetUrl })
+      }),
+      fetch('/api/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: targetUrl })
+      }).catch(() => null)
     ]);
 
-    // ─── DNS result handling ──────────────────────────────────────────────────
-    if (!validation.valid) {
-      // Cancel any still-pending analyze fetch
-      abortController.abort();
-      showErrorModal(validation.error, validation.domain);
-      return { success: false, error: validation.error, domainError: true };
+    updateScanPhase('Sculpting 3D Strata…', 'Processing DOM hierarchy, word density, and crawler directives');
+
+    const data = await analyzeRes.json().catch(() => ({}));
+
+    if (!analyzeRes.ok || data.success === false) {
+      throw new Error(data.message || data.error || `Server status ${analyzeRes.status}`);
     }
 
-    // ─── Analyze response handling ────────────────────────────────────────────
-    if (!analyzeResponse) {
-      return { success: false, error: 'Analysis request was cancelled.' };
+    let previewUrl = null;
+    if (previewRes && previewRes.ok) {
+      const pData = await previewRes.json().catch(() => ({}));
+      if (pData.url) previewUrl = pData.url;
     }
 
-    updateLoadingStatus('Scoring results…');
-    const data = await analyzeResponse.json().catch(() => ({}));
+    const fullResult = {
+      ...data,
+      previewUrl
+    };
 
-    if (!analyzeResponse.ok || data.success === false) {
-      return {
-        success: false,
-        error: data.message || data.error || `Server error ${analyzeResponse.status}`
-      };
+    appState.currentResult = fullResult;
+
+    // Update 3D Mountain Terrain
+    if (appState.mountainViewer) {
+      appState.mountainViewer.updateData(fullResult);
     }
 
-    // ─── Score calculation (synchronous, runs once) ───────────────────────────
-    const scores = calculateDetailedScores({
-      title:     data.title,
-      metaDesc:  data.metaDesc,
-      h1Count:   data.h1Count,
-      h2Count:   data.h2Count,
-      imageCount: data.imageCount,
-      linkCount:  data.linkCount,
-      wordCount:  data.wordCount,
-      hasViewport: data.hasViewport,
-      url:       data.url
-    });
+    // Populate UI
+    renderSurveyResults(fullResult);
 
-    return { ...data, scores };
+    // Save to history
+    addToHistory(fullResult);
 
-  } catch (error) {
-    return { success: false, error: `Failed to fetch analysis: ${error.message || 'connection failed.'}` };
+  } catch (err) {
+    console.error('Survey error:', err);
+    showErrorModal(err.message, targetUrl);
+  } finally {
+    if (overlay) overlay.classList.add('hidden');
   }
 }
 
+// ---------------------------------------------------------------------------
+// Render Results onto Dashboard
+// ---------------------------------------------------------------------------
+function renderSurveyResults(data) {
+  const scores = data.scores || { total: 0, onPage: 0, technical: 0, content: 0, links: 0 };
 
+  // Active domain title
+  const activeDomainEl = document.getElementById('active-domain-display');
+  if (activeDomainEl) {
+    try {
+      const u = new URL(data.url);
+      activeDomainEl.textContent = `— ${u.hostname}`;
+    } catch {
+      activeDomainEl.textContent = `— ${data.url}`;
+    }
+  }
 
-// Calculate detailed scores
-function calculateDetailedScores(data) {
-  const scores = {
-    onPage: 0,
-    technical: 0,
-    content: 0,
-    links: 0
+  // Score deck
+  const totalEl = document.getElementById('score-total');
+  const gradeEl = document.getElementById('score-grade');
+  if (totalEl) totalEl.textContent = scores.total;
+
+  if (gradeEl) {
+    if (scores.total >= 90) gradeEl.textContent = 'Alpine Peak (Outstanding)';
+    else if (scores.total >= 75) gradeEl.textContent = 'Subalpine Ridge (Healthy)';
+    else if (scores.total >= 50) gradeEl.textContent = 'Plateau Terrace (Moderate)';
+    else gradeEl.textContent = 'Eroded Valley (Deficit)';
+  }
+
+  // Category scores and progress bars
+  const setScore = (id, barId, val, max) => {
+    const el = document.getElementById(id);
+    const bar = document.getElementById(barId);
+    if (el) el.textContent = val;
+    if (bar) bar.style.width = `${Math.min(100, (val / max) * 100)}%`;
   };
-  
-  // On-Page SEO (max 40)
-  if (data.title && data.title !== 'Missing') {
-    scores.onPage += 15;
-    if (data.title.length >= 30 && data.title.length <= 60) scores.onPage += 5;
+
+  setScore('score-onpage', 'bar-onpage', scores.onPage, 40);
+  setScore('score-technical', 'bar-technical', scores.technical, 30);
+  setScore('score-content', 'bar-content', scores.content, 20);
+  setScore('score-links', 'bar-links', scores.links, 10);
+
+  // Satellite preview
+  const previewImg = document.getElementById('web-preview-img');
+  const placeholder = document.getElementById('web-preview-placeholder');
+  const visitLink = document.getElementById('preview-visit-link');
+
+  if (visitLink) visitLink.href = data.url;
+
+  if (previewImg && data.previewUrl) {
+    previewImg.src = data.previewUrl;
+    previewImg.classList.remove('hidden');
+    if (placeholder) placeholder.classList.add('hidden');
+  } else if (previewImg) {
+    previewImg.classList.add('hidden');
+    if (placeholder) placeholder.classList.remove('hidden');
   }
-  if (data.metaDesc && data.metaDesc !== 'Missing') {
-    scores.onPage += 10;
-    if (data.metaDesc.length >= 120 && data.metaDesc.length <= 160) scores.onPage += 5;
+
+  // Keywords
+  const kwList = document.getElementById('keywords-list');
+  const kwCount = document.getElementById('keyword-count-display');
+  if (kwList) {
+    kwList.innerHTML = '';
+    const keywords = data.topKeywords || [];
+    if (kwCount) kwCount.textContent = `${keywords.length} TOKENS`;
+
+    if (keywords.length === 0) {
+      kwList.innerHTML = '<div class="text-stone-400 py-4 text-center">No prominent keywords identified.</div>';
+    } else {
+      keywords.forEach(([word, count]) => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between py-1 border-b border-stone-200/50 dark:border-stone-800/50';
+        item.innerHTML = `
+          <span class="text-stone-800 dark:text-stone-200 font-medium">${escapeHtml(word)}</span>
+          <span class="px-1.5 py-0.5 rounded bg-stone-200/70 dark:bg-stone-800 text-[11px] text-stone-600 dark:text-stone-400 font-mono">${count}×</span>
+        `;
+        kwList.appendChild(item);
+      });
+    }
   }
-  if (data.h1Count > 0) scores.onPage += 3;
-  if (!data.imagesWithoutAlt || data.imagesWithoutAlt === 0) scores.onPage += 2;
-  
-  // Technical (max 30)
-  if (data.url && data.url.startsWith('https')) scores.technical += 10;
-  if (data.hasViewport) scores.technical += 10; // Real viewport check from server
-  if (data.h1Count === 1) scores.technical += 5;
-  if (data.wordCount >= 300) scores.technical += 5;
-  
-  // Content (max 20)
-  if (data.wordCount >= 300) scores.content += 5;
-  if (data.wordCount >= 600) scores.content += 5;
-  if (data.h2Count > 0) scores.content += 5;
-  scores.content += 5; // Base content score
-  
-  // Links (max 10)
-  if (data.linkCount >= 5) scores.links += 5;
-  if (data.linkCount >= 10) scores.links += 5;
-  
-  scores.total = scores.onPage + scores.technical + scores.content + scores.links;
-  
-  return scores;
+
+  // Technical Strata
+  const setTech = (id, value, isPassed) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const badge = isPassed
+      ? `<span class="text-forest-600 dark:text-forest-400">✓ ${escapeHtml(value)}</span>`
+      : `<span class="text-amber-600 dark:text-amber-400">▲ ${escapeHtml(value)}</span>`;
+    el.innerHTML = badge;
+  };
+
+  setTech('tech-https', data.url.startsWith('https://') ? 'HTTPS Secure' : 'Insecure HTTP', data.url.startsWith('https://'));
+  setTech('tech-viewport', data.hasViewport ? 'Configured' : 'Missing Viewport', data.hasViewport);
+  setTech('tech-robots', data.robots?.disallowsAll ? 'Crawl Blocked' : (data.robots?.found ? 'Permitted (robots.txt)' : 'Default Crawl (No robots.txt)'), !data.robots?.disallowsAll);
+  setTech('tech-canonical', data.canonical ? 'Declared' : 'Not Declared', !!data.canonical);
+  setTech('tech-headings', `H1: ${data.h1Count} // H2: ${data.h2Count}`, data.h1Count === 1);
+  setTech('tech-images', `${data.imagesWithoutAlt} missing alt tags (${data.imageCount} total)`, data.imagesWithoutAlt === 0);
+
+  // Content Topography
+  const titleText = document.getElementById('meta-title-text');
+  const titleLength = document.getElementById('meta-title-length');
+  if (titleText) titleText.textContent = data.title;
+  if (titleLength) titleLength.textContent = `${data.title === 'Missing' ? 0 : data.title.length} characters (optimal 30-60)`;
+
+  const descText = document.getElementById('meta-desc-text');
+  const descLength = document.getElementById('meta-desc-length');
+  if (descText) descText.textContent = data.metaDesc;
+  if (descLength) descLength.textContent = `${data.metaDesc === 'Missing' ? 0 : data.metaDesc.length} characters (optimal 120-160)`;
+
+  const wordCountEl = document.getElementById('content-word-count');
+  if (wordCountEl) wordCountEl.textContent = data.wordCount;
+
+  const linkCountEl = document.getElementById('content-link-count');
+  if (linkCountEl) linkCountEl.textContent = data.linkCount;
+
+  const ogBox = document.getElementById('og-preview-box');
+  if (ogBox) {
+    if (data.ogTitle || data.ogDesc || data.ogImage) {
+      ogBox.innerHTML = `
+        <div class="font-medium text-stone-900 dark:text-stone-100">${escapeHtml(data.ogTitle || 'No og:title')}</div>
+        <div class="text-[11px] text-stone-500 mt-1">${escapeHtml(data.ogDesc || 'No og:description')}</div>
+      `;
+    } else {
+      ogBox.textContent = 'No Open Graph tags detected in document header.';
+    }
+  }
+
+  // Actionable Plan & Code Fixes
+  renderActionablePlan(data.issues || []);
 }
 
-
-
-// Render pie chart
-function renderPieChart(scores) {
-  const svg = document.getElementById('pie-chart-svg');
-  const legend = document.getElementById('pie-chart-legend');
-  
-  const data = [
-    { label: 'OnPage', value: scores.onPage, color: '#3b82f6', max: 40 },
-    { label: 'Technical', value: scores.technical, color: '#10b981', max: 30 },
-    { label: 'Content', value: scores.content, color: '#f97316', max: 20 },
-    { label: 'Link', value: scores.links, color: '#ef4444', max: 10 }
-  ];
-  
-  let total = data.reduce((sum, d) => sum + d.value, 0);
-  let currentAngle = 0;
-  
-  svg.innerHTML = '';
-  legend.innerHTML = '';
-  
-  data.forEach(item => {
-    const percentage = (item.value / total) * 100;
-    const angle = (percentage / 100) * 360;
-    
-    // Create pie slice
-    const x1 = 100 + 80 * Math.cos((currentAngle - 90) * Math.PI / 180);
-    const y1 = 100 + 80 * Math.sin((currentAngle - 90) * Math.PI / 180);
-    const x2 = 100 + 80 * Math.cos((currentAngle + angle - 90) * Math.PI / 180);
-    const y2 = 100 + 80 * Math.sin((currentAngle + angle - 90) * Math.PI / 180);
-    
-    const largeArc = angle > 180 ? 1 : 0;
-    
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', `M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArc} 1 ${x2} ${y2} Z`);
-    path.setAttribute('fill', item.color);
-    path.setAttribute('stroke', '#fff');
-    path.setAttribute('stroke-width', '2');
-    svg.appendChild(path);
-    
-    currentAngle += angle;
-    
-    // Create legend item
-    const legendItem = document.createElement('div');
-    legendItem.className = 'flex items-center gap-3';
-    legendItem.innerHTML = `
-      <div class="w-4 h-4 rounded" style="background: ${item.color}"></div>
-      <span class="text-gray-700 dark:text-gray-300 font-medium">${item.label}: ${item.value}/${item.max} (${percentage.toFixed(1)}%)</span>
-    `;
-    legend.appendChild(legendItem);
-  });
-}
-
-
-
-// Generate recommendations with structured checks grouped by Critical, Improvement, and Passed
-function generateRecommendations(result) {
-  const container = document.getElementById('recommendations-list');
+// ---------------------------------------------------------------------------
+// Render Actionable Recommendations
+// ---------------------------------------------------------------------------
+function renderActionablePlan(issues) {
+  const container = document.getElementById('recommendations-container');
+  const countBadge = document.getElementById('findings-count-badge');
   if (!container) return;
 
-  // Define the audit checks
-  const checks = [
-    // 1. Title Presence & Length (OnPage)
-    {
-      name: 'Title Tag Audit',
-      category: 'onPage',
-      passed: result.title && result.title !== 'Missing' && result.title.length >= 30 && result.title.length <= 60,
-      severity: result.title === 'Missing' ? 'Critical' : 'Improvement',
-      status: result.title === 'Missing' ? 'No title tag detected' : `Title length is suboptimal (${result.title.length} chars: "${result.title}")`,
-      passedStatus: `Title length is optimal (${result.title.length} chars: "${result.title}")`,
-      explanation: result.title === 'Missing' 
-        ? 'Your website is completely missing a title tag in the head section.'
-        : `Your title tag is ${result.title.length < 30 ? 'too short' : 'too long'} to display properly in search engine result pages.`,
-      whyItMatters: 'Title tags are the primary clickable link displayed on search results pages and are heavily weighted by search engines to understand page topic.',
-      fix: result.title === 'Missing'
-        ? 'Add a `<title>Your Target Keyword | BrandName</title>` tag within the `<head>` block of your HTML.'
-        : `Revise the title tag to be between 30 and 60 characters long. Current title: "${result.title}" (length: ${result.title.length}).`,
-      code: '&lt;title&gt;Target Keyword | Described Brand&lt;/title&gt;'
-    },
-    // 2. Meta Description (OnPage)
-    {
-      name: 'Meta Description Audit',
-      category: 'onPage',
-      passed: result.metaDesc && result.metaDesc !== 'Missing' && result.metaDesc.length >= 120 && result.metaDesc.length <= 160,
-      severity: result.metaDesc === 'Missing' ? 'Critical' : 'Improvement',
-      status: result.metaDesc === 'Missing' ? 'No meta description detected' : `Meta description length is suboptimal (${result.metaDesc.length} chars: "${result.metaDesc}")`,
-      passedStatus: `Meta description is optimal (${result.metaDesc.length} chars)`,
-      explanation: result.metaDesc === 'Missing'
-        ? 'No meta description tag was found on the page.'
-        : `The meta description length of ${result.metaDesc.length} characters is outside the optimal 120-160 range.`,
-      whyItMatters: 'Meta descriptions act as search snippet copy; they directly impact Click-Through Rate (CTR) even though they are not a direct ranking factor.',
-      fix: result.metaDesc === 'Missing'
-        ? 'Add a `<meta name="description" content="...">` tag to the `<head>` with a summary between 120 and 160 characters.'
-        : `Rewrite your description to fit within the 120-160 character display limit. Current: "${result.metaDesc}"`,
-      code: '&lt;meta name="description" content="A compelling summary of the page containing your primary keywords."&gt;'
-    },
-    // 3. H1 Presence (OnPage/Technical)
-    {
-      name: 'H1 Heading Presence',
-      category: 'onPage',
-      passed: result.h1Count > 0,
-      severity: 'Critical',
-      status: 'No H1 tag detected on the page',
-      passedStatus: `H1 tag is present (Count: ${result.h1Count})`,
-      explanation: 'Your page does not contain any H1 heading tags.',
-      whyItMatters: 'H1 tags define the top-level heading of a page. Search engines use them to grasp the main topic of your page content.',
-      fix: 'Create exactly one H1 tag near the top of your page wrapper containing your primary keyword.',
-      code: '&lt;h1&gt;Main Page Heading Containing Keywords&lt;/h1&gt;'
-    },
-    // 4. Single H1 Rule (Technical)
-    {
-      name: 'Single H1 Restriction',
-      category: 'technical',
-      passed: result.h1Count === 1,
-      severity: 'Improvement',
-      status: `Multiple H1 tags detected (${result.h1Count} tags found)`,
-      passedStatus: 'Exactly one H1 tag is used (Optimal)',
-      explanation: `Your page has ${result.h1Count} H1 tags instead of the recommended single H1.`,
-      whyItMatters: 'Using more than one H1 tag dilutes keyword focus and makes page hierarchy confusing for screen readers and crawlers.',
-      fix: `Keep only the primary heading as H1 and convert the other ${result.h1Count - 1} H1 tags to H2 or H3 tags.`,
-      code: null
-    },
-    // 5. Image Alt Attributes (OnPage)
-    {
-      name: 'Image Alt Tags Audit',
-      category: 'onPage',
-      passed: result.imagesWithoutAlt === 0,
-      severity: 'Improvement',
-      status: `${result.imagesWithoutAlt} out of ${result.imageCount} images lack descriptive alt tags`,
-      passedStatus: `All ${result.imageCount} images have alt tags`,
-      explanation: `There are ${result.imagesWithoutAlt} image element(s) with missing or empty alt properties.`,
-      whyItMatters: 'Alt attributes tell search engines what an image represents and are crucial for screen reader accessibility and image search rankings.',
-      fix: 'Add a descriptive `alt="..."` attribute to every image tag that lacks one.',
-      code: '&lt;img src="image.jpg" alt="Descriptive explanation of the image content"&gt;'
-    },
-    // 6. HTTPS Security (Technical)
-    {
-      name: 'HTTPS Protocol Secure Connection',
-      category: 'technical',
-      passed: result.url.startsWith('https'),
-      severity: 'Critical',
-      status: `Insecure HTTP protocol in use: "${result.url}"`,
-      passedStatus: 'Secure HTTPS protocol enabled',
-      explanation: 'The connection protocol is HTTP instead of HTTPS.',
-      whyItMatters: 'HTTPS is a confirmed search ranking signal. Insecure sites display browser warnings, increasing user bounce rates.',
-      fix: 'Configure an SSL certificate on your web host and redirect all HTTP traffic to HTTPS via 301 redirects.',
-      code: null
-    },
-    // 7. Viewport Configuration (Technical)
-    {
-      name: 'Viewport Meta Tag Definition',
-      category: 'technical',
-      passed: result.hasViewport,
-      severity: 'Critical',
-      status: 'Viewport meta tag is missing',
-      passedStatus: 'Viewport meta tag is defined correctly',
-      explanation: 'No viewport meta tag was detected in the document header.',
-      whyItMatters: 'The viewport tag ensures search engines recognize your site as mobile-friendly and scale it correctly on phone devices.',
-      fix: 'Add the viewport meta tag inside the `<head>` section of the page.',
-      code: '&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;'
-    },
-    // 8. Content Word Count (Content)
-    {
-      name: 'Page Word Count',
-      category: 'content',
-      passed: result.wordCount >= 600,
-      severity: result.wordCount < 300 ? 'Critical' : 'Improvement',
-      status: result.wordCount < 300 
-        ? `Thin content detected: only ${result.wordCount} words` 
-        : `Suboptimal word count: only ${result.wordCount} words (optimal is 600+)`,
-      passedStatus: `Optimal word count: ${result.wordCount} words`,
-      explanation: `The page contains only ${result.wordCount} words of text.`,
-      whyItMatters: 'Longer, comprehensive copy ranks higher because it matches search queries and offers greater depth of information.',
-      fix: `Expand the page copy with detailed sections, explanations, or FAQs to reach at least 600 words. Current: ${result.wordCount} words.`,
-      code: null
-    },
-    // 9. H2 Subheadings (Content)
-    {
-      name: 'H2 Subheadings Presence',
-      category: 'content',
-      passed: result.h2Count > 0,
-      severity: 'Improvement',
-      status: 'No H2 subheadings found',
-      passedStatus: `H2 subheadings present (Count: ${result.h2Count})`,
-      explanation: 'The page lacks H2 subheading tags to organize the text copy.',
-      whyItMatters: 'H2 tags act as section breaks, improving scannability for readers and providing hierarchy context to web crawlers.',
-      fix: 'Identify major sections within your text copy and wrap their headings in H2 tags.',
-      code: '&lt;h2&gt;Subheading Topic&lt;/h2&gt;'
-    },
-    // 10. Link Density (Links)
-    {
-      name: 'Link Density & Distribution',
-      category: 'links',
-      passed: result.linkCount >= 10,
-      severity: 'Improvement',
-      status: `Low link density: only ${result.linkCount} links found (optimal is 10+)`,
-      passedStatus: `Optimal link density: ${result.linkCount} links`,
-      explanation: `Only ${result.linkCount} total links were detected on the page.`,
-      whyItMatters: 'Links help build page relationships, index site contents, and guide user navigation.',
-      fix: 'Incorporate relevant contextual text links to internal pages or high-authority external sources.',
-      code: '&lt;a href="/internal-page"&gt;Related Article&lt;/a&gt;'
-    }
-  ];
-
-  // Group the checks
-  const critical = [];
-  const improvement = [];
-  const passed = [];
-
-  checks.forEach(check => {
-    if (check.passed) {
-      passed.push(check);
-    } else if (check.severity === 'Critical') {
-      critical.push(check);
-    } else {
-      improvement.push(check);
-    }
-  });
-
-  // Render HTML structures
   container.innerHTML = '';
+  if (countBadge) countBadge.textContent = `${issues.length} audit facets`;
 
-  function renderGroup(title, list, badgeColor, borderColor, emptyText) {
-    if (list.length === 0) {
-      if (!emptyText) return '';
-      return `
-        <div class="col-span-1 md:col-span-2 mt-4">
-          <h5 class="text-xl font-bold flex items-center gap-2 mb-4">
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-green-500 text-white">0</span>
-            <span class="text-gray-800 dark:text-gray-200">${title}</span>
-          </h5>
-          <div class="recommendation-card is-visible bg-white dark:bg-darkCard rounded-2xl shadow-md p-6 border-l-4 border-green-500 flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center font-bold text-base shrink-0">✓</div>
-            <div>
-              <p class="text-sm font-bold text-gray-900 dark:text-white">${emptyText}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">All evaluated checks in this category meet optimal search engine requirements.</p>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-    
-    let groupHtml = `
-      <div class="col-span-1 md:col-span-2 mt-4">
-        <h5 class="text-xl font-bold flex items-center gap-2 mb-4">
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${badgeColor}">${list.length}</span>
-          <span class="text-gray-800 dark:text-gray-200">${title}</span>
-        </h5>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    `;
-
-    list.forEach(check => {
-      groupHtml += `
-        <div class="recommendation-card is-visible bg-white dark:bg-darkCard rounded-2xl shadow-md p-6 border-l-4 ${borderColor} transition hover:shadow-lg">
-          <div class="flex items-start justify-between mb-3">
-            <span class="text-sm font-bold text-gray-900 dark:text-white">${check.name}</span>
-            <span class="text-xs uppercase font-bold px-2 py-0.5 rounded ${check.passed ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : (check.severity === 'Critical' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' : 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400')}">
-              ${check.passed ? 'Passed' : check.severity}
-            </span>
-          </div>
-          
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2 font-mono break-all">
-            Status: ${check.passed ? check.passedStatus : check.status}
-          </p>
-          
-          <p class="text-sm text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">
-            ${check.passed ? 'No issues found. This check meets optimal SEO criteria.' : check.explanation}
-          </p>
-          
-          ${!check.passed ? `
-            <div class="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900 rounded-lg p-3.5 mb-3 text-xs text-blue-900 dark:text-blue-300">
-              <span class="font-bold">Why it matters:</span> ${check.whyItMatters}
-            </div>
-            <div class="bg-gray-50 dark:bg-slate-800 rounded-lg p-3.5 mb-3 text-xs text-gray-700 dark:text-gray-300 border border-gray-100 dark:border-slate-700">
-              <span class="font-bold text-gray-900 dark:text-white">🔧 How to fix:</span> ${check.fix}
-            </div>
-          ` : ''}
-          
-          ${check.code && !check.passed ? `
-            <div class="bg-gray-900 dark:bg-slate-950 rounded-lg p-3 mb-3">
-              <pre class="text-xs text-green-400 font-mono overflow-x-auto"><code>${check.code}</code></pre>
-            </div>
-          ` : ''}
-          
-          ${!check.passed ? `
-            <button onclick="markCompleted(this)" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 rounded-lg transition text-xs">
-              Mark as Fixed
-            </button>
-          ` : `
-            <div class="text-xs text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
-              ✓ Meets SEO best practices
-            </div>
-          `}
-        </div>
-      `;
-    });
-
-    groupHtml += `
-        </div>
-      </div>
-    `;
-    return groupHtml;
-  }
-
-  // Render in columns/grids
-  let finalHtml = '';
-  finalHtml += renderGroup('Critical Issues', critical, 'bg-red-500 text-white', 'border-red-500', 'No critical issues found ✓');
-  finalHtml += renderGroup('Improvements Needed', improvement, 'bg-orange-500 text-white', 'border-orange-500', 'No improvements needed ✓');
-  finalHtml += renderGroup('Passed Checks', passed, 'bg-green-500 text-white', 'border-green-500', '');
-
-  container.innerHTML = finalHtml;
-
-  // FIX 2: Populate top-level callout cards (Critical Issues & Quick Wins)
-  updateTopCalloutCards(critical, improvement);
-}
-
-// Populate the top-level Critical Issues and Quick Wins summary cards
-function updateTopCalloutCards(criticalList, improvementList) {
-  // 1. Critical Issues Callout
-  const criticalContainer = document.getElementById('callout-critical-list');
-  const criticalBadge = document.getElementById('callout-critical-badge');
-  const criticalFooter = document.getElementById('callout-critical-footer');
-  const criticalLinkText = document.getElementById('callout-critical-link-text');
-
-  if (criticalContainer) {
-    if (criticalList.length === 0) {
-      if (criticalBadge) criticalBadge.classList.add('hidden');
-      if (criticalFooter) criticalFooter.classList.add('hidden');
-      criticalContainer.innerHTML = `
-        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400">
-          <span class="font-bold text-sm">✓</span>
-          <p class="text-xs font-semibold">No critical issues found ✓</p>
-        </div>
-      `;
-    } else {
-      if (criticalBadge) {
-        criticalBadge.textContent = criticalList.length;
-        criticalBadge.classList.remove('hidden');
-      }
-      const topItems = criticalList.slice(0, 3);
-      criticalContainer.innerHTML = topItems.map(item => `
-        <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-black/20 border border-red-500/20 text-xs">
-          <span class="text-red-400 font-bold shrink-0 mt-0.5">•</span>
-          <div class="min-w-0">
-            <p class="font-semibold text-gray-200 truncate">${item.name}</p>
-            <p class="text-[11px] text-gray-400 truncate">${item.status}</p>
-          </div>
-        </div>
-      `).join('');
-
-      if (criticalFooter) {
-        criticalFooter.classList.remove('hidden');
-        if (criticalLinkText) {
-          criticalLinkText.textContent = `View all ${criticalList.length} critical ${criticalList.length === 1 ? 'issue' : 'issues'}`;
-        }
-      }
-    }
-  }
-
-  // 2. Quick Wins Callout (Low implementation effort: metadata, headings, alt tags)
-  const winsContainer = document.getElementById('callout-wins-list');
-  const winsBadge = document.getElementById('callout-wins-badge');
-  const winsFooter = document.getElementById('callout-wins-footer');
-  const winsLinkText = document.getElementById('callout-wins-link-text');
-
-  if (winsContainer) {
-    // Filter improvement list for quick wins (e.g. meta descriptions, H2 subheadings, alt tags, single H1)
-    const quickWinNames = ['Meta Description Audit', 'H2 Subheadings Presence', 'Image Alt Tags Audit', 'Single H1 Restriction'];
-    let quickWins = improvementList.filter(item => quickWinNames.includes(item.name));
-    if (quickWins.length === 0 && improvementList.length > 0) {
-      quickWins = improvementList; // Fallback to whatever improvements exist
-    }
-
-    if (quickWins.length === 0) {
-      if (winsBadge) winsBadge.classList.add('hidden');
-      if (winsFooter) winsFooter.classList.add('hidden');
-      winsContainer.innerHTML = `
-        <div class="flex items-center gap-2.5 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400">
-          <span class="font-bold text-sm">✓</span>
-          <p class="text-xs font-semibold">No quick wins needed ✓</p>
-        </div>
-      `;
-    } else {
-      if (winsBadge) {
-        winsBadge.textContent = quickWins.length;
-        winsBadge.classList.remove('hidden');
-      }
-      const topWins = quickWins.slice(0, 3);
-      winsContainer.innerHTML = topWins.map(item => `
-        <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-black/20 border border-green-500/20 text-xs">
-          <span class="text-green-400 font-bold shrink-0 mt-0.5">⚡</span>
-          <div class="min-w-0">
-            <p class="font-semibold text-gray-200 truncate">${item.name}</p>
-            <p class="text-[11px] text-gray-400 truncate">${item.status}</p>
-          </div>
-        </div>
-      `).join('');
-
-      if (winsFooter) {
-        winsFooter.classList.remove('hidden');
-        if (winsLinkText) {
-          winsLinkText.textContent = `View all ${quickWins.length} quick ${quickWins.length === 1 ? 'win' : 'wins'}`;
-        }
-      }
-    }
-  }
-}
-
-
-// Modified displayResults function to render one-line reasons for lost points dynamically
-function displayResults(result) {
-  // Save current result
-  appState.currentResult = result;
-
-  // Show results section
-  document.getElementById('results-section').classList.remove('hidden');
-  
-  // Update overall score
-  document.getElementById('overall-score').textContent = `${result.scores.total}/100`;
-  
-  // Update individual scores with animation
-  const circumference = 2 * Math.PI * 45;
-  
-  // OnPage
-  const onPagePercent = (result.scores.onPage / 40) * 100;
-  const onPageOffset = circumference - (onPagePercent / 100) * circumference;
-  document.getElementById('score-onpage').textContent = result.scores.onPage;
-  setTimeout(() => {
-    document.getElementById('circle-onpage').style.strokeDashoffset = onPageOffset;
-  }, 100);
-  
-  // Technical
-  const techPercent = (result.scores.technical / 30) * 100;
-  const techOffset = circumference - (techPercent / 100) * circumference;
-  document.getElementById('score-technical').textContent = result.scores.technical;
-  setTimeout(() => {
-    document.getElementById('circle-technical').style.strokeDashoffset = techOffset;
-  }, 200);
-  
-  // Content
-  const contentPercent = (result.scores.content / 20) * 100;
-  const contentOffset = circumference - (contentPercent / 100) * circumference;
-  document.getElementById('score-content').textContent = result.scores.content;
-  setTimeout(() => {
-    document.getElementById('circle-content').style.strokeDashoffset = contentOffset;
-  }, 300);
-  
-  // Link
-  const linkPercent = (result.scores.links / 10) * 100;
-  const linkOffset = circumference - (linkPercent / 100) * circumference;
-  document.getElementById('score-link').textContent = result.scores.links;
-  setTimeout(() => {
-    document.getElementById('circle-link').style.strokeDashoffset = linkOffset;
-  }, 400);
-  
-  // Final score
-  const finalPercent = (result.scores.total / 100) * 100;
-  const finalOffset = circumference - (finalPercent / 100) * circumference;
-  document.getElementById('final-score-text').textContent = result.scores.total;
-  setTimeout(() => {
-    document.getElementById('final-circle').style.strokeDashoffset = finalOffset;
-  }, 500);
-
-  // ─── Compile Category Reasons for Lost Points ─────────────────────────────────
-  const reasons = {
-    onPage: [],
-    technical: [],
-    content: [],
-    link: []
-  };
-
-  // On-Page failed checks compile
-  if (!result.title || result.title === 'Missing') {
-    reasons.onPage.push('Title tag missing (-15)');
-  } else if (result.title.length < 30 || result.title.length > 60) {
-    reasons.onPage.push('Suboptimal Title length (-5)');
-  }
-  if (!result.metaDesc || result.metaDesc === 'Missing') {
-    reasons.onPage.push('Meta description missing (-10)');
-  } else if (result.metaDesc.length < 120 || result.metaDesc.length > 160) {
-    reasons.onPage.push('Suboptimal Meta description length (-5)');
-  }
-  if (result.h1Count === 0) {
-    reasons.onPage.push('H1 tag missing (-3)');
-  }
-  if (result.imagesWithoutAlt && result.imagesWithoutAlt > 0) {
-    reasons.onPage.push(`Missing alt attributes (${result.imagesWithoutAlt} img) (-2)`);
-  }
-
-  // Technical failed checks compile
-  if (!result.url || !result.url.startsWith('https')) {
-    reasons.technical.push('Insecure HTTP Connection (-10)');
-  }
-  if (!result.hasViewport) {
-    reasons.technical.push('Viewport meta tag missing (-10)');
-  }
-  if (result.h1Count !== 1) {
-    reasons.technical.push('Page H1 count is not exactly 1 (-5)');
-  }
-  if (result.wordCount < 300) {
-    reasons.technical.push('Thin content word count (-5)');
-  }
-
-  // Content failed checks compile
-  if (result.wordCount < 300) {
-    reasons.content.push('Word count is below 300 (-10)');
-  } else if (result.wordCount < 600) {
-    reasons.content.push('Word count is below 600 (-5)');
-  }
-  if (result.h2Count === 0) {
-    reasons.content.push('H2 subheadings missing (-5)');
-  }
-
-  // Link failed checks compile
-  if (result.linkCount < 5) {
-    reasons.link.push('Link count is below 5 (-10)');
-  } else if (result.linkCount < 10) {
-    reasons.link.push('Link count is below 10 (-5)');
-  }
-
-  // Display reasons dynamically below each progress ring
-  const updateReasonEl = (id, reasonList, maxScore, actualScore) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (actualScore === maxScore || reasonList.length === 0) {
-      el.classList.add('hidden');
-    } else {
-      el.textContent = reasonList.join('; ');
-      el.classList.remove('hidden');
-    }
-  };
-
-  updateReasonEl('reason-onpage', reasons.onPage, 40, result.scores.onPage);
-  updateReasonEl('reason-technical', reasons.technical, 30, result.scores.technical);
-  updateReasonEl('reason-content', reasons.content, 20, result.scores.content);
-  updateReasonEl('reason-link', reasons.link, 10, result.scores.links);
-  
-  // Render pie chart
-  renderPieChart(result.scores);
-  
-  // Update quick stats
-  document.getElementById('stats-title').textContent = result.title;
-  document.getElementById('stats-desc').textContent = result.metaDesc;
-  document.getElementById('stats-h1').textContent = result.h1Count;
-  document.getElementById('stats-words').textContent = result.wordCount;
-  document.getElementById('stats-images').textContent = result.imageCount;
-  document.getElementById('stats-links').textContent = result.linkCount;
-  document.getElementById('stats-https').textContent = result.url.startsWith('https') ? '✓' : '✗';
-  document.getElementById('stats-keywords').textContent = result.topKeywords.length;
-  
-  // Render the structured checks inside recommendations-list
-  generateRecommendations(result);
-  
-  // Load screenshot
-  loadScreenshot(result.url);
-  
-  // Save to history
-  try {
-    result.domain = new URL(result.url).hostname;
-  } catch {
-    result.domain = result.url;
-  }
-  result.savedAt = Date.now();
-
-  let history = getStoredHistory();
-  const normUrl = result.url.replace(/\/$/, '').toLowerCase();
-  history = history.filter(item => item.url.replace(/\/$/, '').toLowerCase() !== normUrl);
-  history.unshift(result);
-  if (history.length > 20) history.pop();
-  saveStoredHistory(history);
-  updateHistory();
-  
-  // Scroll to results
-  setTimeout(() => {
-    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
-  }, 300);
-}
-// Copy code function
-function copyCode(button) {
-  const codeBlock = button.closest('.bg-gray-900, .bg-slate-950').querySelector('code');
-  const text = codeBlock.textContent;
-  
-  navigator.clipboard.writeText(text).then(() => {
-    const originalText = button.textContent;
-    button.textContent = 'Copied!';
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 2000);
-  });
-}
-window.copyCode = copyCode;
-
-// Mark as completed
-function markCompleted(button) {
-  button.textContent = '✓ Fixed';
-  button.classList.add('bg-green-600', 'hover:bg-green-700');
-  button.classList.remove('bg-primary-600', 'hover:bg-primary-700');
-  button.disabled = true;
-}
-window.markCompleted = markCompleted;
-
-// ─── Preview helpers ──────────────────────────────────────────────────────────
-
-// Set URL bar text and HTTPS badge visibility
-function setPreviewUrlBar(url) {
-  const urlBar = document.getElementById('preview-url-bar');
-  const httpsBadge = document.getElementById('preview-https-badge');
-  if (!urlBar) return;
-
-  try {
-    const parsed = new URL(url);
-    urlBar.textContent = parsed.hostname + (parsed.pathname !== '/' ? parsed.pathname : '');
-    if (httpsBadge) {
-      if (parsed.protocol === 'https:') {
-        httpsBadge.classList.remove('hidden');
-        httpsBadge.classList.add('flex');
-      } else {
-        httpsBadge.classList.add('hidden');
-        httpsBadge.classList.remove('flex');
-      }
-    }
-  } catch {
-    urlBar.textContent = url;
-  }
-}
-
-// Show fallback state with favicon + domain + retry/visit links
-function showPreviewFallback(url, errorMsg = '') {
-  const loading  = document.getElementById('preview-loading');
-  const skeleton = document.getElementById('preview-skeleton');
-  const img      = document.getElementById('web-preview-img');
-  const fallback = document.getElementById('preview-fallback');
-
-  if (loading)  loading.style.display  = 'none';
-  if (skeleton) skeleton.style.display = 'none';
-  if (img)      img.style.display      = 'none';
-  if (fallback) fallback.style.display = 'flex';
-
-  const errorEl = document.getElementById('preview-error-message');
-  if (errorEl) {
-    errorEl.textContent = errorMsg || 'Preview unavailable';
-  }
-
-  try {
-    const parsed = new URL(url);
-    const faviconEl = document.getElementById('preview-favicon');
-    const domainEl  = document.getElementById('preview-fallback-domain');
-    const visitLink = document.getElementById('preview-visit-link');
-
-    if (faviconEl) {
-      faviconEl.src = `https://www.google.com/s2/favicons?domain=${parsed.hostname}&sz=64`;
-      faviconEl.style.display = 'block';
-    }
-    if (domainEl)  domainEl.textContent = parsed.hostname;
-    if (visitLink) visitLink.href = url;
-  } catch { /* ignore parse errors */ }
-}
-
-// Load screenshot via /api/preview (caching + correct URL encoding)
-async function loadScreenshot(url) {
-  const img      = document.getElementById('web-preview-img');
-  const loading  = document.getElementById('preview-loading');
-  const skeleton = document.getElementById('preview-skeleton');
-  const fallback = document.getElementById('preview-fallback');
-
-  // Reset all states
-  if (loading)  loading.style.display  = 'flex';
-  if (skeleton) skeleton.style.display = 'none';
-  if (img)      img.style.display      = 'none';
-  if (fallback) fallback.style.display = 'none';
-
-  const cleanUrl = url.startsWith('http') ? url : 'https://' + url;
-
-  // Populate URL bar and HTTPS badge immediately (data is already known)
-  setPreviewUrlBar(cleanUrl);
-
-  // Wire up retry button
-  const retryBtn = document.getElementById('preview-retry-btn');
-  if (retryBtn) {
-    // Remove any previous listener by cloning the node
-    const freshBtn = retryBtn.cloneNode(true);
-    retryBtn.parentNode.replaceChild(freshBtn, retryBtn);
-    freshBtn.addEventListener('click', () => loadScreenshot(cleanUrl));
-  }
-
-  // Switch to skeleton after 300ms so rapid loads don't flash it
-  const skeletonTimer = setTimeout(() => {
-    if (loading && skeleton) {
-      loading.style.display  = 'none';
-      skeleton.style.display = 'block';
-    }
-  }, 300);
-
-  try {
-    // Ask the server for the (possibly cached) thum.io URL
-    const response = await fetch('/api/preview', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: cleanUrl })
-    });
-
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      clearTimeout(skeletonTimer);
-      showPreviewFallback(cleanUrl, errData.message || 'Screenshot service returned an error.');
-      return;
-    }
-
-    const { url: screenshotUrl } = await response.json();
-
-    // Preload image before swapping in
-    const testImg = new Image();
-    try {
-      await new Promise((resolve, reject) => {
-        testImg.onload  = resolve;
-        testImg.onerror = () => reject(new Error('Image failed to load from screenshot service.'));
-        testImg.src     = screenshotUrl;
-        setTimeout(() => reject(new Error('Screenshot load timed out.')), 12000);
-      });
-    } catch (imageErr) {
-      clearTimeout(skeletonTimer);
-      showPreviewFallback(cleanUrl, imageErr.message);
-      return;
-    }
-
-    // Save to result object if it's the current one
-    if (appState.currentResult && appState.currentResult.url === cleanUrl) {
-      appState.currentResult.screenshotUrl = screenshotUrl;
-      let hist = getStoredHistory();
-      const normClean = cleanUrl.replace(/\/$/, '').toLowerCase();
-      const match = hist.find(item => item.url.replace(/\/$/, '').toLowerCase() === normClean);
-      if (match) {
-        match.screenshotUrl = screenshotUrl;
-        saveStoredHistory(hist);
-        updateHistory();
-      }
-    }
-
-    clearTimeout(skeletonTimer);
-
-    // Show image
-    img.src           = screenshotUrl;
-    img.style.display = 'block';
-    if (loading)  loading.style.display  = 'none';
-    if (skeleton) skeleton.style.display = 'none';
-
-  } catch {
-    clearTimeout(skeletonTimer);
-    showPreviewFallback(cleanUrl);
-  }
-}
-
-
-// Local storage helper methods for analysis history
-function getStoredHistory() {
-  try {
-    const data = localStorage.getItem('streetcoders_seo_history');
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return appState.history || [];
-  }
-}
-
-function saveStoredHistory(history) {
-  appState.history = history;
-  try {
-    localStorage.setItem('streetcoders_seo_history', JSON.stringify(history));
-  } catch {
-    // Fail silently if blocked in sandboxed environment
-  }
-}
-
-// Delete history item
-function deleteHistoryItem(index) {
-  let history = getStoredHistory();
-  history.splice(index, 1);
-  saveStoredHistory(history);
-  updateHistory();
-}
-window.deleteHistoryItem = deleteHistoryItem;
-
-// Update history
-function updateHistory() {
-  const container = document.getElementById('history-list');
-  const history = getStoredHistory();
-  
-  if (history.length === 0) {
-    container.innerHTML = `
-      <div class="flex flex-col items-center justify-center py-10 px-4 text-center">
-        <svg class="w-12 h-12 text-gray-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No analysis history yet</p>
-        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Audit websites to keep track of your scores over time.</p>
-      </div>
-    `;
+  if (issues.length === 0) {
+    container.innerHTML = '<div class="text-stone-400 py-8 text-center font-mono text-xs">No audit findings recorded.</div>';
     return;
   }
-  
-  container.innerHTML = history.map((item, index) => {
-    const domain = item.domain || new URL(item.url).hostname;
-    const thumbnail = item.screenshotUrl || `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-    return `
-      <div class="border-b border-gray-100 dark:border-slate-700 last:border-0 py-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors px-4 rounded-lg">
-        <div class="flex items-center gap-4 cursor-pointer flex-1 min-w-0" onclick="loadHistoryItem(${index})">
-          <img src="${thumbnail}" class="w-12 h-12 rounded object-cover border border-gray-200 dark:border-slate-700 bg-gray-50 flex-shrink-0" onerror="this.src='https://www.google.com/s2/favicons?domain=${domain}&sz=64'" />
-          <div class="min-w-0">
-            <p class="font-semibold text-gray-800 dark:text-gray-200 truncate">${domain}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">${item.timestamp}</p>
-          </div>
+
+  // Sort: Critical issues first, then improvements, then passed
+  const order = { 'Critical': 0, 'Improvement': 1, 'Passed': 2 };
+  const sorted = [...issues].sort((a, b) => {
+    const oa = a.passed ? 2 : (order[a.severity] ?? 1);
+    const ob = b.passed ? 2 : (order[b.severity] ?? 1);
+    return oa - ob;
+  });
+
+  sorted.forEach(issue => {
+    const card = document.createElement('div');
+    card.id = `rec-${issue.id}`;
+    card.className = 'p-4 rounded-xl stone-card transition-all duration-300';
+
+    let statusPill = '';
+    if (issue.passed) {
+      statusPill = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-forest-100 dark:bg-forest-950/60 text-forest-800 dark:text-forest-300 border border-forest-300 dark:border-forest-800">● Optimal</span>`;
+    } else if (issue.severity === 'Critical') {
+      statusPill = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-800">▲ Critical Deficit</span>`;
+    } else {
+      statusPill = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">▲ Improvement</span>`;
+    }
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-4 mb-2">
+        <div>
+          <div class="text-[10px] font-mono text-stone-400 uppercase tracking-wider">${issue.category} // ${issue.terrainRegion || 'TERRAIN'}</div>
+          <h4 class="font-serif font-bold text-base text-stone-900 dark:text-stone-100">${escapeHtml(issue.name)}</h4>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="text-xl font-bold text-primary-600 dark:text-primary-500">${item.scores.total}</div>
-          <button onclick="deleteHistoryItem(${index}); event.stopPropagation();" class="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20" title="Delete from history">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-            </svg>
-          </button>
-        </div>
+        <div>${statusPill}</div>
+      </div>
+      <p class="text-xs text-stone-600 dark:text-stone-300 mb-3">${escapeHtml(issue.status || issue.passedStatus)}</p>
+      <div class="p-3 rounded-lg bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs font-mono text-stone-700 dark:text-stone-300">
+        <strong class="text-stone-900 dark:text-stone-100">Prescription:</strong> ${escapeHtml(issue.fix)}
       </div>
     `;
-  }).join('');
+
+    container.appendChild(card);
+  });
 }
 
-// Load history item
-async function loadHistoryItem(index) {
-  const history = getStoredHistory();
-  const item = history[index];
-  if (!item) return;
+// ---------------------------------------------------------------------------
+// History Archive
+// ---------------------------------------------------------------------------
+function addToHistory(result) {
+  if (!result || !result.url) return;
 
-  const ageMs = Date.now() - (item.savedAt || 0);
-  const oneHour = 60 * 60 * 1000;
+  // Filter existing URL
+  appState.history = appState.history.filter(item => item.url !== result.url);
 
-  if (ageMs < oneHour) {
-    // Re-load from local cache
-    displayResults(item);
-  } else {
-    // Re-run analysis
-    document.getElementById('url-input').value = item.url;
-    document.getElementById('launch-btn').click();
-  }
-}
-window.loadHistoryItem = loadHistoryItem;
+  appState.history.unshift({
+    url: result.url,
+    totalScore: result.scores?.total || 0,
+    timestamp: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  });
 
-
-// Update the status text shown inside the loading spinner, and advance phase pills.
-// Phase messages (in order):
-//   'Checking domain & fetching page…'  → phase 1 active
-//   'Scoring results…'                   → phase 2 done, phase 3 active
-function updateLoadingStatus(message) {
-  const statusEl = document.querySelector('#loading-section p');
-  if (statusEl) statusEl.textContent = message;
-
-  const pillActive   = 'bg-primary-500 text-white';
-  const pillDone     = 'bg-green-500 text-white';
-  const pillPending  = 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400';
-
-  function setPill(id, state) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.className = el.className
-      .replace(/bg-\S+|text-\S+/g, '')
-      .trim();
-    const classes = state === 'active'  ? pillActive
-                  : state === 'done'    ? pillDone
-                  : pillPending;
-    el.className += ' ' + classes;
-  }
-
-  if (message.startsWith('Checking domain')) {
-    setPill('phase-domain', 'active');
-    setPill('phase-fetch',  'active'); // Both DNS + fetch fire together
-    setPill('phase-score',  'pending');
-  } else if (message.startsWith('Scoring')) {
-    setPill('phase-domain', 'done');
-    setPill('phase-fetch',  'done');
-    setPill('phase-score',  'active');
-  }
+  saveHistory();
+  renderHistory();
 }
 
-// Generate and download a PDF report using jsPDF (client-side)
-async function downloadReport() {
-  const result = appState.currentResult;
-  if (!result) return;
+function renderHistory() {
+  const container = document.getElementById('history-container');
+  if (!container) return;
+
+  container.innerHTML = '';
+  if (appState.history.length === 0) {
+    container.innerHTML = '<div class="text-center py-8 font-mono text-xs text-stone-500">No prior surveys recorded in this workspace.</div>';
+    return;
+  }
+
+  appState.history.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'p-3 rounded-xl stone-card flex items-center justify-between gap-4 hover:border-copper-500 transition-colors';
+    row.innerHTML = `
+      <div class="flex items-center gap-3 truncate">
+        <div class="w-9 h-9 rounded-lg bg-stone-200 dark:bg-stone-800 flex items-center justify-center font-serif font-bold text-sm">
+          ${item.totalScore}
+        </div>
+        <div class="truncate">
+          <div class="font-serif font-bold text-sm text-stone-900 dark:text-stone-100 truncate">${escapeHtml(item.url)}</div>
+          <div class="font-mono text-[10px] text-stone-500">${item.timestamp}</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="history-reload-btn px-2.5 py-1 rounded bg-copper-50 dark:bg-copper-950/40 text-copper-700 dark:text-copper-300 border border-copper-300 dark:border-copper-800 text-xs font-mono hover:bg-copper-100 transition-colors" data-url="${escapeHtml(item.url)}">
+          Survey
+        </button>
+        <button class="history-delete-btn p-1 text-stone-400 hover:text-red-500 transition-colors text-xs" data-url="${escapeHtml(item.url)}">
+          ✕
+        </button>
+      </div>
+    `;
+
+    row.querySelector('.history-reload-btn').addEventListener('click', () => {
+      const input = document.getElementById('url-input');
+      if (input) input.value = item.url;
+      const launchBtn = document.getElementById('launch-btn');
+      if (launchBtn) launchBtn.click();
+    });
+
+    row.querySelector('.history-delete-btn').addEventListener('click', () => {
+      appState.history = appState.history.filter(h => h.url !== item.url);
+      saveHistory();
+      renderHistory();
+    });
+
+    container.appendChild(row);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// PDF Report Generator (Editorial Terra Incognita Layout)
+// ---------------------------------------------------------------------------
+function downloadReport() {
+  if (!appState.currentResult) {
+    alert('Please run a survey on a website before generating a report.');
+    return;
+  }
+
+  if (typeof window.jspdf === 'undefined') {
+    alert('PDF export engine is currently loading. Please retry in a moment.');
+    return;
+  }
 
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'mm', 'a4');
-  
-  let y = 15;
-  const margin = 15;
-  const pageHeight = 280;
+  const doc = new jsPDF({ format: 'a4', unit: 'mm' });
+  const result = appState.currentResult;
+  const scores = result.scores || { total: 0, onPage: 0, technical: 0, content: 0, links: 0 };
 
-  const addText = (text, size = 10, isBold = false, color = '#333333') => {
-    doc.setFontSize(size);
-    doc.setFont('Helvetica', isBold ? 'bold' : 'normal');
-    if (color === 'primary') {
-      doc.setTextColor(13, 148, 136); // #0d9488
-    } else if (color === 'red') {
-      doc.setTextColor(239, 68, 68);
-    } else if (color === 'orange') {
-      doc.setTextColor(249, 115, 22);
-    } else if (color === 'green') {
-      doc.setTextColor(16, 185, 129);
-    } else {
-      doc.setTextColor(51, 51, 51);
-    }
+  // Palette constants
+  const cCharcoal = [28, 27, 24];
+  const cCopper = [45, 99, 94];
+  const cStone = [110, 105, 93];
 
-    const splitText = doc.splitTextToSize(text, 180);
-    splitText.forEach(line => {
-      if (y > pageHeight) {
-        doc.addPage();
-        y = 15;
-      }
-      doc.text(line, margin, y);
-      y += (size * 0.3527) + 2.5; // spacing
-    });
-  };
+  let y = 20;
 
-  const addDivider = () => {
-    if (y > pageHeight - 10) {
-      doc.addPage();
-      y = 15;
-    }
-    doc.setDrawColor(229, 231, 235);
-    doc.setLineWidth(0.5);
-    doc.line(margin, y, 195, y);
-    y += 5;
-  };
+  // Header Masthead
+  doc.setFillColor(244, 241, 234);
+  doc.rect(0, 0, 210, 36, 'F');
 
-  // Title
-  addText('STREET CODERS - SEO AUDIT REPORT', 16, true, 'primary');
-  addText(`Generated on: ${new Date().toLocaleString()}`, 9, false, 'gray');
-  y += 3;
-  addDivider();
+  doc.setFont('times', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(...cCharcoal);
+  doc.text('TERRA INCOGNITA // GEOLOGICAL SEO SURVEY', 20, y);
 
-  // Overview
-  addText('1. AUDIT OVERVIEW', 13, true, 'primary');
-  addText(`Target URL: ${result.url}`, 10, false);
-  addText(`Overall SEO Score: ${result.scores.total}/100`, 11, true, 'primary');
-  y += 2;
-  
-  addText('Category Breakdown:', 10, true);
-  
-  const getCategoryReason = (cat) => {
-    const reasons = {
-      onPage: [],
-      technical: [],
-      content: [],
-      link: []
-    };
-    if (!result.title || result.title === 'Missing') reasons.onPage.push('Title missing (-15)');
-    else if (result.title.length < 30 || result.title.length > 60) reasons.onPage.push('Suboptimal Title length (-5)');
-    if (!result.metaDesc || result.metaDesc === 'Missing') reasons.onPage.push('Meta description missing (-10)');
-    else if (result.metaDesc.length < 120 || result.metaDesc.length > 160) reasons.onPage.push('Suboptimal Meta description length (-5)');
-    if (result.h1Count === 0) reasons.onPage.push('H1 missing (-5)');
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...cStone);
+  doc.text(`SURVEY TARGET: ${result.url}  |  DATE: ${new Date().toLocaleDateString()}`, 20, y + 8);
 
-    if (!result.url.startsWith('https')) reasons.technical.push('Insecure HTTP Connection (-10)');
-    if (!result.hasViewport) reasons.technical.push('Viewport missing (-10)');
-    if (result.h1Count !== 1) reasons.technical.push('H1 count not 1 (-5)');
-    if (result.wordCount <= 300) reasons.technical.push('Thin content (-5)');
+  y = 48;
 
-    if (result.wordCount <= 300) reasons.content.push('Word count < 300 (-10)');
-    else if (result.wordCount <= 600) reasons.content.push('Word count < 600 (-5)');
-    if (result.h2Count === 0) reasons.content.push('H2 missing (-5)');
+  // Executive Score Box
+  doc.setFillColor(250, 248, 244);
+  doc.setDrawColor(216, 211, 199);
+  doc.roundedRect(20, y, 170, 34, 2, 2, 'FD');
 
-    if (result.linkCount <= 5) reasons.link.push('Link count < 5 (-10)');
-    else if (result.linkCount <= 10) reasons.link.push('Link count < 10 (-5)');
+  doc.setFont('times', 'bold');
+  doc.setFontSize(26);
+  doc.setTextColor(...cCharcoal);
+  doc.text(`${scores.total} / 100`, 28, y + 18);
 
-    return reasons[cat].length > 0 ? `(Deductions: ${reasons[cat].join('; ')})` : '(No deductions)';
-  };
+  doc.setFont('courier', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...cCopper);
+  doc.text('SUMMIT ELEVATION SCORE', 28, y + 26);
 
-  addText(`• On-Page SEO: ${result.scores.onPage}/40 ${getCategoryReason('onPage')}`, 9.5, false);
-  addText(`• Technical SEO: ${result.scores.technical}/30 ${getCategoryReason('technical')}`, 9.5, false);
-  addText(`• Content Quality: ${result.scores.content}/20 ${getCategoryReason('content')}`, 9.5, false);
-  addText(`• Link Density: ${result.scores.links}/10 ${getCategoryReason('link')}`, 9.5, false);
-  y += 3;
-  addDivider();
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...cStone);
+  doc.text(`OnPage: ${scores.onPage}/40`, 110, y + 12);
+  doc.text(`Technical: ${scores.technical}/30`, 110, y + 19);
+  doc.text(`Content: ${scores.content}/20`, 150, y + 12);
+  doc.text(`Links: ${scores.links}/10`, 150, y + 19);
 
-  // Stats
-  addText('2. WEBSITE METRICS', 13, true, 'primary');
-  addText(`• Title Tag: ${result.title}`, 9.5, false);
-  addText(`• Meta Description: ${result.metaDesc}`, 9.5, false);
-  addText(`• Headings: ${result.h1Count} H1 heading(s) / ${result.h2Count} H2 heading(s)`, 9.5, false);
-  addText(`• Word Count: ${result.wordCount} words`, 9.5, false);
-  addText(`• Link Density: ${result.linkCount} links`, 9.5, false);
-  addText(`• Images Audit: ${result.imageCount} image(s) total (${result.imagesWithoutAlt} missing alt tags)`, 9.5, false);
-  addText(`• Security Status: ${result.url.startsWith('https') ? 'Secure (HTTPS)' : 'Insecure (HTTP)'}`, 9.5, false);
-  y += 3;
-  addDivider();
+  y += 44;
 
-  // Actionable findings
-  addText('3. ACTIONABLE AUDIT FINDINGS', 13, true, 'primary');
-  
-  const checks = [
-    { name: 'Title Tag Audit', passed: result.title && result.title !== 'Missing' && result.title.length >= 30 && result.title.length <= 60, severity: result.title === 'Missing' ? 'Critical' : 'Improvement', fix: result.title === 'Missing' ? 'Add a title tag inside the <head> block.' : `Revise title tag to 30-60 characters.` },
-    { name: 'Meta Description Audit', passed: result.metaDesc && result.metaDesc !== 'Missing' && result.metaDesc.length >= 120 && result.metaDesc.length <= 160, severity: result.metaDesc === 'Missing' ? 'Critical' : 'Improvement', fix: result.metaDesc === 'Missing' ? 'Add a meta description to your head section.' : `Rewrite description to fit within 120-160 characters.` },
-    { name: 'H1 Heading Presence', passed: result.h1Count > 0, severity: 'Critical', fix: 'Add exactly one H1 tag near the top of the page.' },
-    { name: 'Single H1 Restriction', passed: result.h1Count === 1, severity: 'Improvement', fix: 'Keep only one H1 and convert additional ones to H2 or H3 tags.' },
-    { name: 'Image Alt Tags Audit', passed: result.imagesWithoutAlt === 0, severity: 'Improvement', fix: 'Add alt attributes to all images.' },
-    { name: 'HTTPS Connection', passed: result.url.startsWith('https'), severity: 'Critical', fix: 'Install SSL certificate and configure redirect.' },
-    { name: 'Viewport Meta Tag', passed: result.hasViewport, severity: 'Critical', fix: 'Add viewport meta tag to document header.' },
-    { name: 'Page Word Count', passed: result.wordCount >= 600, severity: result.wordCount < 300 ? 'Critical' : 'Improvement', fix: 'Expand page content to at least 600 words.' },
-    { name: 'H2 Subheadings Presence', passed: result.h2Count > 0, severity: 'Improvement', fix: 'Organize text sections under H2 subheadings.' },
-    { name: 'Link Density & Distribution', passed: result.linkCount >= 10, severity: 'Improvement', fix: 'Incorporate relevant internal or external contextual links.' }
+  // Key Metrics Table
+  doc.setFont('times', 'bold');
+  doc.setFontSize(13);
+  doc.setTextColor(...cCharcoal);
+  doc.text('1. TOPOGRAPHIC STRATA TELEMETRY', 20, y);
+  y += 8;
+
+  const metrics = [
+    `Title Tag: "${result.title}" (${result.title === 'Missing' ? 0 : result.title.length} chars)`,
+    `Meta Description: "${result.metaDesc}" (${result.metaDesc === 'Missing' ? 0 : result.metaDesc.length} chars)`,
+    `Headings: H1: ${result.h1Count} tag(s)  |  H2: ${result.h2Count} section(s)`,
+    `Page Word Depth: ${result.wordCount} words  |  Total Links: ${result.linkCount}`,
+    `Mobile Viewport: ${result.hasViewport ? 'Present' : 'Missing'}  |  Robots.txt: ${result.robots?.found ? 'Found' : 'Not Found'}`
   ];
 
-  const failedChecks = checks.filter(c => !c.passed);
-  const passedChecks = checks.filter(c => c.passed);
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...cCharcoal);
+  metrics.forEach(m => {
+    doc.text(`• ${m}`, 24, y);
+    y += 6;
+  });
 
-  if (failedChecks.length > 0) {
-    addText('Identified Issues:', 10.5, true, 'red');
-    failedChecks.forEach(c => {
-      addText(`[${c.severity}] ${c.name} — Recommended Fix: ${c.fix}`, 9, false, c.severity === 'Critical' ? 'red' : 'orange');
+  y += 6;
+
+  // Architectural Issues & Fixes
+  doc.setFont('times', 'bold');
+  doc.setFontSize(13);
+  doc.setTextColor(...cCharcoal);
+  doc.text('2. ACTIONABLE ARCHITECTURAL PRESCRIPTIONS', 20, y);
+  y += 8;
+
+  const issues = result.issues || [];
+  const deficits = issues.filter(i => !i.passed);
+
+  if (deficits.length === 0) {
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(46, 91, 66);
+    doc.text('✓ All audited structural facets meet optimal terrain parameters.', 24, y);
+    y += 8;
+  } else {
+    deficits.forEach(d => {
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(d.severity === 'Critical' ? 143 : 184, 45, 45);
+      doc.text(`[${d.severity || 'DEFICIT'}] ${d.name}`, 24, y);
+      y += 5;
+
+      doc.setFont('times', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...cCharcoal);
+      doc.text(`Diagnosis: ${d.status || d.passedStatus}`, 26, y);
+      y += 5;
+
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...cCopper);
+      doc.text(`Fix: ${d.fix}`, 26, y);
+      y += 7;
     });
-    y += 2;
   }
 
-  if (passedChecks.length > 0) {
-    addText('Passed Audits:', 10.5, true, 'green');
-    passedChecks.forEach(c => {
-      addText(`✓ ${c.name}`, 9, false, 'green');
-    });
-    y += 2;
-  }
-  
+  // Footer
+  doc.setFont('courier', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...cStone);
+  doc.text('Generated via Terra Incognita Topographic SEO Intelligence Engine', 20, 290);
 
-  const filename = `seo-report-${result.url.replace(/^https?:\/\//i, '').replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
-  doc.save(filename);
+  const cleanDomain = result.url.replace(/^https?:\/\//i, '').replace(/[^a-zA-Z0-9]/g, '-');
+  doc.save(`terra-incognita-survey-${cleanDomain}.pdf`);
 }
 
-// Event listeners
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ---------------------------------------------------------------------------
+// Initialization & Event Binding
+// ---------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
-  // PDF Report button
-  document.getElementById('download-report-btn').addEventListener('click', downloadReport);
+  initTheme();
+  loadStoredHistory();
+  renderHistory();
 
-  // Theme toggle
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-  
+  // Initialize 3D Mountain
+  if (window.TerraMountain && window.TerraMountain.MountainViewer) {
+    appState.mountainViewer = new window.TerraMountain.MountainViewer('mountain-canvas-container');
+  }
+
+  // Theme toggle button
+  const themeBtn = document.getElementById('theme-toggle');
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+
+  // PDF Download button
+  const reportBtn = document.getElementById('download-report-btn');
+  if (reportBtn) reportBtn.addEventListener('click', downloadReport);
+
+  // Camera presets
+  const presetSummit = document.getElementById('camera-preset-summit');
+  if (presetSummit) presetSummit.addEventListener('click', () => appState.mountainViewer?.setPreset('summit'));
+
+  const presetRidge = document.getElementById('camera-preset-ridge');
+  if (presetRidge) presetRidge.addEventListener('click', () => appState.mountainViewer?.setPreset('ridge'));
+
+  const presetOrtho = document.getElementById('camera-preset-ortho');
+  if (presetOrtho) presetOrtho.addEventListener('click', () => appState.mountainViewer?.setPreset('ortho'));
+
+  const resetBtn = document.getElementById('terrain-reset-btn');
+  if (resetBtn) resetBtn.addEventListener('click', () => appState.mountainViewer?.resetView());
+
   // Launch button
-  document.getElementById('launch-btn').addEventListener('click', async () => {
-    const url = document.getElementById('url-input').value.trim();
-    
-    if (!url) {
-      alert('Please enter a URL');
-      return;
-    }
-    
-    // Show loading, hide any previous results
-    const loadingSection = document.getElementById('loading-section');
-    const resultsSection = document.getElementById('results-section');
-    loadingSection.classList.remove('hidden');
-    resultsSection.classList.add('hidden');
-    updateLoadingStatus('Checking domain & fetching page…');
-    
-    // Reset progress circles
-    document.querySelectorAll('.progress-circle').forEach(circle => {
-      circle.style.strokeDashoffset = 283;
-    });
-    
-    // Run analysis (DNS + crawl run in parallel inside analyzeWebsite)
-    const result = await analyzeWebsite(url);
-    
-    // Hide loading
-    loadingSection.classList.add('hidden');
-    
-    if (result && result.success) {
-      // Render results immediately — all data is available in one pass
-      displayResults(result);
-    } else if (result && result.domainError) {
-      // Domain validation error already shown via modal
-      return;
-    } else {
-      showErrorModal(result ? result.error : 'An unexpected error occurred.', url);
-    }
-  });
-  
-  // Enter key
-  document.getElementById('url-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      document.getElementById('launch-btn').click();
-    }
-  });
+  const launchBtn = document.getElementById('launch-btn');
+  const urlInput = document.getElementById('url-input');
 
-  // Render history on load
-  updateHistory();
+  if (launchBtn && urlInput) {
+    launchBtn.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      if (!url) {
+        alert('Please enter a target domain or URL to survey.');
+        urlInput.focus();
+        return;
+      }
+      analyzeDomain(url);
+    });
+
+    urlInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        launchBtn.click();
+      }
+    });
+  }
+
+  // Clear history button
+  const clearHistBtn = document.getElementById('clear-history-btn');
+  if (clearHistBtn) {
+    clearHistBtn.addEventListener('click', () => {
+      if (confirm('Clear all surveyed domains from archive?')) {
+        appState.history = [];
+        saveHistory();
+        renderHistory();
+      }
+    });
+  }
 });
