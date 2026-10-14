@@ -84,46 +84,7 @@ function retryWithCorrection() {
 }
 window.retryWithCorrection = retryWithCorrection;
 
-// Send message to AI — proxied through /api/ai-recommend (key stored server-side)
-async function sendMessageToAI(userMessage) {
-  try {
-    const payload = {
-      message: userMessage,
-      auditData: appState.currentResult ? {
-        url: appState.currentResult.url,
-        title: appState.currentResult.title,
-        metaDesc: appState.currentResult.metaDesc,
-        h1Count: appState.currentResult.h1Count,
-        h2Count: appState.currentResult.h2Count,
-        imageCount: appState.currentResult.imageCount,
-        imagesWithoutAlt: appState.currentResult.imagesWithoutAlt,
-        linkCount: appState.currentResult.linkCount,
-        wordCount: appState.currentResult.wordCount,
-        hasViewport: appState.currentResult.hasViewport,
-        scores: appState.currentResult.scores,
-        topKeywords: appState.currentResult.topKeywords,
-        robots: appState.currentResult.robots
-      } : null
-    };
 
-    const response = await fetch('/api/ai-recommend', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(data.message || data.error || 'AI service error.');
-    }
-
-    return data.reply;
-  } catch (error) {
-    console.error('AI API Error:', error);
-    return `AI Chatbot Error: ${error.message || 'Failed to contact AI recommendations service. Please verify server connectivity.'}`;
-  }
-}
 
 
 // Stop words to filter
@@ -1104,100 +1065,6 @@ async function loadHistoryItem(index) {
 }
 window.loadHistoryItem = loadHistoryItem;
 
-// Chat bot functionality
-let chatOpen = false;
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function addMessageToChat(message, sender) {
-  const messagesDiv = document.getElementById('chat-messages');
-  const messageDiv = document.createElement('div');
-  
-  if (sender === 'user') {
-    messageDiv.className = 'flex justify-end';
-    messageDiv.innerHTML = `
-      <div class="bg-gray-200 dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-2xl rounded-tr-none max-w-[80%]">
-        <p class="text-sm">${escapeHtml(message)}</p>
-      </div>
-    `;
-  } else {
-    messageDiv.className = 'flex gap-2';
-    messageDiv.innerHTML = `
-      <div class="bg-primary-500 text-white p-3 rounded-2xl rounded-tl-none max-w-[80%]">
-        <p class="text-sm">${escapeHtml(message)}</p>
-      </div>
-    `;
-  }
-  
-  messagesDiv.appendChild(messageDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function showTypingIndicator() {
-  const messagesDiv = document.getElementById('chat-messages');
-  const typingDiv = document.createElement('div');
-  typingDiv.id = 'typing-indicator';
-  typingDiv.className = 'flex gap-2';
-  typingDiv.innerHTML = `
-    <div class="bg-primary-500 text-white p-3 rounded-2xl rounded-tl-none">
-      <div class="flex gap-1">
-        <span class="w-2 h-2 bg-white rounded-full animate-bounce"></span>
-        <span class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
-        <span class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
-      </div>
-    </div>
-  `;
-  messagesDiv.appendChild(typingDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function removeTypingIndicator() {
-  const typingIndicator = document.getElementById('typing-indicator');
-  if (typingIndicator) {
-    typingIndicator.remove();
-  }
-}
-
-async function sendChatMessage() {
-  const input = document.getElementById('chat-input');
-  const message = input.value.trim();
-  
-  if (!message) return;
-  
-  // Add user message to chat
-  addMessageToChat(message, 'user');
-  input.value = '';
-  
-  // Show typing indicator
-  showTypingIndicator();
-  
-  // Get AI response
-  const aiResponse = await sendMessageToAI(message);
-  
-  // Remove typing indicator and add AI response
-  removeTypingIndicator();
-  addMessageToChat(aiResponse, 'ai');
-}
-
-function toggleChat() {
-  chatOpen = !chatOpen;
-  const chatWindow = document.getElementById('chat-window');
-  const toggleBtn = document.getElementById('chat-toggle-btn');
-  
-  if (chatOpen) {
-    chatWindow.classList.add('active');
-    chatWindow.style.display = 'flex';
-    toggleBtn.style.transform = 'scale(0)';
-  } else {
-    chatWindow.classList.remove('active');
-    chatWindow.style.display = 'none';
-    toggleBtn.style.transform = 'scale(1)';
-  }
-}
 
 // Update the status text shown inside the loading spinner, and advance phase pills.
 // Phase messages (in order):
@@ -1379,19 +1246,6 @@ async function downloadReport() {
     y += 2;
   }
   
-  // Chat logs
-  const messagesContainer = document.getElementById('chat-messages');
-  if (messagesContainer) {
-    const aiMessages = Array.from(messagesContainer.querySelectorAll('.bg-primary-500 p'));
-    if (aiMessages.length > 1) {
-      y += 3;
-      addDivider();
-      addText('4. INTERACTIVE AI CHAT ASSISTANT NOTES', 13, true, 'primary');
-      aiMessages.slice(1).forEach((msg, idx) => {
-        addText(`AI note ${idx + 1}: ${msg.textContent}`, 9, false);
-      });
-    }
-  }
 
   const filename = `seo-report-${result.url.replace(/^https?:\/\//i, '').replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
   doc.save(filename);
@@ -1447,22 +1301,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('url-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       document.getElementById('launch-btn').click();
-    }
-  });
-  
-  // Chat bot toggle
-  document.getElementById('chat-toggle-btn').addEventListener('click', toggleChat);
-  
-  // Chat close
-  document.getElementById('chat-close-btn').addEventListener('click', toggleChat);
-  
-  // Chat send
-  document.getElementById('chat-send-btn').addEventListener('click', sendChatMessage);
-  
-  // Chat enter key
-  document.getElementById('chat-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      sendChatMessage();
     }
   });
 

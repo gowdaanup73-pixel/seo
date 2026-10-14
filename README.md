@@ -6,7 +6,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 [![Vercel Serverless](https://img.shields.io/badge/Backend-Vercel%20Serverless-black?style=for-the-badge&logo=vercel)](https://vercel.com/)
 
-A fast, highly interactive, and beautiful SEO audit platform that analyzes websites in real-time, compiles actionable checklists, displays live site screenshot previews, and provides prioritized, context-aware AI recommendations via an integrated chatbot.
+A fast, highly interactive, and beautiful SEO audit platform that analyzes websites in real-time, compiles actionable checklists, displays live site screenshot previews, and provides prioritized SEO intelligence.
 
 ---
 
@@ -20,11 +20,10 @@ Deploy Link: [https://streetcoders-seo-analyzer.vercel.app/](https://streetcoder
 - **⚡ Parallel Audits**: Check domain health (via Google DNS) and scrape page contents simultaneously. A strict 8-second fetch timeout guarantees fast responses.
 - **🎨 Interactive Data Visualizations**: Overall score indicator and category rings (On-Page, Technical, Content, and Links) dynamically rendered, highlighting deductions.
 - **📋 Actionable Recommendations**: Issues are grouped into **Critical Issues** (failed high priority), **Improvements Needed** (failed low/medium priority), and **Passed Checks** cards. Includes copies for one-click CSS/HTML code fixes.
-- **🤖 Contextual AI Chatbot Assistant**: Embedded OpenRouter AI chatbot. It is fed with live site statistics (exact word count, missing alt tag counts, meta description status) to avoid generic boilerplate advice.
-- **💾 Offline Caching Layer**: In-memory caching on Vercel Serverless (1-hour TTL for page crawls, 24-hour TTL for previews and AI chats). Cache hits load instantly in under 15ms.
-- **📄 Downloadable PDF Reports**: Compile and download styled, client-ready A4 PDF reports (powered by `jsPDF`) containing audit breakdowns, points deductions, metrics, and chat history.
+- **💾 Offline Caching Layer**: In-memory caching on Vercel Serverless (1-hour TTL for page crawls, 24-hour TTL for previews). Cache hits load instantly in under 15ms.
+- **📄 Downloadable PDF Reports**: Compile and download styled, client-ready A4 PDF reports (powered by `jsPDF`) containing audit breakdowns, points deductions, and metrics.
 - **🕒 Persistent Analysis History**: Browser `localStorage` stores the last 20 analyzed domains complete with favicon/screenshots, scores, timestamps, click-to-load/reload logic, and delete options.
-- **📱 Fully Responsive Layout**: Responsive breakpoints designed to scale card columns, chatbot cards, and radial rings from narrow mobile devices (<640px) to desktops.
+- **📱 Fully Responsive Layout**: Responsive breakpoints designed to scale card columns and radial rings from narrow mobile devices (<640px) to desktops.
 - **🛡️ SSRF & Error Guards**: Robust server-side security checks block private IP ranges (like `192.168.x.x`), parse malformed URLs, and capture connection resets, bot blocks (403), or unreachable domains.
 
 ---
@@ -32,10 +31,9 @@ Deploy Link: [https://streetcoders-seo-analyzer.vercel.app/](https://streetcoder
 ## 🛠️ Tech Stack & Architecture
 
 - **Frontend**: Vanilla ES6+ JS, HTML5, Tailwind CSS (via CDN)
-- **Backend / Serverless**: Node.js ESM Vercel Serverless APIs (`/api/analyze`, `/api/preview`, `/api/ai-recommend`)
+- **Backend / Serverless**: Node.js ESM Vercel Serverless APIs (`/api/analyze`, `/api/preview`)
 - **Third-Party APIs**:
   - **DNS Resolution**: Google DNS API (`https://dns.google/resolve`)
-  - **AI Chatbot**: OpenRouter completions endpoint (`openai/gpt-3.5-turbo`)
   - **Screenshots**: Proxied `thum.io` image generator (secured server-side)
 - **PDF Generation**: Client-side `jsPDF` integration
 

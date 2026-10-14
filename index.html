@@ -31,8 +31,7 @@
                         scoreGreen: '#10b981',
                         scoreBlue: '#3b82f6',
                         scoreOrange: '#f97316',
-                        scoreRed: '#ef4444',
-                        chatPrimary: '#0d9488'
+                        scoreRed: '#ef4444'
                     },
                     boxShadow: {
                         'glass': '0 8px 32px rgba(0,0,0,0.25)',
@@ -306,13 +305,7 @@
             animation: spin 0.8s linear infinite;
         }
 
-        /* ─── Chat ────────────────────────────────────────────── */
-        #chat-window {
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        #chat-window.active {
-            display: flex !important;
-        }
+
 
         /* ─── Bounce ──────────────────────────────────────────── */
         @keyframes bounce {
@@ -838,47 +831,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════════  CHATBOT  ═══════════════════ -->
-    <div id="chatbot-container" class="fixed bottom-5 right-4 sm:right-5 z-50">
-        <div id="chat-window" class="w-[calc(100vw-2rem)] sm:w-96 h-[70vh] sm:h-[500px] glass-card flex-col border-white/10" style="display: none;">
-            <div class="p-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold rounded-t-[1.25rem] flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                    </svg>
-                    <span class="text-sm">AI SEO Assistant</span>
-                </div>
-                <button id="chat-close-btn" class="hover:bg-white/10 p-1.5 rounded-lg transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-black/20" style="flex: 1; min-height: 0;">
-                <div class="flex gap-2">
-                    <div class="bg-primary-500 text-white p-3 rounded-2xl rounded-tl-none max-w-[80%]">
-                        <p class="text-sm">👋 Hi! I'm your AI SEO assistant. Ask me anything about SEO optimization, keywords, or website performance!</p>
-                    </div>
-                </div>
-            </div>
-            <div class="p-4 bg-black/10 border-t border-white/5 rounded-b-[1.25rem]">
-                <div class="flex gap-2">
-                    <input id="chat-input" type="text" placeholder="Ask about SEO..." 
-                           class="input-glow flex-grow p-3 rounded-xl border border-white/10 bg-white/5 text-gray-100 placeholder-gray-500 focus:outline-none text-sm">
-                    <button id="chat-send-btn" class="btn-gradient text-white p-3 rounded-xl">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <button id="chat-toggle-btn" class="w-14 h-14 rounded-full btn-gradient text-white shadow-glow-md hover:shadow-glow-lg hover:scale-110 transition-all flex items-center justify-center">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-            </svg>
-        </button>
-    </div>
+
 
     <!-- ═══════════════════  TAB SWITCHING & PREVIEW CLICKTHROUGH (minimal JS)  ═══════════════════ -->
     <script>
