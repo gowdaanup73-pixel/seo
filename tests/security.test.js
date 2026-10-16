@@ -21,8 +21,8 @@ test('SSRF Guard: Private & Loopback IPv4 addresses are rejected', () => {
     '172.31.255.254',
     '192.168.0.1',
     '192.168.1.254',
-    '169.254.169.254', // AWS / GCP / Azure metadata
-    '169.254.1.1',     // Link-local
+    '169.254.169.254',
+    '169.254.1.1',     
     '0.0.0.0',
     '100.64.0.1',      // CGNAT
     '192.0.2.1',       // TEST-NET-1
