@@ -30,7 +30,7 @@ test('SSRF Guard: Private & Loopback IPv4 addresses are rejected', () => {
     '203.0.113.1',     // TEST-NET-3
     '224.0.0.1',       // Multicast
     '240.0.0.1',       // Reserved
-    '255.255.255.255'  // Broadcast
+    '255.255.255.255' 
   ];
 
   for (const ip of privateIps) {
